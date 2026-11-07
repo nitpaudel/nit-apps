@@ -189,14 +189,33 @@ svg{display:block}
 /* date picker popover */
 #dpScrim{position:fixed;inset:0;z-index:24;display:none}
 #dpScrim.on{display:block}
-#dp{position:fixed;left:16px;right:16px;z-index:25;border-radius:34px;padding:18px 10px 14px;opacity:0;transform:scale(.9);pointer-events:none;
-  transition:opacity .22s,transform .38s cubic-bezier(.34,1.3,.5,1)}
+#dp{position:fixed;left:14px;right:14px;z-index:25;border-radius:38px;padding:20px 12px 16px;opacity:0;transform:scale(.88);pointer-events:none;
+  transition:opacity .2s,transform .42s cubic-bezier(.34,1.25,.5,1);
+  background:radial-gradient(120% 70% at 12% 0%,rgba(255,255,255,.95),rgba(255,255,255,0) 60%),linear-gradient(165deg,rgba(255,255,255,.80),rgba(246,246,250,.70));
+  -webkit-backdrop-filter:blur(40px) saturate(190%);backdrop-filter:blur(40px) saturate(190%);
+  border:.5px solid rgba(255,255,255,.95);box-shadow:0 30px 70px rgba(0,0,0,.20),0 2px 8px rgba(0,0,0,.06),inset 0 1px 0 #fff}
+@media (prefers-color-scheme: dark){
+  #dp{background:radial-gradient(110% 65% at 10% 0%,rgba(255,196,150,.13),rgba(255,196,150,0) 60%),radial-gradient(90% 60% at 100% 100%,rgba(120,160,255,.08),rgba(0,0,0,0) 60%),linear-gradient(165deg,rgba(78,78,84,.70),rgba(46,46,50,.80));
+    border:.5px solid rgba(255,255,255,.17);box-shadow:0 34px 90px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(255,255,255,.05)}
+}
 #dp.on{opacity:1;transform:scale(1);pointer-events:auto}
-.dp-foot{display:flex;justify-content:space-between;align-items:center;padding:10px 8px 0}
-.dp-clear{height:44px;padding:0 22px;border-radius:22px;font-size:17px;font-weight:500;background:var(--fill)}
-.dp-ok{width:52px;height:52px;border-radius:26px;background:var(--accent);color:#fff;display:grid;place-items:center;box-shadow:0 6px 16px rgba(42,120,245,.35)}
-.dp-ok svg{width:22px;height:22px}
-.dp-clear:active,.dp-ok:active{transform:scale(.94)}
+#dp .cal-h{padding:0 10px 14px}
+#dp .cal-h b{font-size:21px}
+#dp .cal-h b em{font-style:normal;color:var(--accent);margin-left:6px;font-weight:600}
+#dp .cal-g .dn{font-size:13px;padding-bottom:10px}
+#dp .cd{height:50px;font-size:22px}
+#dp .cd span{width:46px;height:46px;border-radius:23px}
+.dp-foot{display:flex;justify-content:space-between;align-items:center;padding:12px 8px 0}
+.dp-reset{height:50px;padding:0 26px;border-radius:25px;font-size:18px;font-weight:500;color:var(--text);
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.25));border:.5px solid rgba(0,0,0,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 2px 6px rgba(0,0,0,.06)}
+.dp-ok{width:62px;height:62px;border-radius:31px;color:#fff;display:grid;place-items:center;
+  background:linear-gradient(180deg,#6aa6ff,#2f77f2);border:.5px solid rgba(255,255,255,.35);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -2px 6px rgba(0,40,120,.25),0 8px 20px rgba(42,120,245,.35)}
+.dp-ok svg{width:36px;height:36px}
+@media (prefers-color-scheme: dark){
+  .dp-reset{background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.07));border:.5px solid rgba(255,255,255,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 4px 12px rgba(0,0,0,.25)}
+}
+.dp-reset:active,.dp-ok:active{transform:scale(.93)}
 /* Done list: 7 days / 30 days / all time */
 .seg{display:flex;margin:0 16px 4px;padding:3px;border-radius:10px;background:var(--fill)}
 .seg button{flex:1;height:32px;border-radius:8px;font-size:14px;font-weight:500;transition:background .2s,box-shadow .2s}
@@ -220,7 +239,8 @@ svg{display:block}
 #fab.drag{scale:1.08;box-shadow:0 12px 28px rgba(0,0,0,.25)}
 #fab.gone{scale:.4;opacity:0;pointer-events:none}
 .zone{position:fixed;z-index:14;width:300px;height:300px;margin:-150px 0 0 -150px;border-radius:50%;pointer-events:none;
-  background:rgba(120,120,128,.18);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  background:radial-gradient(circle at 50% 50%,rgba(120,120,128,.10),rgba(120,120,128,.24));-webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%);
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.22),inset 0 0 40px rgba(255,255,255,.06);
   transform:scale(0);transition:transform .45s cubic-bezier(.34,1.35,.5,1),background .25s}
 .zone.near{transform:scale(.55)}
 .zone.hot{transform:scale(1);background:color-mix(in srgb,var(--accent) 22%,transparent)}
@@ -679,7 +699,7 @@ function monthCells(ym, o){
   let cells = WDL.map(d => `<div class="dn">${o.short ? d[0] : d}</div>`).join("") + "<div></div>".repeat((first.getDay() + 6) % 7);
   for (let d = 1; d <= days; d++){
     const ds = `${y}-${pad(m)}-${pad(d)}`, past = o.min && ds < o.min;
-    cells += `<button class="cd${past?" past":""}${ds===T()?" today":""}${ds===o.sel?" sel":""}" ${o.attr}="${ds}"${past?" disabled":""}><span>${d}</span>${o.dots && o.dots[ds] && !past ? "<i></i>" : ""}</button>`;
+    cells += `<button class="cd${past?" past":""}${ds===T()?" today":""}${ds===o.sel?" sel":""}" ${o.attr}="${ds}"><span>${d}</span>${o.dots && o.dots[ds] ? "<i></i>" : ""}</button>`;
   }
   return cells;
 }
@@ -690,7 +710,7 @@ function monthHead(ym, navAttr, minYm){
 const shiftMonth = (ym, n) => { const [y,m] = ym.split("-").map(Number), d = new Date(y, m-1+n, 1); return `${d.getFullYear()}-${pad(d.getMonth()+1)}`; };
 function calHTML(anim){
   const dots = {}; db.tasks.forEach(t => { if (!t.done && isDate(t.when)) dots[t.when] = 1; });
-  return `<div class="cal lg">${monthHead(upMonth, "data-calnav", T().slice(0,7))}
+  return `<div class="cal lg">${monthHead(upMonth, "data-calnav", null)}
     <div class="cal-g${anim ? " slide-" + anim : ""}">${monthCells(upMonth, { sel: upSel, min: T(), dots, attr: "data-cal", short: true })}</div></div>`;
 }
 
@@ -701,15 +721,15 @@ let dpState = null;
 function openDatePicker(anchor, { value, min, onPick }){
   dpState = { sel: value || null, ym: (value || T()).slice(0,7), min, onPick };
   drawDP();
-  const r = anchor.getBoundingClientRect(), h = 470, below = r.bottom + 10 + h < innerHeight;
+  const r = anchor.getBoundingClientRect(), h = 520, below = r.bottom + 10 + h < innerHeight;
   dp.style.top = (below ? r.bottom + 10 : Math.max(10, r.top - 10 - h)) + "px";
   dp.style.transformOrigin = `${r.left + r.width/2 - 16}px ${below ? "0" : "100%"}`;
   dpScrim.classList.add("on"); requestAnimationFrame(() => dp.classList.add("on")); haptic();
 }
 function drawDP(anim){
-  dp.innerHTML = monthHead(dpState.ym, "data-dpnav", dpState.min ? dpState.min.slice(0,7) : null)
+  dp.innerHTML = monthHead(dpState.ym, "data-dpnav", null).replace("</b>", `<em>›</em></b>`)
     + `<div class="cal-g${anim ? " slide-" + anim : ""}">${monthCells(dpState.ym, { sel: dpState.sel, min: dpState.min, attr: "data-dpd" })}</div>
-    <div class="dp-foot"><button class="dp-clear" data-dpclear>Clear</button><button class="dp-ok" data-dpok aria-label="Done">${I.check.replace('width="14" height="14"','')}</button></div>`;
+    <div class="dp-foot"><button class="dp-reset" data-dpclear>Reset</button><button class="dp-ok" data-dpok aria-label="Done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 12.8l4.2 4.4L18.5 7"/></svg></button></div>`;
 }
 function closeDP(apply){
   if (!dpState) return; const st = dpState; dpState = null;
@@ -1336,7 +1356,7 @@ function setCorner(c){ fab.classList.remove("c-br","c-bl","c-tr","c-tl"); fab.cl
     suppressClick = true; setTimeout(() => suppressClick = false, 60);
     fabDrag = false; fab.classList.remove("drag");
     const r = fab.getBoundingClientRect(), zone = cornerAt(r.left + r.width/2, r.top + r.height/2);
-    const thrown = Math.hypot(v.x, v.y) > 900;   // a fast flick just sends the + home, it never adds anything
+    const thrown = Math.hypot(v.x, v.y) > 900;   // a fast flick never adds anything; the + flies to the corner you threw it at
     const over = zone || thrown ? null : createAtTarget();
     showZones();
     if (over) ripple(r.left + r.width/2, r.top + r.height/2);
@@ -1344,7 +1364,10 @@ function setCorner(c){ fab.classList.remove("c-br","c-bl","c-tr","c-tl"); fab.cl
     if (showAllParts){ showAllParts = false; if (!over) renderList(); }
     if (!over){
       // dropped in (or thrown into) another corner: the + lives there now. Dropped on nothing: it just goes home.
-      const corner = zone;
+      // dragged into a corner circle, or flicked toward a corner: the + settles there
+      let corner = zone;
+      if (!corner && thrown){ const px = r.left + r.width/2 + project(v.x, .995), py = r.top + r.height/2 + project(v.y, .995);
+        corner = (py < innerHeight/2 ? "t" : "b") + (px < innerWidth/2 ? "l" : "r"); }
       if (corner && corner !== db.ui.fabCorner){
         const c0 = { x: r.left + r.width/2, y: r.top + r.height/2 };
         setCorner(corner);
