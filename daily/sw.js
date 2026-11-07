@@ -1,6 +1,6 @@
 // Makes Daily open instantly. The app is always served from the copy saved on the phone,
 // and a fresh copy is fetched quietly in the background, so updates show up on the next launch.
-const CACHE = "daily-v8";
+const CACHE = "daily-v9";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-180.png", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/launch-1170x2532.png", "./icons/launch-1170x2532-dark.png"];
 
 self.addEventListener("install", e => {
