@@ -1,7 +1,7 @@
-// Offline support. The app page always tries the network first so updates show up,
-// and falls back to the saved copy when you have no signal.
-const CACHE = "daily-v4";
-const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-180.png", "./icons/icon-192.png", "./icons/icon-512.png"];
+// Makes Daily open instantly. The app is always served from the copy saved on the phone,
+// and a fresh copy is fetched quietly in the background, so updates show up on the next launch.
+const CACHE = "daily-v5";
+const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-180.png", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/launch-1170x2532.png", "./icons/launch-1170x2532-dark.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
@@ -11,10 +11,12 @@ self.addEventListener("activate", e => {
 });
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
-  if (e.request.mode === "navigate") {
-    e.respondWith(fetch(e.request).then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put("./index.html", copy)); return r; })
-      .catch(() => caches.match("./index.html")));
-    return;
-  }
-  e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request)));
+  const isPage = e.request.mode === "navigate";
+  const key = isPage ? "./index.html" : e.request;
+  e.respondWith(caches.open(CACHE).then(async cache => {
+    const hit = await cache.match(key, { ignoreSearch: isPage });
+    const fresh = fetch(e.request).then(r => { if (r && r.ok) cache.put(key, r.clone()); return r; }).catch(() => hit);
+    if (hit) { e.waitUntil(fresh); return hit; }
+    return fresh;
+  }));
 });
