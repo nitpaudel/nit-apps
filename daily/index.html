@@ -1430,7 +1430,16 @@ renderAll();
   sp.addEventListener("pointerdown", finish);
   setTimeout(finish, 560);
 })();
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+if ("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).catch(() => {});
+  // a newer Daily was just downloaded: reload right away if you only just opened the app, otherwise offer it
+  const openedAt = Date.now();
+  navigator.serviceWorker.addEventListener("message", e => {
+    if (!e.data || e.data.type !== "daily-updated") return;
+    if (Date.now() - openedAt < 6000 && !sheetOpen) location.reload();
+    else toast("Daily was updated", "Reload", () => location.reload());
+  });
+}
 })();
 </script>
 </body>
