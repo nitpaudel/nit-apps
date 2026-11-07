@@ -1,6 +1,6 @@
 // Offline support. The app page always tries the network first so updates show up,
 // and falls back to the saved copy when you have no signal.
-const CACHE = "daily-v2";
+const CACHE = "daily-v3";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-180.png", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", e => {

@@ -165,11 +165,40 @@ svg{display:block}
   padding:10px 16px;border-radius:20px;font-size:15px;pointer-events:none;transition:opacity .2s,transform .3s var(--ease);white-space:nowrap}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 
+/* launch animation */
+#splash{position:fixed;inset:0;z-index:50;background:var(--bg2);display:grid;place-items:center}
+#splash svg{width:112px;height:112px;filter:drop-shadow(0 10px 24px rgba(31,110,240,.28));animation:icoIn .55s var(--ease) both}
+#splash .ln,#splash .ring{fill:none;stroke-linecap:round;stroke-dasharray:60;stroke-dashoffset:60;animation:draw .42s var(--ease) forwards}
+#splash .ln{stroke:#3c3c42;stroke-width:5}
+#splash .ln.d{stroke:#d2d2da}
+#splash .ring{stroke:#c6c6ce;stroke-width:1.6}
+#splash .dot{fill:#247af6;transform-box:fill-box;transform-origin:center;transform:scale(0);animation:dot .38s cubic-bezier(.3,1.5,.5,1) .62s forwards}
+#splash .tick{fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:16;stroke-dashoffset:16;animation:draw .28s var(--ease) .82s forwards}
+#splash.out{animation:fadeOut .42s var(--ease) forwards}
+#splash.out svg{animation:icoOut .42s var(--ease) forwards}
+#home{transition:opacity .45s var(--ease),scale .55s var(--ease)}
+#home.pre{opacity:0;scale:.96}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes dot{to{transform:scale(1)}}
+@keyframes icoIn{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:scale(1)}}
+@keyframes icoOut{to{opacity:0;transform:scale(1.18)}}
+@keyframes fadeOut{to{opacity:0;visibility:hidden}}
+
 @media (prefers-reduced-motion: reduce){ .check svg,.chip,#fab{transition:none} }
 </style>
 </head>
 <body>
-<section class="screen" id="home"></section>
+<div id="splash" aria-hidden="true"><svg viewBox="0 0 120 120">
+  <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#60a5ff"/><stop offset="1" stop-color="#1a6cf0"/></linearGradient></defs>
+  <rect width="120" height="120" rx="27" fill="url(#sg)"/>
+  <rect x="23.5" y="21" width="73" height="78" rx="10" fill="#fff"/>
+  <circle class="ring" cx="37.5" cy="41" r="6.9" style="animation-delay:.18s"/>
+  <circle class="dot" cx="37.5" cy="41" r="7.4"/><path class="tick" d="M34.4 41.2l2.2 2.3 4.2-4.5"/>
+  <path class="ln d" d="M50 41h34" style="animation-delay:.24s"/>
+  <circle class="ring" cx="37.5" cy="60" r="6.9" style="animation-delay:.3s"/><path class="ln" d="M50 60h31" style="animation-delay:.36s"/>
+  <circle class="ring" cx="37.5" cy="79" r="6.9" style="animation-delay:.42s"/><path class="ln" d="M50 79h24" style="animation-delay:.48s"/>
+</svg></div>
+<section class="screen pre" id="home"></section>
 <section class="screen hidden" id="list"></section>
 <button id="gear" class="round" data-settings aria-label="Settings"></button>
 <button id="fab" aria-label="New task"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -882,6 +911,13 @@ function toast(msg, actionLabel, action){
 let lastDay = T();
 document.addEventListener("visibilitychange", () => { if (!document.hidden && T() !== lastDay){ lastDay = T(); renderAll(); } });
 renderAll();
+(() => { // launch animation: the icon draws itself, then opens into the app
+  const sp = $("#splash"); if (!sp) return;
+  const finish = () => { if (sp._done) return; sp._done = true; sp.classList.add("out"); home.classList.remove("pre"); setTimeout(() => sp.remove(), 500); };
+  if (reduceMotion){ sp.remove(); home.classList.remove("pre"); return; }
+  sp.addEventListener("pointerdown", finish);
+  setTimeout(finish, 1250);
+})();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 })();
 </script>
