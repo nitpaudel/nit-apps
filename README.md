@@ -1,4 +1,7 @@
 # nit-apps
-## Apps
 
-- `daily/` Daily, a Things-style to-do app. Open https://nitpaudel.github.io/nit-apps/daily/ in Safari, then Share > Add to Home Screen.
+My personal iPhone apps.
+
+## Daily
+
+My to-do app. Open https://nitpaudel.github.io/nit-apps/daily/ in Safari, then tap Share > Add to Home Screen.
