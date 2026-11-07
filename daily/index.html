@@ -347,18 +347,6 @@ html[data-card="default"] .gpanel{background:rgba(246,246,248,.80);
 
 /* ===== Done: days as glass notifications, older months stack like the Lock Screen ===== */
 .hcal svg{width:21px;height:21px}
-#list.donebg{background:
-  radial-gradient(70% 38% at 12% 18%, rgba(72,150,128,.34), transparent 70%),
-  radial-gradient(60% 34% at 95% 52%, rgba(122,96,210,.26), transparent 70%),
-  radial-gradient(80% 40% at 25% 98%, rgba(226,138,62,.22), transparent 70%),
-  #060607}
-@media (prefers-color-scheme: light){
-  #list.donebg{background:
-    radial-gradient(70% 38% at 12% 18%, rgba(110,175,255,.42), transparent 70%),
-    radial-gradient(60% 34% at 95% 52%, rgba(255,160,205,.36), transparent 70%),
-    radial-gradient(80% 40% at 25% 98%, rgba(255,205,130,.42), transparent 70%),
-    #eef0f5}
-}
 .dz{padding:2px 12px 140px}
 .dcard{--g:rgba(36,36,42,.42);border-radius:24px;margin-bottom:9px;position:relative;transform-origin:50% 100%;
   background:var(--g);-webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);
@@ -1024,7 +1012,6 @@ function renderList(){
   const scroll = list.scrollTop;
   list.innerHTML = `<div class="bar"><button class="back gbtn" data-back aria-label="Back">${I.back}</button><span class="mini">${esc(title)}</span>${isProj ? `<button class="icon-btn gbtn" data-projmenu aria-label="Project options">${I.more}</button>` : k === "logbook" ? `<button class="icon-btn gbtn hcal" data-hcal aria-label="Calendar">${I.cal}</button>` : "<span style='width:46px'></span>"}</div>
     <div class="big-title">${icon}<span>${esc(title)}</span>${extra}</div>${sub ? `<div class="list-sub">${sub}</div>` : `<div style="height:12px"></div>`}<div class="rows">${body}</div>`;
-  list.classList.toggle("donebg", !isProj && k === "logbook");
   list.scrollTop = scroll;
   updateBar(); doneScrollFx();
 }

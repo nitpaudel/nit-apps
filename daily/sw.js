@@ -1,6 +1,6 @@
 // Makes Daily open instantly from the copy saved on the phone, and checks for a newer
 // version every time it opens. When a newer version is found, the app is told so it can reload.
-const CACHE = "daily-v23";
+const CACHE = "daily-v24";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-180.png", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/launch-1170x2532.png", "./icons/launch-1170x2532-dark.png"];
 
 self.addEventListener("install", e => {
