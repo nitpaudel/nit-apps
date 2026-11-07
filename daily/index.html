@@ -111,6 +111,26 @@ svg{display:block}
 .row.shift{transition:transform .22s var(--ease)}
 .row.pop .check{animation:pop .38s var(--ease)}
 @keyframes pop{0%{transform:scale(.82)}55%{transform:scale(1.14)}100%{transform:scale(1)}}
+.days{display:flex;gap:7px;margin-top:12px}
+.dayb{width:38px;height:38px;border-radius:19px;background:var(--fill);font-size:14px;font-weight:600}
+.dayb.on{background:var(--accent);color:#fff}
+.tring{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--text2);letter-spacing:0}
+.tring svg{width:30px;height:30px;transform:rotate(-90deg)}
+.tring .bar{transition:stroke-dashoffset .6s cubic-bezier(.16,1,.3,1),stroke .3s}
+.tring.full{color:var(--logbook)}
+.tring.full .bar{stroke:var(--logbook)}
+.tring.cele{animation:pop .5s cubic-bezier(.16,1,.3,1)}
+.list-sub .flame{display:inline-flex;align-items:center;gap:3px;color:#f08a24;font-weight:600}
+.list-sub .flame svg{width:14px;height:14px}
+.greet{font-size:28px;font-weight:700;letter-spacing:-.02em;margin:4px 0 2px}
+.plan-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:.5px solid var(--sep);transition:opacity .22s,transform .22s}
+.plan-item.gone{opacity:0;transform:translateX(40px)}
+.pt{flex:1;min-width:0;word-wrap:break-word}
+.pt small{display:block;color:var(--text2);font-size:13px;margin-top:2px}
+.pb{display:flex;gap:6px;flex:none}
+.pb button{height:32px;padding:0 12px;border-radius:16px;background:var(--fill);font-size:14px;font-weight:600}
+.pb .ptoday{background:var(--today);color:#1c1c1e}
+.pb button:active{transform:scale(.94)}
 .empty{padding:70px 40px;text-align:center;color:var(--text3)}
 .empty .ico{width:44px;height:44px;margin:0 auto 12px;opacity:.5}
 .empty p{font-size:15px;color:var(--text2)}
@@ -223,6 +243,7 @@ function load(){
   return { v:1, tasks:[], projects:[], seeded:false };
 }
 function save(){
+  try { logDay(); } catch(e){}
   try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){ toast("Couldn't save. Storage is full or blocked."); }
 }
 db = load();
@@ -293,6 +314,8 @@ const I = {
   box:`<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="5" rx="1.6"/><path d="M4.5 10h15v8a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2z" opacity=".75"/></svg>`,
   clock:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>`,
   trash:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13"/></svg>`,
+  repeat:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l3 3-3 3M20 6H8a4 4 0 0 0-4 4v1M7 21l-3-3 3-3M4 18h12a4 4 0 0 0 4-4v-1"/></svg>`,
+  flame:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c-4.2 0-7-2.9-7-6.8 0-3.1 1.9-5.3 3.6-7.2.3 1.6 1.1 2.8 2.4 3.4-.3-3.6 1.3-6.7 4-8.4-.3 2.6.7 4.4 2.3 6.2 1.4 1.6 2.7 3.4 2.7 6 0 4-2.8 6.8-8 6.8z"/></svg>`,
   plusSmall:`<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></svg>`,
   export:`<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3.5M7.5 8L12 3.5 16.5 8M5 12v6.5A2 2 0 0 0 7 20.5h10a2 2 0 0 0 2-2V12"/></svg>`,
   import:`<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5V15M7.5 10.5L12 15l4.5-4.5M5 15v3.5A2 2 0 0 0 7 20.5h10a2 2 0 0 0 2-2V15"/></svg>`,
@@ -412,6 +435,63 @@ function renderResults(){
   return h;
 }
 
+/* ---------- repeat ---------- */
+function nextRepeat(r, from){
+  if (r.freq === "days"){ for (let i=1;i<=7;i++){ const d = addDays(from,i); if (r.days.includes(parseYmd(d).getDay())) return d; } return addDays(from,1); }
+  if (r.freq === "week") return addDays(from,7);
+  const d = parseYmd(from), day = d.getDate(), n = new Date(d.getFullYear(), d.getMonth()+1, 1);
+  n.setDate(Math.min(day, new Date(n.getFullYear(), n.getMonth()+1, 0).getDate())); return ymd(n);
+}
+function firstRepeat(r){ const t = T(); return (r.freq === "days" && !r.days.includes(parseYmd(t).getDay())) ? nextRepeat(r, t) : t; }
+function repeatLabel(r){
+  if (!r) return "";
+  if (r.freq === "days"){ const d = r.days.slice().sort((a,b)=>a-b); if (d.length === 7) return "Every day";
+    if (d.join() === "1,2,3,4,5") return "Weekdays";
+    if (d.length === 6) return "Every day but " + DOWS[[0,1,2,3,4,5,6].find(i => !d.includes(i))];
+    return d.map(i => DOWS[i]).join(" "); }
+  return r.freq === "week" ? "Every week" : "Every month";
+}
+function spawnNext(t){
+  const base = isDate(t.when) ? t.when : T();
+  let next = nextRepeat(t.repeat, t.repeat.freq === "days" && T() > base ? T() : base);
+  while (next <= T()) next = nextRepeat(t.repeat, next);
+  const n = { ...t, id: uid(), when: next, evening: t.evening, done:false, doneAt:null, createdAt: Date.now(), spawnedId:null, deadline:null };
+  db.tasks.push(n); t.spawnedId = n.id; return n;
+}
+
+/* ---------- today progress + streak ---------- */
+function todayStats(){
+  const t = T();
+  const open = db.tasks.filter(x => !x.done && inToday(x)).length;
+  const done = db.tasks.filter(x => x.done && x.doneAt && ymd(new Date(x.doneAt)) === t && ((isDate(x.when) && x.when <= t) || (x.deadline && x.deadline <= t))).length;
+  return { open, done, total: open + done };
+}
+function logDay(){ const s = todayStats(); db.dayLog = db.dayLog || {}; db.dayLog[T()] = { t: s.total, d: s.done }; }
+function streak(){
+  const log = db.dayLog || {}; let n = 0, gap = 0;
+  const today = log[T()]; if (today && today.t > 0 && today.d >= today.t) n++;
+  for (let i = 1; i < 500; i++){
+    const e = log[addDays(T(), -i)];
+    if (!e || e.t === 0){ if (++gap >= 2) break; continue; }   // never miss 2 days in a row
+    gap = 0; if (e.d >= e.t) n++; else break;
+  }
+  return n;
+}
+function ringHTML(){
+  const s = todayStats(); if (!s.total) return "";
+  const C = 2 * Math.PI * 12, frac = s.done / s.total, full = s.open === 0;
+  return `<span class="tring${full?" full":""}"><svg viewBox="0 0 30 30"><circle cx="15" cy="15" r="12" fill="none" stroke="var(--fill)" stroke-width="3.4"/><circle class="bar" cx="15" cy="15" r="12" fill="none" stroke="var(--accent)" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${(C*(1-frac)).toFixed(2)}"/></svg>${s.done}/${s.total}</span>`;
+}
+function updateRing(celebrate){
+  const r = list.querySelector(".tring"); if (!r) return;
+  const tmp = document.createElement("div"); tmp.innerHTML = ringHTML(); const nr = tmp.firstElementChild; if (!nr){ r.remove(); return; }
+  // animate the bar from its old value
+  const oldBar = r.querySelector(".bar"), newBar = nr.querySelector(".bar");
+  const to = newBar.getAttribute("stroke-dashoffset"); newBar.setAttribute("stroke-dashoffset", oldBar.getAttribute("stroke-dashoffset"));
+  r.replaceWith(nr); requestAnimationFrame(() => requestAnimationFrame(() => newBar.setAttribute("stroke-dashoffset", to)));
+  if (celebrate) nr.classList.add("cele");
+}
+
 /* ---------- LIST ---------- */
 function rowHTML(t, o={}){
   const meta = [];
@@ -422,6 +502,7 @@ function rowHTML(t, o={}){
   }
   if (o.showProject && t.projectId && proj(t.projectId)) meta.push(`<span class="m">${esc(proj(t.projectId).name)}</span>`);
   if (t.deadline){ const late = t.deadline <= T(); meta.push(`<span class="m${late?" due":""}">${I.flag}${late && t.deadline < T() ? "Overdue" : "Due " + shortDay(t.deadline)}</span>`); }
+  if (t.repeat) meta.push(`<span class="m">${I.repeat}${o.inToday ? "" : repeatLabel(t.repeat)}</span>`);
   if (t.notes && t.notes.trim()) meta.push(`<span class="m">${I.notes}</span>`);
   return `<div class="row${t.done?" done":""}" data-id="${t.id}">
     <div class="acts l"><div class="act today">${I.star}Today</div></div>
@@ -435,7 +516,7 @@ function empty(icon, text){ return `<div class="empty">${I[icon]}<p>${text}</p><
 
 function renderList(){
   if (!current) return;
-  let title, icon, body = "", sub = "", isProj = current.type === "project";
+  let title, icon, body = "", sub = "", extra = "", isProj = current.type === "project";
   if (isProj){
     const p = proj(current.key); if (!p){ pop(); return; }
     const s = projStats(p.id); title = p.name; icon = pie(s.frac);
@@ -449,7 +530,8 @@ function renderList(){
     if (k === "today"){
       const items = visible(FILTERS.today);
       const day = items.filter(t => !t.evening), eve = items.filter(t => t.evening);
-      const d = new Date(); sub = `${DOW[d.getDay()]}, ${d.getDate()} ${MONL[d.getMonth()]}`;
+      const d = new Date(), st = streak(); sub = `${DOW[d.getDay()]}, ${d.getDate()} ${MONL[d.getMonth()]}` + (st ? ` <span style="margin:0 4px">·</span> <span class="flame">${I.flame}${st}-day streak</span>` : "");
+      extra = ringHTML();
       body = grp(day.map(t => rowHTML(t, {showProject:true, showWhen:true, inToday:true})).join(""));
       if (eve.length) body += sec("This Evening", I.evening) + grp(eve.map(t => rowHTML(t, {showProject:true, showWhen:true, inToday:true})).join(""));
       if (!items.length) body = empty("today", "Nothing for today. Add something or enjoy the free time.");
@@ -489,7 +571,7 @@ function renderList(){
   }
   const scroll = list.scrollTop;
   list.innerHTML = `<div class="bar"><button class="back" data-back>${I.back}<span>Lists</span></button><span class="mini">${esc(title)}</span>${isProj ? `<button class="icon-btn" data-projmenu aria-label="Project options">${I.more}</button>` : "<span style='width:44px'></span>"}</div>
-    <div class="big-title">${icon}<span>${esc(title)}</span></div>${sub ? `<div class="list-sub">${sub}</div>` : ""}<div class="rows">${body}</div>`;
+    <div class="big-title">${icon}<span>${esc(title)}</span>${extra}</div>${sub ? `<div class="list-sub">${sub}</div>` : ""}<div class="rows">${body}</div>`;
   list.scrollTop = scroll;
   updateBar();
 }
@@ -552,9 +634,17 @@ window.addEventListener("resize", () => { if (!current) setNav(W()); });
 function getTask(id){ return db.tasks.find(t => t.id === id); }
 function toggleDone(id, rowEl){
   const t = getTask(id); if (!t) return;
+  const before = todayStats();
   t.done = !t.done; t.doneAt = t.done ? Date.now() : null;
   if (t.done) recentDone.add(id); else recentDone.delete(id);
+  if (t.repeat){
+    if (t.done && !t.spawnedId){ const n = spawnNext(t); setTimeout(() => toast("Next one: " + longDay(n.when)), 350); }
+    else if (!t.done && t.spawnedId){ const i = db.tasks.findIndex(x => x.id === t.spawnedId && !x.done); if (i >= 0) db.tasks.splice(i,1); t.spawnedId = null; }
+  }
   save();
+  const after = todayStats(), cleared = t.done && before.open > 0 && after.open === 0 && after.total > 0;
+  if (current && current.key === "today"){ updateRing(cleared); const sub = list.querySelector(".list-sub"); if (sub && cleared) setTimeout(renderList, 900); }
+  if (cleared){ setTimeout(() => { haptic(); const st = streak(); toast(st > 1 ? `All done for today. ${st}-day streak` : "All done for today"); }, 300); }
   if (rowEl){ rowEl.classList.toggle("done", t.done); rowEl.classList.remove("pop"); if (t.done){ void rowEl.offsetWidth; rowEl.classList.add("pop"); } }
   if (t.done) haptic();
   renderHome();
@@ -752,6 +842,7 @@ function editorBody(){
   const isToday = isDate(d.when) && d.when <= t && !d.evening, isEve = isDate(d.when) && d.when <= t && d.evening;
   const isTmrw = d.when === addDays(t,1), isSome = d.when === "someday";
   const isOther = isDate(d.when) && d.when > addDays(t,1);
+  const r = d.repeat;
   const opts = `<option value="">No project (Inbox)</option>` + db.projects.slice().sort(byOrder).map(p => `<option value="${p.id}"${p.id===d.projectId?" selected":""}>${esc(p.name)}</option>`).join("");
   return `<input class="t-title" placeholder="New To-Do" value="${esc(d.title)}" enterkeyhint="done" autocomplete="off">
     <div class="parsed" id="parsed"></div>
@@ -764,6 +855,13 @@ function editorBody(){
       <button class="chip c-some${isSome?" on":""}" data-when="someday">${I.box}Someday</button>
       ${d.when ? `<button class="chip" data-when="clear">Clear</button>` : ""}
     </div></div>
+    <div class="field"><div class="field-label">Repeat</div><div class="chips">
+      <button class="chip${!r?" on":""}" data-rep="off">Off</button>
+      <button class="chip${r && r.freq==="days" && r.days.length===7?" on":""}" data-rep="daily">${I.repeat}Every day</button>
+      <button class="chip${r && r.freq==="days" && r.days.length<7?" on":""}" data-rep="some">Some days</button>
+      <button class="chip${r && r.freq==="week"?" on":""}" data-rep="week">Every week</button>
+      <button class="chip${r && r.freq==="month"?" on":""}" data-rep="month">Every month</button>
+    </div>${r && r.freq==="days" && r.days.length<7 ? `<div class="days">${[0,1,2,3,4,5,6].map(i => `<button class="dayb${r.days.includes(i)?" on":""}" data-day="${i}">${"SMTWTFS"[i]}</button>`).join("")}</div>` : ""}</div>
     <div class="field"><div class="field-label">Deadline</div><div class="chips">
       <span class="chip c-due${d.deadline?" on":""}">${I.flag}${d.deadline ? "Due " + longDay(d.deadline) : "Add deadline"}<input type="date" data-deadline value="${d.deadline||""}"></span>
       ${d.deadline ? `<button class="chip" data-nodeadline>Remove</button>` : ""}
@@ -791,6 +889,20 @@ function wireEditor(){
   wireFields(); showParsed();
 }
 function wireFields(){
+  sheetBody.querySelectorAll("[data-rep]").forEach(b => b.onclick = () => {
+    const v = b.dataset.rep;
+    if (v === "off") draft.repeat = null;
+    else if (v === "daily") draft.repeat = { freq:"days", days:[0,1,2,3,4,5,6] };
+    else if (v === "some") draft.repeat = { freq:"days", days:[0,1,2,3,4,5] };
+    else draft.repeat = { freq: v };
+    if (draft.repeat && (!isDate(draft.when))) { draft.when = firstRepeat(draft.repeat); draft.evening = false; }
+    draft.spawnedId = null; parsedHint = null; refreshEditorFields(); showParsed();
+  });
+  sheetBody.querySelectorAll("[data-day]").forEach(b => b.onclick = () => {
+    const i = +b.dataset.day, days = draft.repeat.days;
+    if (days.includes(i)){ if (days.length > 1) days.splice(days.indexOf(i),1); } else days.push(i);
+    if (days.length === 7) {} refreshEditorFields();
+  });
   sheetBody.querySelectorAll("[data-when]").forEach(b => b.onclick = () => {
     const w = b.dataset.when, t = T();
     if (w === "today"){ draft.when = t; draft.evening = false; }
@@ -915,12 +1027,47 @@ function toast(msg, actionLabel, action){
 
 /* ---------- day change / start ---------- */
 let lastDay = T();
-document.addEventListener("visibilitychange", () => { if (!document.hidden && T() !== lastDay){ lastDay = T(); renderAll(); } });
+document.addEventListener("visibilitychange", () => { if (!document.hidden && T() !== lastDay){ lastDay = T(); renderAll(); maybePlan(); } });
 renderAll();
+/* ---------- morning plan: first open of the day, sort yesterday's leftovers ---------- */
+function leftovers(){ return db.tasks.filter(t => !t.done && isDate(t.when) && t.when < T()).sort((a,b) => a.when < b.when ? -1 : 1); }
+function maybePlan(){
+  if (db.planDay === T()) return;
+  if (sheetOpen || !leftovers().length){ if (!leftovers().length){ db.planDay = T(); save(); } return; }
+  openPlan();
+}
+function openPlan(){
+  const h = new Date().getHours(), greet = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+  const items = leftovers(), todayCount = db.tasks.filter(t => !t.done && isDate(t.when) && t.when === T()).length;
+  const row = t => `<div class="plan-item" data-id="${t.id}"><div class="pt">${esc(t.title)}<small>From ${longDay(t.when)}${t.repeat ? " · " + repeatLabel(t.repeat) : ""}</small></div>
+    <div class="pb"><button class="ptoday" data-p="today">Today</button><button data-p="later">Later</button><button data-p="${t.repeat ? "skip" : "del"}">${t.repeat ? "Skip" : "Delete"}</button></div></div>`;
+  openSheet({
+    head: `<span style="width:60px"></span><h3>Plan your day</h3><button class="txt-btn strong" data-x>Done</button>`,
+    body: `<div class="greet">${greet}, Nit</div>
+      <p class="note" style="margin:0 0 8px">${items.length === 1 ? "1 thing" : items.length + " things"} didn't get done. Where should ${items.length === 1 ? "it" : "they"} go?</p>
+      <div id="planList">${items.map(row).join("")}</div>
+      <p class="note" id="planFoot">${todayCount ? `You already have ${todayCount} planned for today.` : ""} Anything you leave here moves to Today.</p>`,
+    onClose(){
+      db.tasks.forEach(t => { if (!t.done && isDate(t.when) && t.when < T()) t.when = T(); });
+      db.planDay = T(); save(); renderAll();
+    },
+  });
+  sheetHead.querySelector("[data-x]").onclick = () => closeSheet();
+  sheetBody.querySelectorAll(".plan-item button").forEach(b => b.onclick = () => {
+    const item = b.closest(".plan-item"), t = getTask(item.dataset.id), what = b.dataset.p; if (!t) return;
+    if (what === "today") t.when = T();
+    else if (what === "later") t.when = addDays(T(), 1);
+    else if (what === "skip"){ let n = nextRepeat(t.repeat, T()); t.when = n; }
+    else db.tasks = db.tasks.filter(x => x.id !== t.id);
+    save(); haptic(); item.classList.add("gone");
+    setTimeout(() => { item.remove(); if (!sheetBody.querySelector(".plan-item")) closeSheet(); }, 230);
+  });
+}
+
 (() => { // launch animation: rows shoot in, first one ticks, then it opens into the app
   const sp = $("#splash"); if (!sp) return;
-  const finish = () => { if (sp._done) return; sp._done = true; sp.classList.add("out"); home.classList.remove("pre"); setTimeout(() => sp.remove(), 300); };
-  if (reduceMotion){ sp.remove(); home.classList.remove("pre"); return; }
+  const finish = () => { if (sp._done) return; sp._done = true; sp.classList.add("out"); home.classList.remove("pre"); setTimeout(() => { sp.remove(); maybePlan(); }, 300); };
+  if (reduceMotion){ sp.remove(); home.classList.remove("pre"); maybePlan(); return; }
   sp.addEventListener("pointerdown", finish);
   setTimeout(finish, 560);
 })();
