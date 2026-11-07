@@ -783,8 +783,9 @@ let dpState = null;
 function openDatePicker(anchor, { value, min, onPick, dots, allowed, jump }){
   dpState = { sel: value || null, ym: (value || T()).slice(0,7), min, onPick, dots, allowed, jump };
   drawDP();
-  const r = anchor.getBoundingClientRect(), h = jump ? 450 : 520, below = r.bottom + 10 + h < innerHeight;
-  dp.style.top = (below ? r.bottom + 10 : Math.max(10, r.top - 10 - h)) + "px";
+  const r = anchor.getBoundingClientRect(), h = dp.offsetHeight || (jump ? 450 : 520), below = r.bottom + 10 + h < innerHeight - 8;
+  const sat = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sat")) || 0;
+  dp.style.top = (below ? r.bottom + 10 : Math.max(sat + 6, r.top - 10 - h)) + "px";
   dp.style.transformOrigin = `${r.left + r.width/2 - 16}px ${below ? "0" : "100%"}`;
   dpScrim.classList.add("on"); requestAnimationFrame(() => dp.classList.add("on")); haptic();
 }
@@ -913,7 +914,8 @@ function jumpToDay(d){
   const st = card.closest(".dstack"); if (st && !st.classList.contains("open")) setStack(st.dataset.stack, true);
   if (!card.classList.contains("open")){ openDays.add(d); card.classList.add("open"); }
   const barH = list.querySelector(".bar").offsetHeight;
-  const y = card.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop - barH - 12;
+  let y = 0; for (let el = card; el && el !== list; el = el.offsetParent) y += el.offsetTop;   // layout position, so cards still flying open don't throw it off
+  y -= barH + 12;
   glideList(Math.max(0, Math.min(y, list.scrollHeight - list.clientHeight)));
   card.classList.remove("flash"); void card.offsetWidth; card.classList.add("flash");
 }
