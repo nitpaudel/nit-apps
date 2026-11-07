@@ -152,7 +152,7 @@ html[data-card="default"] .gpanel{background:rgba(246,246,248,.80);
 /* rows */
 .row{position:relative;overflow:hidden}
 .row:not(:last-child)::after{content:"";position:absolute;left:50px;right:0;bottom:0;height:.5px;background:var(--sep);z-index:2}
-.row-main{position:relative;z-index:1;display:flex;align-items:flex-start;gap:12px;padding:12px 16px;touch-action:pan-y;will-change:transform}
+.row-main{position:relative;z-index:1;display:flex;align-items:flex-start;gap:12px;padding:12px 16px;touch-action:pan-y}
 .row-main:active{background:var(--fill)}
 .row.sw .row-main,.row.lift .row-main{background:var(--solid)}
 .check{flex:none;width:22px;height:22px;border-radius:7px;border:1.6px solid var(--check);display:grid;place-items:center;transition:background .18s var(--ease),border-color .18s,transform .12s;position:relative}
@@ -348,11 +348,11 @@ html[data-card="default"] .gpanel{background:rgba(246,246,248,.80);
 /* ===== Done: days as glass notifications, older months stack like the Lock Screen ===== */
 .hcal svg{width:21px;height:21px}
 .dz{padding:2px 12px 140px}
-.dcard{--g:rgba(36,36,42,.42);border-radius:24px;margin-bottom:9px;position:relative;transform-origin:50% 100%;
-  background:var(--g);-webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);
+.dcard{--g:#141417;border-radius:24px;margin-bottom:9px;position:relative;transform-origin:50% 100%;
+  background:var(--g);
   box-shadow:inset 0 0 0 .5px rgba(255,255,255,.13),inset 0 1px 0 rgba(255,255,255,.16),0 10px 30px rgba(0,0,0,.22)}
 @media (prefers-color-scheme: light){
-  .dcard{--g:rgba(255,255,255,.52);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.75),inset 0 1px 0 rgba(255,255,255,.95),0 10px 30px rgba(40,40,80,.10)}
+  .dcard{--g:#f8f8fb;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.75),inset 0 1px 0 rgba(255,255,255,.95),0 10px 30px rgba(40,40,80,.10)}
 }
 .dc-head{display:flex;align-items:flex-start;gap:12px;padding:13px 15px 13px 13px;cursor:pointer}
 .dc-tile{position:relative;flex:none;width:40px;height:40px;border-radius:10px;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.18)}
@@ -383,7 +383,7 @@ html[data-card="default"] .gpanel{background:rgba(246,246,248,.80);
 .ds-h{display:flex;align-items:center;justify-content:space-between;padding:20px 6px 10px;min-height:32px}
 .ds-h span{font-size:20px;font-weight:700;letter-spacing:-.02em}
 .ds-h small{font-size:14px;font-weight:500;color:var(--text2);letter-spacing:0;margin-left:7px}
-.ds-less{font-size:14px;font-weight:600;color:var(--text);border-radius:16px;padding:6px 13px;background:rgba(127,127,127,.22);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.ds-less{font-size:14px;font-weight:600;color:var(--text);border-radius:16px;padding:6px 13px;background:rgba(127,127,127,.22)}
 .dstack:not(.open) .ds-less,.dstack.open .dc-more{display:none}
 .ds-cards{position:relative;z-index:0}
 /* the stack: top day in full, the next two tucked under it as slim cards */
@@ -401,29 +401,9 @@ html[data-card="default"] .gpanel{background:rgba(246,246,248,.80);
 .dstack:not(.open) .dcard:nth-child(3) > *{opacity:0}
 .dstack:not(.open) .dcard:nth-child(n+4){display:none}
 
-/* ===== Opening animation ===== */
-#intro{position:fixed;inset:0;z-index:100;background:var(--base);display:grid;place-items:center}
-#intro svg{width:128px;height:auto;overflow:visible}
-#intro svg *{transform-box:fill-box;transform-origin:center}
-html.nointro #intro{display:none}
 </style>
-<script>try{var _d=JSON.parse(localStorage.getItem("nit.daily.v1")||"{}");if(!(_d.ui&&_d.ui.intro===true)||sessionStorage.getItem("skipIntro")){document.documentElement.classList.add("nointro");}sessionStorage.removeItem("skipIntro");}catch(e){}</script>
 </head>
 <body>
-<div id="intro" aria-hidden="true"><svg id="introCard" viewBox="0 0 624 664">
-  <defs><linearGradient id="icCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3a40"/><stop offset="1" stop-color="#26262a"/></linearGradient>
-  <linearGradient id="icBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a9bff"/><stop offset="1" stop-color="#1e6cf0"/></linearGradient></defs>
-  <rect width="624" height="664" rx="64" fill="url(#icCard)"/>
-  <rect x="1.5" y="1.5" width="621" height="661" rx="62.5" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="3"/>
-  <circle cx="120" cy="172" r="54" fill="none" stroke="#6e6e73" stroke-width="10"/>
-  <circle id="icFill" cx="120" cy="172" r="60" fill="url(#icBlue)"/>
-  <path id="icTick" d="M92 174 L114 196 L150 154" fill="none" stroke="#fff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="90"/>
-  <circle cx="120" cy="332" r="54" fill="none" stroke="#6e6e73" stroke-width="10"/>
-  <circle cx="120" cy="492" r="54" fill="none" stroke="#6e6e73" stroke-width="10"/>
-  <rect id="icB1" x="232" y="150" width="288" height="44" rx="22" fill="#55555a"/>
-  <rect id="icB2" x="232" y="310" width="264" height="44" rx="22" fill="#f2f2f7"/>
-  <rect id="icB3" x="232" y="470" width="204" height="44" rx="22" fill="#f2f2f7"/>
-</svg></div>
 <section class="screen" id="home"></section>
 <section class="screen hidden" id="list"></section>
 <button id="fab" class="c-br gbtn" aria-label="New to-do"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -942,12 +922,13 @@ function doneScrollFx(){
   if (!current || current.key !== "logbook") return;
   const bar = list.querySelector(".bar"); if (!bar) return;
   const top = bar.getBoundingClientRect().bottom;
-  list.querySelectorAll(".dz > .dcard, .dstack.open .dcard, .dstack:not(.open) .ds-cards").forEach(c => {
-    const r = c.getBoundingClientRect(), p = Math.min(1, Math.max(0, (top + 24 - r.bottom) / 90));
-    c.style.transform = p ? `scale(${(1 - p * .08).toFixed(4)})` : ""; c.style.opacity = p ? (1 - p * .95).toFixed(3) : "";
-  });
+  const els = [...list.querySelectorAll(".dz > .dcard, .dstack.open .dcard, .dstack:not(.open) .ds-cards")];
+  const ps = els.map(c => { const b = c.getBoundingClientRect().bottom; return b > top + 140 ? 0 : Math.min(1, Math.max(0, (top + 24 - b) / 90)); });
+  els.forEach((c, i) => { const p = Math.round(ps[i] * 100) / 100; if (c._p === p) return; c._p = p;
+    c.style.transform = p ? `scale(${(1 - p * .08).toFixed(3)})` : ""; c.style.opacity = p ? (1 - p * .95).toFixed(2) : ""; });
 }
-list.addEventListener("scroll", () => requestAnimationFrame(doneScrollFx), { passive: true });
+let fxQueued = false;
+list.addEventListener("scroll", () => { if (fxQueued || !current || current.key !== "logbook") return; fxQueued = true; requestAnimationFrame(() => { fxQueued = false; doneScrollFx(); }); }, { passive: true });
 
 function renderList(){
   if (!current) return;
@@ -1110,7 +1091,7 @@ function del(id){
 /* ================= swipe + hold to reorder ================= */
 let openRow = null, reordering = false;
 document.addEventListener("touchmove", e => { if (reordering || fabDrag) e.preventDefault(); }, { passive:false });
-function setRowX(row, x){ row._x = x; row.classList.toggle("sw", Math.abs(x) > .5); row.querySelector(".row-main").style.transform = Math.abs(x) > .5 ? `translateX(${x}px)` : ""; }
+function setRowX(row, x){ row._x = x; const on = Math.abs(x) > .5, m = row.querySelector(".row-main"); row.classList.toggle("sw", on); m.style.transform = on ? `translateX(${x}px)` : ""; m.style.willChange = on ? "transform" : ""; }
 function closeOpenRow(){ if (openRow){ const r = openRow; openRow = null; r._anim && r._anim.stop(); r._anim = spring({ from: r._x||0, to: 0, response: .32, onUpdate: x => setRowX(r, x) }); } }
 const LEFT_W = 76, RIGHT_W = 152;
 function attachSwipe(root){
@@ -1433,10 +1414,6 @@ function openSettings(){
   });
   sheetHead.querySelector("[data-x]").onclick = () => closeSheet();
   sheetBody.querySelector("[data-export]").onclick = exportData;
-  sheetBody.querySelectorAll("[data-introset]").forEach(b => b.onclick = () => {
-    db.ui.intro = b.dataset.introset === "on"; save();
-    sheetBody.querySelectorAll("[data-introset]").forEach(x => x.classList.toggle("on", x === b)); haptic();
-  });
   sheetBody.querySelectorAll("[data-cardstyle]").forEach(b => b.onclick = () => {
     db.ui.card = b.dataset.cardstyle; document.documentElement.dataset.card = db.ui.card; save();
     sheetBody.querySelectorAll("[data-cardstyle]").forEach(x => x.classList.toggle("on", x === b)); haptic();
@@ -1634,36 +1611,15 @@ function openPlan(){
 let lastDay = T();
 document.addEventListener("visibilitychange", () => { if (!document.hidden && T() !== lastDay){ lastDay = T(); renderAll(); maybePlan(); } });
 renderAll();
-/* ---------- opening animation: the card arrives, the first to-do gets ticked, then we zoom into the app ---------- */
-(function intro(){
-  const el = document.getElementById("intro"); if (!el) return;
-  if (getComputedStyle(el).display === "none"){ el.remove(); return; }
-  const g = id => document.getElementById(id), card = g("introCard"), anims = [];
-  const an = (node, kf, o) => { const a = node.animate(kf, o); anims.push(a); return a; };
-  let gone = false; const finish = () => { if (gone) return; gone = true; el.remove(); };
-  el.addEventListener("pointerdown", () => { anims.forEach(a => { try { a.finish(); } catch(e){} }); finish(); }, { once: true });
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches){ an(el, [{ opacity: 1 }, { opacity: 0 }], { duration: 260, delay: 250, fill: "forwards" }).onfinish = finish; return; }
-  const pop = "cubic-bezier(.2,1.25,.4,1)", out = "cubic-bezier(.2,.8,.2,1)";
-  an(card, [{ transform: "scale(.55)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], { duration: 560, easing: pop, fill: "both" });
-  ["icB1","icB2","icB3"].forEach((id, i) => an(g(id), [{ transform: "translateX(-40px)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 420, delay: 160 + i * 70, easing: out, fill: "both" }));
-  an(g("icFill"), [{ transform: "scale(0)" }, { transform: "scale(1)" }], { duration: 320, delay: 560, easing: pop, fill: "both" });
-  an(g("icTick"), [{ strokeDashoffset: 90 }, { strokeDashoffset: 0 }], { duration: 260, delay: 680, easing: out, fill: "both" });
-  an(g("icB1"), [{ fill: "#f2f2f7" }, { fill: "#55555a" }], { duration: 300, delay: 680, easing: "ease", fill: "both" });
-  const z = 1020;
-  an(card, [{ transform: "scale(1)", opacity: 1 }, { transform: "scale(8)", opacity: 0 }], { duration: 520, delay: z, easing: "cubic-bezier(.65,0,.35,1)", fill: "forwards" });
-  an(el, [{ opacity: 1 }, { opacity: 0 }], { duration: 420, delay: z + 110, easing: "ease-in-out", fill: "forwards" });
-  an(home, [{ transform: "scale(.94)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], { duration: 620, delay: z + 80, easing: out, fill: "backwards" });
-  setTimeout(finish, z + 560);
-})();
 
-setTimeout(maybePlan, document.documentElement.classList.contains("nointro") ? 250 : 1500);
+setTimeout(maybePlan, 250);
 if ("serviceWorker" in navigator){
   navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).catch(() => {});
   // a newer Daily was just downloaded: reload right away if you only just opened the app, otherwise offer it
   const openedAt = Date.now();
   navigator.serviceWorker.addEventListener("message", e => {
     if (!e.data || e.data.type !== "daily-updated") return;
-    const again = () => { try { sessionStorage.setItem("skipIntro", "1"); } catch(e){} location.reload(); };
+    const again = () => location.reload();
     if (Date.now() - openedAt < 6000 && !sheetOpen) again();
     else toast("Daily was updated", "Reload", again);
   });
