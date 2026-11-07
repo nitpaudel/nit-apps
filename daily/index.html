@@ -345,45 +345,73 @@ html[data-card="default"] .gpanel{background:rgba(246,246,248,.80);
 
 @media (prefers-reduced-motion: reduce){ .check svg,.chip,#fab,.foldbox,.gap{transition:none} }
 
-/* ===== Done: one card per day, older months stack like Notification Centre ===== */
+/* ===== Done: days as glass notifications, older months stack like the Lock Screen ===== */
 .hcal svg{width:21px;height:21px}
-.dz{padding:0 16px 120px}
-.dcard{border-radius:22px;margin-bottom:10px;position:relative;transform-origin:50% 100%}
-.dc-head{display:flex;align-items:center;gap:12px;padding:14px 16px 10px;cursor:pointer}
-.dc-ring{width:34px;height:34px;flex:none}
-.dc-t{flex:1;min-width:0}
-.dc-t b{display:block;font-size:17px;font-weight:600;letter-spacing:-.01em}
-.dc-t span{display:block;font-size:13px;color:var(--text2);margin-top:1px}
-.dc-chev{width:15px;height:15px;color:var(--text3);flex:none;transition:transform .4s var(--ease),opacity .2s}
-.dcard.open .dc-chev{transform:rotate(90deg)}
-.dc-sum{display:flex;flex-wrap:wrap;gap:6px 14px;padding:0 16px 14px 62px;font-size:14px;color:var(--text2);cursor:pointer}
-.dc-sum span{display:inline-flex;align-items:center;gap:6px}
-.dc-sum i{width:8px;height:8px;border-radius:4px;background:var(--logbook)}
-.dc-sum .nf i{background:var(--text3)}
-.dc-sum .more{color:var(--text3)}
-.dc-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s var(--ease)}
+#list.donebg{background:
+  radial-gradient(70% 38% at 12% 18%, rgba(72,150,128,.34), transparent 70%),
+  radial-gradient(60% 34% at 95% 52%, rgba(122,96,210,.26), transparent 70%),
+  radial-gradient(80% 40% at 25% 98%, rgba(226,138,62,.22), transparent 70%),
+  #060607}
+@media (prefers-color-scheme: light){
+  #list.donebg{background:
+    radial-gradient(70% 38% at 12% 18%, rgba(110,175,255,.42), transparent 70%),
+    radial-gradient(60% 34% at 95% 52%, rgba(255,160,205,.36), transparent 70%),
+    radial-gradient(80% 40% at 25% 98%, rgba(255,205,130,.42), transparent 70%),
+    #eef0f5}
+}
+.dz{padding:2px 12px 140px}
+.dcard{--g:rgba(36,36,42,.42);border-radius:24px;margin-bottom:9px;position:relative;transform-origin:50% 100%;
+  background:var(--g);-webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.13),inset 0 1px 0 rgba(255,255,255,.16),0 10px 30px rgba(0,0,0,.22)}
+@media (prefers-color-scheme: light){
+  .dcard{--g:rgba(255,255,255,.52);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.75),inset 0 1px 0 rgba(255,255,255,.95),0 10px 30px rgba(40,40,80,.10)}
+}
+.dc-head{display:flex;align-items:flex-start;gap:12px;padding:13px 15px 13px 13px;cursor:pointer}
+.dc-tile{position:relative;flex:none;width:40px;height:40px;border-radius:10px;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.dc-tile em{font-style:normal;font-size:8.5px;font-weight:700;letter-spacing:.06em;color:#ff3b30;margin-bottom:2px}
+.dc-tile b{font-size:19px;font-weight:600;letter-spacing:-.02em}
+.dc-tile .ok{position:absolute;right:-5px;bottom:-5px;width:18px;height:18px;border-radius:9px;background:var(--logbook);display:grid;place-items:center;box-shadow:0 0 0 2px rgba(0,0,0,.25)}
+.dc-tile .ok svg{width:11px;height:11px}
+.dc-main{flex:1;min-width:0}
+.dc-top{display:flex;align-items:baseline;gap:8px}
+.dc-top b{flex:1;min-width:0;font-size:15.5px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dc-when{font-size:13px;color:var(--text2);flex:none}
+.dc-line{font-size:15px;margin-top:2px;letter-spacing:-.01em}
+.dc-line .nf{color:var(--text2)}
+.dc-prev{font-size:14px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .25s}
+.dc-more{font-size:13px;color:var(--text2);margin-top:3px}
+.dcard.open .dc-prev{opacity:0;height:0;margin:0}
+.dc-mini{display:none}
+.dc-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s cubic-bezier(.2,.9,.25,1)}
 .dcard.open .dc-body{grid-template-rows:1fr}
 .dc-body > div{overflow:hidden;min-height:0}
-.dc-sec{padding:12px 16px 4px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);border-top:.5px solid var(--sep)}
+.dc-sec{padding:11px 16px 3px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);border-top:.5px solid var(--sep)}
 .dcard .grp{margin:0;border-radius:0;box-shadow:none;background:none}
 .dcard .grp + .grp{margin-top:0}
-.dcard.flash{animation:dflash 1.1s ease}
-@keyframes dflash{0%,100%{box-shadow:var(--card-shadow)}25%{box-shadow:0 0 0 2px var(--accent),var(--card-shadow)}}
-.dstack{transform-origin:50% 100%}
-.ds-h{display:flex;align-items:center;justify-content:space-between;padding:18px 4px 9px;font-size:20px;font-weight:700;letter-spacing:-.02em;min-height:30px}
-.ds-h small{font-size:14px;font-weight:500;color:var(--text2);letter-spacing:0;margin-left:6px}
-.ds-less{font-size:14px;font-weight:600;color:var(--text);background:var(--fill);border-radius:16px;padding:6px 13px}
-.dstack:not(.open) .ds-less,.dstack.open .more{display:none}
+.dcard .row-main:active{background:rgba(127,127,127,.12)}
+.dcard.flash{animation:dflash 1.2s ease}
+@keyframes dflash{0%,100%{box-shadow:inset 0 0 0 .5px rgba(255,255,255,.13),0 10px 30px rgba(0,0,0,.22)}25%{box-shadow:inset 0 0 0 2px var(--accent),0 10px 30px rgba(0,0,0,.22)}}
+.dstack,.ds-cards{transform-origin:50% 100%}
+.ds-h{display:flex;align-items:center;justify-content:space-between;padding:20px 6px 10px;min-height:32px}
+.ds-h span{font-size:20px;font-weight:700;letter-spacing:-.02em}
+.ds-h small{font-size:14px;font-weight:500;color:var(--text2);letter-spacing:0;margin-left:7px}
+.ds-less{font-size:14px;font-weight:600;color:var(--text);border-radius:16px;padding:6px 13px;background:rgba(127,127,127,.22);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.dstack:not(.open) .ds-less,.dstack.open .dc-more{display:none}
 .ds-cards{position:relative;z-index:0}
-.dstack:not(.open) .ds-cards{padding-bottom:20px;cursor:pointer}
+/* the stack: top day in full, the next two tucked under it as slim cards */
+.dstack:not(.open) .ds-cards{cursor:pointer}
 .dstack:not(.open) .dcard{margin-bottom:0}
 .dstack:not(.open) .dc-body{grid-template-rows:0fr}
-.dstack:not(.open) .dc-chev{opacity:0}
-.dstack:not(.open) .dcard:nth-child(n+2){position:absolute;left:0;right:0;top:0;bottom:20px;overflow:hidden;pointer-events:none}
-.dstack:not(.open) .dcard:nth-child(n+2) > *{opacity:0}
-.dstack:not(.open) .dcard:nth-child(2){transform:translateY(10px) scale(.95);z-index:-1;opacity:.75}
-.dstack:not(.open) .dcard:nth-child(n+3){transform:translateY(20px) scale(.9);z-index:-2;opacity:.45}
-.dstack:not(.open) .dcard:nth-child(n+4){opacity:0}
+.dstack:not(.open) .dcard:nth-child(n+2){transform-origin:50% 0;pointer-events:none}
+.dstack:not(.open) .dcard:nth-child(n+2) .dc-head{display:none}
+.dstack:not(.open) .dcard:nth-child(n+2) .dc-mini{display:flex;align-items:center;gap:8px;padding:14px 16px 7px;font-size:13.5px;color:var(--text2);white-space:nowrap;overflow:hidden}
+.dc-mini .t{width:18px;height:18px;border-radius:5px;background:#fff;color:#111;font-size:10px;font-weight:700;display:grid;place-items:center;flex:none}
+.dc-mini b{color:var(--text);font-weight:600;opacity:.85}
+.dc-mini span{overflow:hidden;text-overflow:ellipsis}
+.dstack:not(.open) .dcard:nth-child(2){margin-top:-10px;transform:scale(.95);z-index:-1;opacity:.92}
+.dstack:not(.open) .dcard:nth-child(3){margin-top:-24px;transform:scale(.9);z-index:-2;opacity:.7}
+.dstack:not(.open) .dcard:nth-child(3) > *{opacity:0}
+.dstack:not(.open) .dcard:nth-child(n+4){display:none}
 
 /* ===== Opening animation ===== */
 #intro{position:fixed;inset:0;z-index:100;background:var(--base);display:grid;place-items:center}
@@ -391,7 +419,7 @@ html[data-card="default"] .gpanel{background:rgba(246,246,248,.80);
 #intro svg *{transform-box:fill-box;transform-origin:center}
 html.nointro #intro{display:none}
 </style>
-<script>try{var _d=JSON.parse(localStorage.getItem("nit.daily.v1")||"{}");if((_d.ui&&_d.ui.intro===false)||sessionStorage.getItem("skipIntro")){document.documentElement.classList.add("nointro");}sessionStorage.removeItem("skipIntro");}catch(e){}</script>
+<script>try{var _d=JSON.parse(localStorage.getItem("nit.daily.v1")||"{}");if(!(_d.ui&&_d.ui.intro===true)||sessionStorage.getItem("skipIntro")){document.documentElement.classList.add("nointro");}sessionStorage.removeItem("skipIntro");}catch(e){}</script>
 </head>
 <body>
 <div id="intro" aria-hidden="true"><svg id="introCard" viewBox="0 0 624 664">
@@ -840,13 +868,24 @@ function dayRing(done, total){
   const C = 2 * Math.PI * 14, f = total ? done / total : 0, full = total > 0 && done === total;
   return `<svg class="dc-ring" viewBox="0 0 34 34"><circle cx="17" cy="17" r="14" fill="none" stroke="var(--fill)" stroke-width="4"/>${f ? `<circle cx="17" cy="17" r="14" fill="none" stroke="${full ? "var(--logbook)" : "var(--accent)"}" stroke-width="4" stroke-linecap="round" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${(C * (1 - f)).toFixed(2)}" transform="rotate(-90 17 17)"/>` : ""}${full ? `<path d="M11.5 17.4l3.7 3.7 7.3-7.7" fill="none" stroke="var(--logbook)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>` : ""}</svg>`;
 }
+const DOWU = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+function whenText(d){
+  const n = -dayDiff(T(), d);
+  if (n === 0) return "Today"; if (n === 1) return "Yesterday"; if (n < 7) return n + "d ago";
+  if (n < 30) return Math.floor(n / 7) + "w ago"; const x = parseYmd(d); return `${x.getDate()} ${MON[x.getMonth()]}`;
+}
 function dcardHTML(h, more){
-  const { d, done, nf } = h, isT = d === T(), [a, b] = dayName(d), open = openDays.has(d);
+  const { d, done, nf } = h, isT = d === T(), x = parseYmd(d), open = openDays.has(d), all = !nf.length && done.length;
+  const title = `${DOW[x.getDay()]}, ${x.getDate()} ${MONL[x.getMonth()]}`;
+  const line = `${done.length} done${nf.length ? ` <span class="nf">· ${nf.length} ${isT ? "still to do" : "not finished"}</span>` : ""}`;
+  const prev = esc((done.length ? done : nf).map(t => t.title).join(", "));
   const body = (done.length ? `<div class="dc-sec">Done · ${done.length}</div>` + grp(done.map(t => rowHTML(t, { showProject:true, compact:true })).join(""), {}, false) : "")
     + (nf.length ? `<div class="dc-sec">${isT ? "Still to do" : "Not finished"} · ${nf.length}</div>` + grp(nf.map(t => rowHTML(t, { showProject:true, compact:true, note: t.done ? "Done later, " + shortDate(t.doneAt) : "" })).join(""), {}, false) : "");
-  return `<div class="dcard glass${open ? " open" : ""}" data-day="${d}">
-    <div class="dc-head" data-dcard>${dayRing(done.length, done.length + nf.length)}<div class="dc-t"><b>${a}</b><span>${b}</span></div><svg class="dc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div>
-    <div class="dc-sum" data-dcard><span class="ok"><i></i>${done.length} done</span>${nf.length ? `<span class="nf"><i></i>${nf.length} ${isT ? "still to do" : "not finished"}</span>` : ""}${more ? `<span class="more">+${more} more ${more === 1 ? "day" : "days"}</span>` : ""}</div>
+  return `<div class="dcard${open ? " open" : ""}" data-day="${d}">
+    <div class="dc-head" data-dcard><div class="dc-tile"><em>${DOWU[x.getDay()]}</em><b>${x.getDate()}</b>${all ? `<span class="ok"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 6.2l2.2 2.2 4.6-4.8"/></svg></span>` : ""}</div>
+      <div class="dc-main"><div class="dc-top"><b>${title}</b><span class="dc-when">${whenText(d)}</span></div>
+      <div class="dc-line">${line}</div>${prev ? `<div class="dc-prev">${prev}</div>` : ""}${more ? `<div class="dc-more">${more} more ${more === 1 ? "day" : "days"}</div>` : ""}</div></div>
+    <div class="dc-mini"><span class="t">${x.getDate()}</span><b>${DOW[x.getDay()]}</b><span>${done.length} done${nf.length ? " · " + nf.length + " not finished" : ""}</span></div>
     <div class="dc-body"><div>${body}</div></div></div>`;
 }
 function doneBody(){
@@ -868,31 +907,34 @@ function toggleDay(card){
   const d = card.dataset.day, open = !card.classList.contains("open");
   open ? openDays.add(d) : openDays.delete(d); card.classList.toggle("open", open); haptic();
 }
-// open or close a month stack; cards fly from where they are to where they go
+// open or close a month stack; every card flies from where it was to where it goes
 function setStack(ym, open){
   const s = list.querySelector(`.dstack[data-stack="${ym}"]`); if (!s || s.classList.contains("open") === open) return;
   const cards = [...s.querySelectorAll(".dcard")];
   cards.forEach(c => { c.getAnimations().forEach(a => a.cancel()); c.style.transform = ""; c.style.opacity = ""; });
   s.style.transform = ""; s.style.opacity = "";
-  const before = cards.map(c => c.getBoundingClientRect());
+  const before = cards.map(c => { const r = c.getBoundingClientRect(); return { top: r.top, w: r.width, o: +getComputedStyle(c).opacity, shown: getComputedStyle(c).display !== "none" }; });
   open ? openStacks.add(ym) : openStacks.delete(ym);
   s.classList.toggle("open", open);
-  const after = cards.map(c => c.getBoundingClientRect()), box = s.querySelector(".ds-cards").getBoundingClientRect();
+  const firstTop = cards[0].getBoundingClientRect().top;
   cards.forEach((c, i) => {
     if (i === 0) return;
-    const k = Math.min(i, 8);
-    if (open){
-      const from = i === 1 ? .75 : i === 2 ? .45 : 0;
-      c.animate([{ transformOrigin: "50% 0", transform: `translateY(${before[i].top - after[i].top}px) scale(${before[i].width / after[i].width})`, opacity: from },
-                 { transformOrigin: "50% 0", transform: "none", opacity: 1 }], { duration: 560, delay: k * 30, easing: "cubic-bezier(.2,.95,.25,1)", fill: "backwards" });
-      [...c.children].forEach(ch => ch.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, delay: 140 + k * 30, fill: "backwards" }));
-    } else {
-      const end = getComputedStyle(c);
-      c.animate([{ transformOrigin: "50% 100%", transform: `translateY(${before[i].top - box.top}px)`, opacity: 1 },
-                 { transformOrigin: "50% 100%", transform: end.transform, opacity: end.opacity }], { duration: 380, easing: "cubic-bezier(.3,.8,.25,1)" });
-    }
+    const cs = getComputedStyle(c); if (cs.display === "none") return;
+    const r = c.getBoundingClientRect(), m = cs.transform, sa = m && m !== "none" ? new DOMMatrix(m).a : 1, w0 = r.width / sa;
+    const b = before[i], k = Math.min(i, 10);
+    const fromTop = b.shown ? b.top : firstTop + (open ? 18 : 0), fromW = b.shown ? b.w : r.width * .9, fromO = b.shown ? b.o : 0;
+    c.animate([{ transformOrigin: "50% 0", transform: `translateY(${fromTop - r.top}px) scale(${fromW / w0})`, opacity: fromO },
+               { transformOrigin: "50% 0", transform: `translateY(0) scale(${sa})`, opacity: +cs.opacity }],
+              { duration: open ? 620 : 440, delay: open ? k * 26 : 0, easing: open ? "cubic-bezier(.2,.95,.22,1)" : "cubic-bezier(.3,.85,.25,1)", fill: "backwards" });
+    [...c.children].forEach(ch => ch.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: (open ? 90 + k * 26 : 60), fill: "backwards" }));
   });
   haptic(); requestAnimationFrame(doneScrollFx);
+}
+// smooth scroll that we drive ourselves, so it feels the same everywhere
+function glideList(to, ms = 650){
+  const from = list.scrollTop, t0 = performance.now(), ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+  const step = now => { const t = Math.min(1, (now - t0) / ms); list.scrollTop = from + (to - from) * ease(t); if (t < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
 }
 function openHistoryCal(btn){
   const H = history(), allowed = new Set(H.map(h => h.d)), dots = {}; H.forEach(h => dots[h.d] = 1);
@@ -904,7 +946,7 @@ function jumpToDay(d){
   if (!card.classList.contains("open")){ openDays.add(d); card.classList.add("open"); }
   const barH = list.querySelector(".bar").offsetHeight;
   const y = card.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop - barH - 12;
-  list.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+  glideList(Math.max(0, Math.min(y, list.scrollHeight - list.clientHeight)));
   card.classList.remove("flash"); void card.offsetWidth; card.classList.add("flash");
 }
 // as a day slides up under the top bar it shrinks and fades, like notifications do
@@ -912,7 +954,7 @@ function doneScrollFx(){
   if (!current || current.key !== "logbook") return;
   const bar = list.querySelector(".bar"); if (!bar) return;
   const top = bar.getBoundingClientRect().bottom;
-  list.querySelectorAll(".dz > .dcard, .dstack.open .dcard, .dstack:not(.open)").forEach(c => {
+  list.querySelectorAll(".dz > .dcard, .dstack.open .dcard, .dstack:not(.open) .ds-cards").forEach(c => {
     const r = c.getBoundingClientRect(), p = Math.min(1, Math.max(0, (top + 24 - r.bottom) / 90));
     c.style.transform = p ? `scale(${(1 - p * .08).toFixed(4)})` : ""; c.style.opacity = p ? (1 - p * .95).toFixed(3) : "";
   });
@@ -982,6 +1024,7 @@ function renderList(){
   const scroll = list.scrollTop;
   list.innerHTML = `<div class="bar"><button class="back gbtn" data-back aria-label="Back">${I.back}</button><span class="mini">${esc(title)}</span>${isProj ? `<button class="icon-btn gbtn" data-projmenu aria-label="Project options">${I.more}</button>` : k === "logbook" ? `<button class="icon-btn gbtn hcal" data-hcal aria-label="Calendar">${I.cal}</button>` : "<span style='width:46px'></span>"}</div>
     <div class="big-title">${icon}<span>${esc(title)}</span>${extra}</div>${sub ? `<div class="list-sub">${sub}</div>` : `<div style="height:12px"></div>`}<div class="rows">${body}</div>`;
+  list.classList.toggle("donebg", !isProj && k === "logbook");
   list.scrollTop = scroll;
   updateBar(); doneScrollFx();
 }
@@ -1396,8 +1439,6 @@ function openSettings(){
     head: `<span style="width:60px"></span><h3>Settings</h3><button class="txt-btn strong" data-x>Done</button>`,
     body: `<div class="field-label" style="margin-top:6px">Card style</div>
       <div class="seg" style="margin:0 0 12px">${[["glass","Glass"],["default","Default"]].map(([v,l]) => `<button class="${db.ui.card===v?"on":""}" data-cardstyle="${v}">${l}</button>`).join("")}</div>
-      <div class="field-label">Opening animation</div>
-      <div class="seg" style="margin:0 0 12px">${[["on","On"],["off","Off"]].map(([v,l]) => `<button class="${(db.ui.intro !== false) === (v === "on") ?"on":""}" data-introset="${v}">${l}</button>`).join("")}</div>
       <button class="set-row" data-export>${I.export}<span>Back up my to-dos</span></button>
       <label class="set-row" style="cursor:pointer">${I.import}<span>Restore from a backup</span><input type="file" accept="application/json,.json" data-import hidden></label>
       <p class="note">Everything lives only on this phone. Back up every week or so and keep the file in iCloud Drive or Files.</p>
