@@ -155,28 +155,48 @@ svg{display:block}
 .gap.open{height:46px}
 .gap::after{content:"";position:absolute;left:16px;right:16px;top:50%;height:2px;margin-top:-1px;border-radius:1px;background:var(--accent);opacity:.5}
 
-/* upcoming calendar (Apple Calendar style) */
-.cal{margin:0 16px 6px;border-radius:20px;padding:14px 8px 10px;overflow:hidden}
-.cal-h{display:flex;align-items:center;justify-content:space-between;padding:0 8px 10px}
-.cal-h b{font-size:22px;font-weight:700;letter-spacing:-.02em}
-.cal-h div{display:flex;gap:4px}
-.cal-h button{width:34px;height:34px;border-radius:17px;display:grid;place-items:center;color:var(--danger)}
+/* liquid glass: see-through, blurred, with light catching the edges */
+.lg{background:linear-gradient(160deg,rgba(255,255,255,.88),rgba(255,255,255,.66) 45%,rgba(255,255,255,.78));
+  -webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);
+  border:.5px solid rgba(255,255,255,.9);box-shadow:0 18px 50px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,1)}
+@media (prefers-color-scheme: dark){
+  .lg{background:linear-gradient(160deg,rgba(255,255,255,.15),rgba(255,255,255,.05) 45%,rgba(255,255,255,.09));
+    border:.5px solid rgba(255,255,255,.16);box-shadow:0 22px 60px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.22),inset 0 -1px 0 rgba(255,255,255,.04)}
+}
+/* month grid shared by Upcoming and the date picker (Apple Calendar style) */
+.cal{margin:0 16px 6px;border-radius:30px;padding:16px 10px 12px;overflow:hidden}
+.cal-h{display:flex;align-items:center;justify-content:space-between;padding:0 10px 12px}
+.cal-h b{font-size:20px;font-weight:700;letter-spacing:-.02em}
+.cal-h div{display:flex;gap:6px}
+.cal-h button{width:36px;height:36px;border-radius:18px;display:grid;place-items:center;color:var(--accent)}
+.cal-h button svg{width:11px;height:18px}
 .cal-h button:disabled{opacity:.25}
 .cal-h button:active{background:var(--fill)}
-.cal-g{display:grid;grid-template-columns:repeat(7,1fr);row-gap:4px;text-align:center}
-.cal-g .dn{font-size:12px;font-weight:600;color:var(--text2);padding:0 0 6px}
-.cd{position:relative;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;font-size:18px;font-variant-numeric:tabular-nums;border-top:.5px solid var(--sep);padding-top:4px}
-.cd span{width:32px;height:32px;border-radius:16px;display:grid;place-items:center;transition:background .2s,color .2s,transform .2s var(--ease)}
-.cd:active span{transform:scale(.88)}
+.cal-g{display:grid;grid-template-columns:repeat(7,1fr);row-gap:2px;text-align:center}
+.cal-g .dn{font-size:12px;font-weight:600;color:var(--text2);padding:0 0 8px;letter-spacing:.02em}
+.cd{position:relative;height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;font-variant-numeric:tabular-nums}
+.cd span{width:40px;height:40px;border-radius:20px;display:grid;place-items:center;transition:background .2s,color .2s,transform .25s var(--ease)}
+.cd:active span{transform:scale(.86)}
 .cd.past{color:var(--text3)}
 .cd.today span{background:var(--danger);color:#fff;font-weight:600}
 .cd.sel span{background:var(--text);color:var(--base);font-weight:600}
 .cd.today.sel span{background:var(--danger);color:#fff}
-.cd i{width:5px;height:5px;border-radius:3px;background:var(--text3);margin-top:2px}
+.cd i{position:absolute;bottom:1px;width:5px;height:5px;border-radius:3px;background:var(--text3)}
 .cal-g.slide-l{animation:slideL .32s var(--ease)}
 .cal-g.slide-r{animation:slideR .32s var(--ease)}
 @keyframes slideL{from{transform:translateX(40px);opacity:0}}
 @keyframes slideR{from{transform:translateX(-40px);opacity:0}}
+/* date picker popover */
+#dpScrim{position:fixed;inset:0;z-index:24;display:none}
+#dpScrim.on{display:block}
+#dp{position:fixed;left:16px;right:16px;z-index:25;border-radius:34px;padding:18px 10px 14px;opacity:0;transform:scale(.9);pointer-events:none;
+  transition:opacity .22s,transform .38s cubic-bezier(.34,1.3,.5,1)}
+#dp.on{opacity:1;transform:scale(1);pointer-events:auto}
+.dp-foot{display:flex;justify-content:space-between;align-items:center;padding:10px 8px 0}
+.dp-clear{height:44px;padding:0 22px;border-radius:22px;font-size:17px;font-weight:500;background:var(--fill)}
+.dp-ok{width:52px;height:52px;border-radius:26px;background:var(--accent);color:#fff;display:grid;place-items:center;box-shadow:0 6px 16px rgba(42,120,245,.35)}
+.dp-ok svg{width:22px;height:22px}
+.dp-clear:active,.dp-ok:active{transform:scale(.94)}
 /* Done list: 7 days / 30 days / all time */
 .seg{display:flex;margin:0 16px 4px;padding:3px;border-radius:10px;background:var(--fill)}
 .seg button{flex:1;height:32px;border-radius:8px;font-size:14px;font-weight:500;transition:background .2s,box-shadow .2s}
@@ -200,15 +220,10 @@ svg{display:block}
 #fab.drag{scale:1.08;box-shadow:0 12px 28px rgba(0,0,0,.25)}
 #fab.gone{scale:.4;opacity:0;pointer-events:none}
 .zone{position:fixed;z-index:14;width:300px;height:300px;margin:-150px 0 0 -150px;border-radius:50%;pointer-events:none;
-  background:rgba(120,120,128,.16);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
-  transform:scale(0);transition:transform .5s cubic-bezier(.34,1.3,.5,1),background .25s}
-.zone.ghost{transform:scale(.42)}
-.zone.home{transform:scale(.78)}
-.zone.hot{transform:scale(1);background:color-mix(in srgb,var(--accent) 24%,transparent)}
-.zone span{position:absolute;font-size:15px;font-weight:600;color:var(--text);opacity:0;transition:opacity .2s;white-space:nowrap}
-.zone.home span,.zone.hot span{opacity:1}
-.zone.z-tl span{left:166px;top:262px}.zone.z-tr span{right:166px;top:262px}
-.zone.z-bl span{left:166px;bottom:250px}.zone.z-br span{right:166px;bottom:250px}
+  background:rgba(120,120,128,.18);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  transform:scale(0);transition:transform .45s cubic-bezier(.34,1.35,.5,1),background .25s}
+.zone.near{transform:scale(.55)}
+.zone.hot{transform:scale(1);background:color-mix(in srgb,var(--accent) 22%,transparent)}
 .ripple{position:fixed;z-index:14;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;border:2px solid var(--accent);pointer-events:none;animation:ripple .5s var(--ease) forwards}
 @keyframes ripple{from{transform:scale(.6);opacity:.5}to{transform:scale(2);opacity:0}}
 
@@ -320,8 +335,8 @@ svg{display:block}
 <section class="screen pre" id="home"></section>
 <section class="screen hidden" id="list"></section>
 <button id="fab" class="c-br" aria-label="New to-do"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
-<div class="zone z-tl" data-z="tl" style="left:0;top:0"><span></span></div><div class="zone z-tr" data-z="tr" style="left:100%;top:0"><span></span></div>
-<div class="zone z-bl" data-z="bl" style="left:0;top:100%"><span></span></div><div class="zone z-br" data-z="br" style="left:100%;top:100%"><span></span></div>
+<div class="zone" data-z="tl" style="left:0;top:0"></div><div class="zone" data-z="tr" style="left:100%;top:0"></div>
+<div class="zone" data-z="bl" style="left:0;top:100%"></div><div class="zone" data-z="br" style="left:100%;top:100%"></div>
 <div id="scrim"></div>
 <div id="sheet" role="dialog"><div class="grab"><i></i></div><div class="sheet-head"></div><div class="sheet-body"></div></div>
 <div id="toast"></div>
@@ -658,18 +673,57 @@ function toggleProjects(){
 }
 
 /* ================= LIST SCREENS ================= */
-function calHTML(anim){
-  const [y,m] = upMonth.split("-").map(Number), first = new Date(y, m-1, 1), days = new Date(y, m, 0).getDate();
-  const counts = {}; db.tasks.forEach(t => { if (!t.done && isDate(t.when)) counts[t.when] = (counts[t.when]||0) + 1; });
-  let cells = DOWS.map(d => `<div class="dn">${d[0]}</div>`).join("") + "<div></div>".repeat(first.getDay());
+const WDL = ["MON","TUE","WED","THU","FRI","SAT","SUN"];
+function monthCells(ym, o){
+  const [y,m] = ym.split("-").map(Number), first = new Date(y, m-1, 1), days = new Date(y, m, 0).getDate();
+  let cells = WDL.map(d => `<div class="dn">${o.short ? d[0] : d}</div>`).join("") + "<div></div>".repeat((first.getDay() + 6) % 7);
   for (let d = 1; d <= days; d++){
-    const ds = `${y}-${pad(m)}-${pad(d)}`, past = ds < T();
-    cells += `<button class="cd${past?" past":""}${ds===T()?" today":""}${ds===upSel?" sel":""}" data-cal="${ds}"${past?" disabled":""}><span>${d}</span>${counts[ds] && !past ? "<i></i>" : ""}</button>`;
+    const ds = `${y}-${pad(m)}-${pad(d)}`, past = o.min && ds < o.min;
+    cells += `<button class="cd${past?" past":""}${ds===T()?" today":""}${ds===o.sel?" sel":""}" ${o.attr}="${ds}"${past?" disabled":""}><span>${d}</span>${o.dots && o.dots[ds] && !past ? "<i></i>" : ""}</button>`;
   }
-  const atStart = upMonth <= T().slice(0,7);
-  return `<div class="cal glass"><div class="cal-h"><b>${MONL[m-1]}${y !== new Date().getFullYear() ? " " + y : ""}</b><div><button data-calnav="-1"${atStart?" disabled":""} aria-label="Previous month">${I.back}</button><button data-calnav="1" aria-label="Next month" style="transform:scaleX(-1)">${I.back}</button></div></div>
-    <div class="cal-g${anim ? " slide-" + anim : ""}">${cells}</div></div>`;
+  return cells;
 }
+function monthHead(ym, navAttr, minYm){
+  const [y,m] = ym.split("-").map(Number);
+  return `<div class="cal-h"><b>${MONL[m-1]} ${y}</b><div><button ${navAttr}="-1"${minYm && ym <= minYm ? " disabled" : ""} aria-label="Previous month">${I.back}</button><button ${navAttr}="1" aria-label="Next month" style="transform:scaleX(-1)">${I.back}</button></div></div>`;
+}
+const shiftMonth = (ym, n) => { const [y,m] = ym.split("-").map(Number), d = new Date(y, m-1+n, 1); return `${d.getFullYear()}-${pad(d.getMonth()+1)}`; };
+function calHTML(anim){
+  const dots = {}; db.tasks.forEach(t => { if (!t.done && isDate(t.when)) dots[t.when] = 1; });
+  return `<div class="cal lg">${monthHead(upMonth, "data-calnav", T().slice(0,7))}
+    <div class="cal-g${anim ? " slide-" + anim : ""}">${monthCells(upMonth, { sel: upSel, min: T(), dots, attr: "data-cal", short: true })}</div></div>`;
+}
+
+/* ---------- date picker (glass, Apple Calendar style) ---------- */
+const dpScrim = document.createElement("div"); dpScrim.id = "dpScrim"; document.body.appendChild(dpScrim);
+const dp = document.createElement("div"); dp.id = "dp"; dp.className = "lg"; document.body.appendChild(dp);
+let dpState = null;
+function openDatePicker(anchor, { value, min, onPick }){
+  dpState = { sel: value || null, ym: (value || T()).slice(0,7), min, onPick };
+  drawDP();
+  const r = anchor.getBoundingClientRect(), h = 470, below = r.bottom + 10 + h < innerHeight;
+  dp.style.top = (below ? r.bottom + 10 : Math.max(10, r.top - 10 - h)) + "px";
+  dp.style.transformOrigin = `${r.left + r.width/2 - 16}px ${below ? "0" : "100%"}`;
+  dpScrim.classList.add("on"); requestAnimationFrame(() => dp.classList.add("on")); haptic();
+}
+function drawDP(anim){
+  dp.innerHTML = monthHead(dpState.ym, "data-dpnav", dpState.min ? dpState.min.slice(0,7) : null)
+    + `<div class="cal-g${anim ? " slide-" + anim : ""}">${monthCells(dpState.ym, { sel: dpState.sel, min: dpState.min, attr: "data-dpd" })}</div>
+    <div class="dp-foot"><button class="dp-clear" data-dpclear>Clear</button><button class="dp-ok" data-dpok aria-label="Done">${I.check.replace('width="14" height="14"','')}</button></div>`;
+}
+function closeDP(apply){
+  if (!dpState) return; const st = dpState; dpState = null;
+  dp.classList.remove("on"); dpScrim.classList.remove("on");
+  if (apply) st.onPick(st.sel);
+}
+dpScrim.addEventListener("click", () => closeDP(false));
+dp.addEventListener("click", e => {
+  const d = e.target.closest("[data-dpd]"); if (d && !d.disabled){ dpState.sel = d.dataset.dpd; haptic(); drawDP(); return; }
+  const n = e.target.closest("[data-dpnav]"); if (n && !n.disabled){ const dir = +n.dataset.dpnav; dpState.ym = shiftMonth(dpState.ym, dir); drawDP(dir > 0 ? "l" : "r"); return; }
+  if (e.target.closest("[data-dpclear]")){ dpState.sel = null; closeDP(true); return; }
+  if (e.target.closest("[data-dpok]")) closeDP(true);
+});
+
 function renderList(){
   if (!current) return;
   let title, icon, body = "", sub = "", extra = "", isProj = current.type === "project";
@@ -935,8 +989,7 @@ document.addEventListener("click", e => {
   const rg = el.closest("[data-range]"); if (rg){ db.ui.doneRange = rg.dataset.range; save(); renderList(); return; }
   const cd = el.closest("[data-cal]"); if (cd && !cd.disabled){ const d = cd.dataset.cal; upSel = upSel === d ? null : d; haptic(); renderList(); return; }
   const cn = el.closest("[data-calnav]"); if (cn && !cn.disabled){
-    const [y,m] = upMonth.split("-").map(Number), dir = +cn.dataset.calnav, n = new Date(y, m-1+dir, 1);
-    upMonth = `${n.getFullYear()}-${pad(n.getMonth()+1)}`; const old = list.querySelector(".cal");
+    const dir = +cn.dataset.calnav; upMonth = shiftMonth(upMonth, dir); const old = list.querySelector(".cal");
     if (old){ const t = document.createElement("div"); t.innerHTML = calHTML(dir > 0 ? "l" : "r"); old.replaceWith(t.firstElementChild); }
     return;
   }
@@ -958,6 +1011,7 @@ function openSheet({ head, body, onClose, focus }){
 }
 function closeSheet(velocity=0){
   if (!sheetOpen) return;
+  closeDP(false);
   sheetOpen = false; document.activeElement && document.activeElement.blur();
   const cb = onSheetClose; onSheetClose = null; cb && cb();
   scrim.style.pointerEvents = "none";
@@ -1021,8 +1075,8 @@ function editorFields(){
       <button class="chip c-today${isToday?" on":""}" data-when="today">${I.star}Today</button>
       <button class="chip c-tmrw${isTmrw?" on":""}" data-when="tmrw">${I.sunrise}Tomorrow</button>
       <button class="chip c-some${isSome?" on":""}" data-when="someday">${I.box}Someday</button>
-      <span class="chip${isOther?" on":""}">${I.cal}${isOther ? longDay(d.when) : "Date"}<input type="date" data-pick min="${t}" value="${isDate(d.when)?d.when:""}"></span>
-      <span class="chip c-due${d.deadline?" on":""}">${I.flag}${ft ? ft.txt : "Finish by"}<input type="date" data-deadline value="${d.deadline||""}"></span>
+      <button class="chip${isOther?" on":""}" data-pickdate>${I.cal}${isOther ? longDay(d.when) : "Date"}</button>
+      <button class="chip c-due${d.deadline?" on":""}" data-pickdue>${I.flag}${ft ? ft.txt : "Finish by"}</button>
       ${d.deadline ? `<button class="chip" data-nodeadline aria-label="Remove deadline">✕</button>` : ""}
     </div>
     <button class="more-btn${moreOpen?" open":""}" data-more>${moreOpen ? "Fewer options" : "More options"}${I.chev}</button>
@@ -1063,8 +1117,8 @@ function wireFields(){
   });
   sheetBody.querySelectorAll("[data-part]").forEach(b => b.onclick = () => { draft.part = draft.part === b.dataset.part ? null : b.dataset.part; refreshEditorFields(); });
   const mb = sheetBody.querySelector("[data-more]"); if (mb) mb.onclick = () => { moreOpen = !moreOpen; refreshEditorFields(); };
-  const pick = sheetBody.querySelector("[data-pick]");
-  pick.onchange = () => { if (pick.value){ draft.when = pick.value; keepText = true; refreshEditorFields(); showParsed(); } };
+  sheetBody.querySelector("[data-pickdate]").onclick = e => openDatePicker(e.currentTarget, { value: isDate(draft.when) ? draft.when : null, min: T(),
+    onPick: v => { draft.when = v; if (!v) draft.part = null; keepText = true; refreshEditorFields(); showParsed(); } });
   sheetBody.querySelectorAll("[data-rep]").forEach(b => b.onclick = () => {
     const v = b.dataset.rep;
     if (v === "off") draft.repeat = null;
@@ -1079,8 +1133,8 @@ function wireFields(){
     if (days.includes(i)){ if (days.length > 1) days.splice(days.indexOf(i),1); } else days.push(i);
     refreshEditorFields();
   });
-  const dl = sheetBody.querySelector("[data-deadline]");
-  dl.onchange = () => { draft.deadline = dl.value || null; refreshEditorFields(); };
+  sheetBody.querySelector("[data-pickdue]").onclick = e => openDatePicker(e.currentTarget, { value: draft.deadline, min: T(),
+    onPick: v => { draft.deadline = v; refreshEditorFields(); } });
   const nd = sheetBody.querySelector("[data-nodeadline]"); if (nd) nd.onclick = () => { draft.deadline = null; refreshEditorFields(); };
   const ps = sheetBody.querySelector("[data-project]"); if (ps) ps.onchange = e => { draft.projectId = e.target.value || null; };
   const dels = sheetBody.querySelector("[data-delete]"); if (dels) dels.onclick = () => { const id = draft.id; draft = null; closeSheet(); del(id); };
@@ -1206,25 +1260,20 @@ function setCorner(c){ fab.classList.remove("c-br","c-bl","c-tr","c-tl"); fab.cl
     return out;
   }
   // near a screen corner = "move the + here", not "add a to-do here"
-  // corner zones: your own corner = plain new to-do, the other three = move the + there
+  // corner circles: only the corner you're heading for shows, and only once you're close
   const zones = [...document.querySelectorAll(".zone")];
-  const cornerAt = (cx, cy) => { for (const z of zones){ const c = z.dataset.z, x = c[1] === "l" ? 0 : innerWidth, y = c[0] === "t" ? 0 : innerHeight;
-    if (Math.hypot(cx - x, cy - y) < 140) return c; } return null; };
+  const cornerPt = c => ({ x: c[1] === "l" ? 0 : innerWidth, y: c[0] === "t" ? 0 : innerHeight });
+  const cornerAt = (cx, cy, r = 140) => { for (const z of zones){ const c = z.dataset.z; if (c === db.ui.fabCorner) continue; const p = cornerPt(c); if (Math.hypot(cx - p.x, cy - p.y) < r) return c; } return null; };
   let hotZone = null;
-  function showZones(on){
-    zones.forEach(z => { const own = z.dataset.z === db.ui.fabCorner;
-      z.querySelector("span").textContent = own ? "New to-do" : "Move + here";
-      z.className = `zone z-${z.dataset.z}` + (on ? (own ? " home" : " ghost") : ""); });
-    hotZone = null;
-  }
-  function setHot(c){
-    if (c === hotZone) return; hotZone = c;
-    zones.forEach(z => { const own = z.dataset.z === db.ui.fabCorner; z.classList.toggle("hot", z.dataset.z === c); z.classList.toggle("ghost", z.dataset.z !== c && !own); z.classList.toggle("home", own && z.dataset.z !== c); });
-    if (c) haptic();
+  function showZones(){ zones.forEach(z => z.className = "zone"); hotZone = null; }
+  function setHot(cx, cy){
+    const near = cornerAt(cx, cy, 210), hot = cornerAt(cx, cy, 140);
+    zones.forEach(z => { z.classList.toggle("near", z.dataset.z === near && !hot); z.classList.toggle("hot", z.dataset.z === hot); });
+    if (hot && hot !== hotZone) haptic(); hotZone = hot;
   }
   function updateTargets(cx, cy){
-    const z = cornerAt(cx, cy); setHot(z);
-    if (z){ if (dropEl || gap) clearTargets(); return; }
+    setHot(cx, cy);
+    if (hotZone){ if (dropEl || gap) clearTargets(); return; }
     if (current){
       const all = slotsNow(); if (!all.length) return;
       let best = all[0], bd = Infinity; all.forEach(sl => { const d = Math.abs(sl.y - cy); if (d < bd){ bd = d; best = sl; } });
@@ -1272,7 +1321,7 @@ function setCorner(c){ fab.classList.remove("c-br","c-bl","c-tr","c-tl"); fab.cl
     if (!s || e.pointerId !== s.id) return;
     s.tr.add(e.clientX, e.clientY);
     if (!s.drag && Math.hypot(e.clientX - s.sx, e.clientY - s.sy) > 8 && canDropHere()){
-      s.drag = true; fabDrag = true; fab.classList.add("drag"); haptic(); closeOpenRow(); showZones(true);
+      s.drag = true; fabDrag = true; fab.classList.add("drag"); haptic(); closeOpenRow();
       if (current && (current.key === "today" || current.key === "tomorrow")){ showAllParts = true; renderList(); }
     }
     if (!s.drag) return;
@@ -1287,14 +1336,15 @@ function setCorner(c){ fab.classList.remove("c-br","c-bl","c-tr","c-tl"); fab.cl
     suppressClick = true; setTimeout(() => suppressClick = false, 60);
     fabDrag = false; fab.classList.remove("drag");
     const r = fab.getBoundingClientRect(), zone = cornerAt(r.left + r.width/2, r.top + r.height/2);
-    const over = zone ? (zone === db.ui.fabCorner ? {} : null) : createAtTarget();
-    showZones(false);
+    const thrown = Math.hypot(v.x, v.y) > 900;   // a fast flick just sends the + home, it never adds anything
+    const over = zone || thrown ? null : createAtTarget();
+    showZones();
     if (over) ripple(r.left + r.width/2, r.top + r.height/2);
     clearTargets();
     if (showAllParts){ showAllParts = false; if (!over) renderList(); }
     if (!over){
       // dropped in (or thrown into) another corner: the + lives there now. Dropped on nothing: it just goes home.
-      const corner = zone || cornerAt(r.left + r.width/2 + project(v.x, .99), r.top + r.height/2 + project(v.y, .99));
+      const corner = zone;
       if (corner && corner !== db.ui.fabCorner){
         const c0 = { x: r.left + r.width/2, y: r.top + r.height/2 };
         setCorner(corner);
