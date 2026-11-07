@@ -199,6 +199,16 @@ svg{display:block}
 #fab:active{scale:.93}
 #fab.drag{scale:1.08;box-shadow:0 12px 28px rgba(0,0,0,.25)}
 #fab.gone{scale:.4;opacity:0;pointer-events:none}
+.zone{position:fixed;z-index:14;width:300px;height:300px;margin:-150px 0 0 -150px;border-radius:50%;pointer-events:none;
+  background:rgba(120,120,128,.16);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  transform:scale(0);transition:transform .5s cubic-bezier(.34,1.3,.5,1),background .25s}
+.zone.ghost{transform:scale(.42)}
+.zone.home{transform:scale(.78)}
+.zone.hot{transform:scale(1);background:color-mix(in srgb,var(--accent) 24%,transparent)}
+.zone span{position:absolute;font-size:15px;font-weight:600;color:var(--text);opacity:0;transition:opacity .2s;white-space:nowrap}
+.zone.home span,.zone.hot span{opacity:1}
+.zone.z-tl span{left:166px;top:262px}.zone.z-tr span{right:166px;top:262px}
+.zone.z-bl span{left:166px;bottom:250px}.zone.z-br span{right:166px;bottom:250px}
 .ripple{position:fixed;z-index:14;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;border:2px solid var(--accent);pointer-events:none;animation:ripple .5s var(--ease) forwards}
 @keyframes ripple{from{transform:scale(.6);opacity:.5}to{transform:scale(2);opacity:0}}
 
@@ -310,6 +320,8 @@ svg{display:block}
 <section class="screen pre" id="home"></section>
 <section class="screen hidden" id="list"></section>
 <button id="fab" class="c-br" aria-label="New to-do"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+<div class="zone z-tl" data-z="tl" style="left:0;top:0"><span></span></div><div class="zone z-tr" data-z="tr" style="left:100%;top:0"><span></span></div>
+<div class="zone z-bl" data-z="bl" style="left:0;top:100%"><span></span></div><div class="zone z-br" data-z="br" style="left:100%;top:100%"><span></span></div>
 <div id="scrim"></div>
 <div id="sheet" role="dialog"><div class="grab"><i></i></div><div class="sheet-head"></div><div class="sheet-body"></div></div>
 <div id="toast"></div>
@@ -679,7 +691,7 @@ function renderList(){
       body = (miss.length ? `<div class="sec" style="color:var(--danger)">${small(I.flag,"var(--danger)").replace("<svg",'<svg class="ico"')}<span>Missed deadline</span></div>` + grp(miss.map(t => rowHTML(t, { showProject:true, showWhen:true, inToday:true })).join(""), {}, false) : "")
         + partsBody(items, T(), { showProject:true, showWhen:true, inToday:true });
       if (!all.length && !showAllParts) body += empty("today", "Nothing for today. Tap + or drag it here to add.");
-      if (done.length) body += sec("Done today", small(I.check.replace('stroke="#fff"','stroke="currentColor"').replace('width="14" height="14"','class="ico"'), "var(--logbook)")) + grp(done.map(t => rowHTML(t, { showProject:true })).join(""), {}, false);
+      if (done.length) body += sec("Done", small(I.check.replace('stroke="#fff"','stroke="currentColor"').replace('width="14" height="14"','class="ico"'), "var(--logbook)")) + grp(done.map(t => rowHTML(t, { showProject:true })).join(""), {}, false);
     } else if (k === "tomorrow"){
       const items = visible(FILTERS.tomorrow), d = parseYmd(TM());
       sub = `${DOW[d.getDay()]}, ${d.getDate()} ${MONL[d.getMonth()]}`;
@@ -794,7 +806,7 @@ function toggleDone(id, rowEl){
   if (inHome) updateRing(cleared, home); else renderHome();
   if (inTodayList) updateRing(cleared, list);
   clearTimeout(settleTimer);
-  if (inHome || inTodayList) settleTimer = setTimeout(() => { if (inHome) flip(home, renderHome); else { flip(list, renderList); renderHome(); } }, 650);
+  if (inHome || inTodayList) settleTimer = setTimeout(() => { if (inHome) flip(home, renderHome); else { flip(list, renderList); renderHome(); } }, 140);
   if (current && current.type === "project"){ const ic = list.querySelector(".big-title .ico"); if (ic) ic.outerHTML = pie(projStats(current.key).frac); }
   if (current && current.key === "logbook") setTimeout(renderList, 250);
   if (cleared) setTimeout(() => { haptic(); const st = streak(); toast(st > 1 ? `All done for today. ${st}-day streak` : "All done for today"); }, 320);
@@ -808,7 +820,7 @@ function flip(root, render){
     const b = before.get(r.dataset.id); if (b == null) return;
     const dy = b - r.getBoundingClientRect().top; if (Math.abs(dy) < 1) return;
     r.style.transition = "none"; r.style.transform = `translateY(${dy}px)`;
-    requestAnimationFrame(() => requestAnimationFrame(() => { r.style.transition = "transform .5s cubic-bezier(.16,1,.3,1)"; r.style.transform = ""; }));
+    requestAnimationFrame(() => requestAnimationFrame(() => { r.style.transition = "transform .34s cubic-bezier(.16,1,.3,1)"; r.style.transform = ""; }));
   });
 }
 function moveToToday(id){ const t = getTask(id); if (!t) return; t.when = T(); save(); toast("Moved to Today"); renderAll(); }
@@ -985,7 +997,7 @@ function openEditor(id, over){
   draft = existing ? { ...existing, repeat: existing.repeat ? { ...existing.repeat, days: existing.repeat.days ? [...existing.repeat.days] : undefined } : null }
     : { id: uid(), title:"", notes:"", deadline:null, done:false, doneAt:null, createdAt: Date.now(), order: Date.now(), ...defaultsForContext(), ...(over || {}) };
   parsedHint = null; keepText = false;
-  moreOpen = !!(draft.part || draft.repeat || draft.projectId || draft.when === "someday") && !draftIsNew;
+  moreOpen = !!(draft.part || draft.repeat || draft.projectId) && !draftIsNew;
   openSheet({
     head: `<button class="txt-btn" data-cancel>${draftIsNew ? "Cancel" : ""}</button><h3>${draftIsNew ? "New To-Do" : ""}</h3><button class="txt-btn strong" data-done>Done</button>`,
     body: editorBody(), focus: draftIsNew ? ".t-title" : null, onClose: commitDraft,
@@ -1008,6 +1020,7 @@ function editorFields(){
   return `<div class="quick">
       <button class="chip c-today${isToday?" on":""}" data-when="today">${I.star}Today</button>
       <button class="chip c-tmrw${isTmrw?" on":""}" data-when="tmrw">${I.sunrise}Tomorrow</button>
+      <button class="chip c-some${isSome?" on":""}" data-when="someday">${I.box}Someday</button>
       <span class="chip${isOther?" on":""}">${I.cal}${isOther ? longDay(d.when) : "Date"}<input type="date" data-pick min="${t}" value="${isDate(d.when)?d.when:""}"></span>
       <span class="chip c-due${d.deadline?" on":""}">${I.flag}${ft ? ft.txt : "Finish by"}<input type="date" data-deadline value="${d.deadline||""}"></span>
       ${d.deadline ? `<button class="chip" data-nodeadline aria-label="Remove deadline">✕</button>` : ""}
@@ -1015,16 +1028,12 @@ function editorFields(){
     <button class="more-btn${moreOpen?" open":""}" data-more>${moreOpen ? "Fewer options" : "More options"}${I.chev}</button>
     ${moreOpen ? `
     ${isDate(d.when) ? `<div class="field"><div class="field-label">Time of day</div><div class="parts" style="margin-top:0">${PARTS.map(([p]) => `<button class="${d.part===p?"on":""}" data-part="${p}">${I[p].replace('class="ico"','')}${PARTSHORT[p]}</button>`).join("")}</div></div>` : ""}
-    <div class="field"><div class="field-label">Other dates</div><div class="chips">
-      <button class="chip c-some${isSome?" on":""}" data-when="someday">${I.box}Someday</button>
-      ${d.when ? `<button class="chip" data-when="clear">No date</button>` : ""}
-    </div></div>
-    <div class="field"><div class="field-label">Repeat</div><div class="chips">
+    ${draftIsNew ? "" : `<div class="field"><div class="field-label">Repeat</div><div class="chips">
       <button class="chip${!r?" on":""}" data-rep="off">Off</button>
       <button class="chip${r && r.freq==="days" && r.days.length===7?" on":""}" data-rep="daily">Every day</button>
       <button class="chip${r && r.freq==="days" && r.days.length<7?" on":""}" data-rep="some">Some days</button>
       <button class="chip${r && r.freq==="week"?" on":""}" data-rep="week">Weekly</button>
-    </div>${r && r.freq==="days" && r.days.length<7 ? `<div class="days">${[0,1,2,3,4,5,6].map(i => `<button class="dayb${r.days.includes(i)?" on":""}" data-day="${i}">${"SMTWTFS"[i]}</button>`).join("")}</div>` : ""}</div>
+    </div>${r && r.freq==="days" && r.days.length<7 ? `<div class="days">${[0,1,2,3,4,5,6].map(i => `<button class="dayb${r.days.includes(i)?" on":""}" data-day="${i}">${"SMTWTFS"[i]}</button>`).join("")}</div>` : ""}</div>`}
     <div class="field"><div class="field-label">Project</div><select class="select" data-project>${opts}</select></div>` : ""}
     ${draftIsNew ? "" : `<button class="danger-btn" data-delete>Delete To-Do</button>`}`;
 }
@@ -1047,7 +1056,8 @@ function wireEditor(){
 function wireFields(){
   sheetBody.querySelectorAll("[data-when]").forEach(b => b.onclick = () => {
     const w = b.dataset.when;
-    if (w === "today") draft.when = T(); else if (w === "tmrw") draft.when = TM();
+    if (b.classList.contains("on")){ draft.when = null; draft.part = null; }
+    else if (w === "today") draft.when = T(); else if (w === "tmrw") draft.when = TM();
     else if (w === "someday"){ draft.when = "someday"; draft.part = null; } else { draft.when = null; draft.part = null; }
     parsedHint = null; keepText = true; refreshEditorFields(); showParsed();
   });
@@ -1196,9 +1206,25 @@ function setCorner(c){ fab.classList.remove("c-br","c-bl","c-tr","c-tl"); fab.cl
     return out;
   }
   // near a screen corner = "move the + here", not "add a to-do here"
-  const cornerAt = (cx, cy) => { const h = cx < 110 ? "l" : cx > innerWidth - 110 ? "r" : null, v = cy < 190 ? "t" : cy > innerHeight - 170 ? "b" : null; return h && v ? v + h : null; };
+  // corner zones: your own corner = plain new to-do, the other three = move the + there
+  const zones = [...document.querySelectorAll(".zone")];
+  const cornerAt = (cx, cy) => { for (const z of zones){ const c = z.dataset.z, x = c[1] === "l" ? 0 : innerWidth, y = c[0] === "t" ? 0 : innerHeight;
+    if (Math.hypot(cx - x, cy - y) < 140) return c; } return null; };
+  let hotZone = null;
+  function showZones(on){
+    zones.forEach(z => { const own = z.dataset.z === db.ui.fabCorner;
+      z.querySelector("span").textContent = own ? "New to-do" : "Move + here";
+      z.className = `zone z-${z.dataset.z}` + (on ? (own ? " home" : " ghost") : ""); });
+    hotZone = null;
+  }
+  function setHot(c){
+    if (c === hotZone) return; hotZone = c;
+    zones.forEach(z => { const own = z.dataset.z === db.ui.fabCorner; z.classList.toggle("hot", z.dataset.z === c); z.classList.toggle("ghost", z.dataset.z !== c && !own); z.classList.toggle("home", own && z.dataset.z !== c); });
+    if (c) haptic();
+  }
   function updateTargets(cx, cy){
-    if (cornerAt(cx, cy)){ if (dropEl || gap) clearTargets(); return; }
+    const z = cornerAt(cx, cy); setHot(z);
+    if (z){ if (dropEl || gap) clearTargets(); return; }
     if (current){
       const all = slotsNow(); if (!all.length) return;
       let best = all[0], bd = Infinity; all.forEach(sl => { const d = Math.abs(sl.y - cy); if (d < bd){ bd = d; best = sl; } });
@@ -1246,7 +1272,7 @@ function setCorner(c){ fab.classList.remove("c-br","c-bl","c-tr","c-tl"); fab.cl
     if (!s || e.pointerId !== s.id) return;
     s.tr.add(e.clientX, e.clientY);
     if (!s.drag && Math.hypot(e.clientX - s.sx, e.clientY - s.sy) > 8 && canDropHere()){
-      s.drag = true; fabDrag = true; fab.classList.add("drag"); haptic(); closeOpenRow();
+      s.drag = true; fabDrag = true; fab.classList.add("drag"); haptic(); closeOpenRow(); showZones(true);
       if (current && (current.key === "today" || current.key === "tomorrow")){ showAllParts = true; renderList(); }
     }
     if (!s.drag) return;
@@ -1260,15 +1286,16 @@ function setCorner(c){ fab.classList.remove("c-br","c-bl","c-tr","c-tl"); fab.cl
     if (!wasDrag){ if (e.type === "pointerup") openEditor(null); return; }
     suppressClick = true; setTimeout(() => suppressClick = false, 60);
     fabDrag = false; fab.classList.remove("drag");
-    const r = fab.getBoundingClientRect(), over = cornerAt(r.left + r.width/2, r.top + r.height/2) ? null : createAtTarget();
+    const r = fab.getBoundingClientRect(), zone = cornerAt(r.left + r.width/2, r.top + r.height/2);
+    const over = zone ? (zone === db.ui.fabCorner ? {} : null) : createAtTarget();
+    showZones(false);
     if (over) ripple(r.left + r.width/2, r.top + r.height/2);
     clearTargets();
     if (showAllParts){ showAllParts = false; if (!over) renderList(); }
     if (!over){
-      // dropped in a corner (or thrown toward one): the + lives there now
-      const cx = r.left + r.width/2 + project(v.x, .99), cy = r.top + r.height/2 + project(v.y, .99);
-      const corner = cornerAt(r.left + r.width/2, r.top + r.height/2) || (cy < innerHeight/2 ? "t" : "b") + (cx < innerWidth/2 ? "l" : "r");
-      if (corner !== db.ui.fabCorner){
+      // dropped in (or thrown into) another corner: the + lives there now. Dropped on nothing: it just goes home.
+      const corner = zone || cornerAt(r.left + r.width/2 + project(v.x, .99), r.top + r.height/2 + project(v.y, .99));
+      if (corner && corner !== db.ui.fabCorner){
         const c0 = { x: r.left + r.width/2, y: r.top + r.height/2 };
         setCorner(corner);
         const r1 = fab.getBoundingClientRect();
