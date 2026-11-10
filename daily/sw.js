@@ -1,6 +1,6 @@
 // Makes Daily open instantly from the copy saved on the phone, and quietly checks for a newer
 // version in the background. A newer version is saved and shows the next time Daily opens.
-const CACHE = "daily-v27";
+const CACHE = "daily-v28";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-180.png", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/launch-1170x2532.png", "./icons/launch-1170x2532-dark.png"];
 
 self.addEventListener("install", e => {
@@ -28,7 +28,7 @@ async function freshPage(cache){
 const within = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
 
 self.addEventListener("fetch", e => {
-  if (e.request.method !== "GET") return;
+  if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;   // GitHub sync goes straight to the internet
   if (e.request.mode === "navigate"){
     e.respondWith((async () => {
       const cache = await caches.open(CACHE);

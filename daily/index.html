@@ -12,6 +12,7 @@
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: light)" href="icons/launch-1170x2532.png">
 <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: dark)" href="icons/launch-1170x2532-dark.png">
 <link rel="icon" href="icons/icon-192.png">
@@ -316,6 +317,8 @@ html[data-card="default"] .gpanel{background:rgba(246,246,248,.80);
 .note{font-size:14px;color:var(--text2);line-height:1.45;margin-top:10px}
 .set-row{display:flex;align-items:center;gap:12px;width:100%;min-height:50px;text-align:left;border-bottom:.5px solid var(--sep)}
 .set-row .ico{color:var(--accent)}
+.set-row > svg{width:22px;height:22px;flex:none;color:var(--accent)}
+.set-row.danger > svg{color:var(--danger)}
 .set-row:active{opacity:.5}
 
 /* ring */
@@ -401,11 +404,63 @@ html[data-card="default"] .gpanel{background:rgba(246,246,248,.80);
 .dstack:not(.open) .dcard:nth-child(3) > *{opacity:0}
 .dstack:not(.open) .dcard:nth-child(n+4){display:none}
 
+
+/* ===== Laptop: sidebar + main pane, always dark, glass panels ===== */
+.steps{margin:10px 0 14px 20px;font-size:15px;line-height:1.45;color:var(--text)}
+.steps li{margin-bottom:10px}
+.steps a{color:var(--accent);text-decoration:none;font-weight:600;white-space:nowrap}
+.field{display:block;width:100%;height:46px;border-radius:12px;border:0;outline:0;padding:0 14px;margin:0 0 10px;background:var(--fill);font-size:16px}
+.primary{display:block;width:100%;height:48px;border-radius:14px;background:var(--accent);color:#fff;font-weight:600;font-size:17px;margin-top:4px}
+.primary:disabled{opacity:.6}
+.note.err,[data-syncstate].err{color:var(--danger)}
+.set-row.danger{color:var(--danger)}
+#newBtn,#sideSync{display:none}
+html.wide{--side:272px;--card:rgba(255,255,255,.055);--fill:rgba(255,255,255,.08)}
+html.wide body{background:#08080a;font-size:15px}
+html.wide #home{right:auto;width:var(--side);transform:none !important;padding:14px 0 70px;background:rgba(255,255,255,.035);
+  box-shadow:inset -.5px 0 0 rgba(255,255,255,.09);will-change:auto}
+html.wide #list{left:var(--side);transform:none !important;visibility:visible !important;box-shadow:none;background:#08080a;padding-bottom:110px;will-change:auto}
+html.wide #fab,html.wide .wcard,html.wide .back{display:none !important}
+html.wide .top{margin:4px 12px 12px}
+html.wide .search{height:32px;border-radius:9px;font-size:14px}
+html.wide .search{min-width:0}
+html.wide .search input{font-size:14px;width:100%}
+html.wide .round{width:32px;height:32px;border-radius:16px}
+html.wide .group{background:none !important;box-shadow:none !important;margin:0 10px 12px;border-radius:0;overflow:visible}
+html.wide .nav-row{min-height:32px;border-radius:8px;padding:0 10px;gap:10px;font-size:14px}
+html.wide .nav-row::after{display:none}
+html.wide .nav-row:hover{background:rgba(255,255,255,.05)}
+html.wide .nav-row.active{background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12),inset 0 1px 0 rgba(255,255,255,.08)}
+html.wide .nav-row .ico{width:18px;height:18px}
+html.wide .nav-row .emo{font-size:15px}
+html.wide .nav-row .count{font-size:13px}
+html.wide .fold{font-size:12px;font-weight:600;color:var(--text2);margin:14px 10px 4px;padding:0 10px;width:calc(100% - 20px)}
+html.wide .fold svg{width:11px;height:11px}
+html.wide #sideSync{display:block;position:fixed;left:0;bottom:0;width:var(--side);padding:12px 20px 16px;font-size:12px;color:var(--text2);
+  background:linear-gradient(transparent,#0d0d10 40%)}
+html.wide #sideSync button{color:var(--accent);font-size:12px;font-weight:600}
+html.wide .bar{height:52px;padding:0 24px;justify-content:flex-end}
+html.wide .bar,html.wide .big-title,html.wide .list-sub,html.wide .rows{max-width:760px;margin-left:auto;margin-right:auto}
+html.wide .big-title{padding-top:26px}
+html.wide .grp.glass,html.wide .dcard,html.wide .group.glass{backdrop-filter:none;-webkit-backdrop-filter:none}
+html.wide .grp.glass{background:rgba(255,255,255,.045);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.08),inset 0 1px 0 rgba(255,255,255,.06)}
+html.wide .row-main{cursor:default}
+html.wide .row-main:hover{background:rgba(255,255,255,.035)}
+html.wide .row-title{font-size:15px}
+html.wide #newBtn{display:flex;align-items:center;gap:8px;position:fixed;left:calc(var(--side) + (100vw - var(--side)) / 2 - 80px);bottom:22px;z-index:6;
+  height:42px;padding:0 18px 0 14px;border-radius:21px;font-size:14px;font-weight:600}
+html.wide #newBtn svg{width:18px;height:18px}
+html.wide #newBtn kbd{font:inherit;font-size:11px;color:var(--text2);border:.5px solid rgba(255,255,255,.2);border-radius:5px;padding:1px 6px;margin-left:4px}
+html.wide #newBtn.gone{opacity:0;pointer-events:none}
+html.wide #sheet{left:50%;right:auto;width:560px;margin-left:-280px;top:10vh;bottom:auto;height:min(640px,80vh);border-radius:26px;transition:opacity .2s}
+html.wide #dp{z-index:30}
 </style>
 </head>
 <body>
 <section class="screen" id="home"></section>
 <section class="screen hidden" id="list"></section>
+<button id="newBtn" class="gbtn" aria-label="New to-do"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>New To-Do</span><kbd>N</kbd></button>
+<div id="sideSync"></div>
 <button id="fab" class="c-br gbtn" aria-label="New to-do"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
 <div class="zone" data-z="tl" style="left:0;top:0"></div><div class="zone" data-z="tr" style="left:100%;top:0"></div>
 <div class="zone" data-z="bl" style="left:0;top:100%"></div><div class="zone" data-z="br" style="left:100%;top:100%"></div>
@@ -433,9 +488,25 @@ try { if (db.tasks.length && localStorage.getItem(SPARE + "Day") !== new Date().
 db.tasks.forEach(t => { if (t.part === undefined){ t.part = t.evening ? "evening" : null; } delete t.evening; });
 db.ui = db.ui || { projOpen: true }; db.ui.fabCorner = db.ui.fabCorner || "br"; db.ui.doneRange = db.ui.doneRange || "7"; db.ui.card = db.ui.card || "glass";
 document.documentElement.dataset.card = db.ui.card;
+/* laptop: a wide window with a mouse gets the sidebar layout, always dark */
+const WIDE_Q = matchMedia("(min-width: 900px) and (hover: hover) and (pointer: fine)");
+var WIDE = WIDE_Q.matches;
+WIDE_Q.addEventListener && WIDE_Q.addEventListener("change", () => location.reload());
+if (WIDE){
+  document.documentElement.classList.add("wide"); document.documentElement.style.colorScheme = "dark";
+  let css = "";
+  for (const sh of document.styleSheets){ let rules; try { rules = sh.cssRules; } catch(e){ continue; }
+    for (let i = rules.length - 1; i >= 0; i--){ const r = rules[i]; if (r.media && /prefers-color-scheme:\s*light/.test(r.media.mediaText)) sh.deleteRule(i); }
+    for (const r of rules) if (r.media && /prefers-color-scheme:\s*dark/.test(r.media.mediaText)) for (const x of r.cssRules) css += x.cssText + "\n"; }
+  // the dark look always, then the laptop styles again so they keep the last word
+  const wideCss = [...document.styleSheets].flatMap(sh => { try { return [...sh.cssRules]; } catch(e){ return []; } }).filter(r => r.selectorText && r.selectorText.includes("html.wide")).map(r => r.cssText).join("\n");
+  const st = document.createElement("style"); st.textContent = css + "\n" + wideCss; document.head.appendChild(st);
+}
 function save(){
   try { logDay(); } catch(e){}
+  try { if (snap) stamp(); } catch(e){}
   try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){ toast("Couldn't save. Storage is full or blocked."); }
+  if (sync) syncSoon();
 }
 if (navigator.storage && navigator.storage.persist) { try { navigator.storage.persist(); } catch(e){} }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
@@ -514,9 +585,157 @@ if (!db.seeded && db.tasks.length === 0){
   const now = Date.now();
   [["Tap the box to finish a to-do",""],["Swipe right on a to-do to move it to Today",""],["Swipe left for Later or Delete",""],
    ["Drag the blue + button onto a list to add right there",""],["Type tmrw, fri or tonight at the end of a new to-do","It schedules itself"]]
-   .forEach((t,i) => db.tasks.push({ id:uid(), title:t[0], notes:t[1], when:T(), part:null, deadline:null, projectId:null, done:false, doneAt:null, createdAt:now+i, order:now+i }));
+   .forEach((t,i) => db.tasks.push({ id:uid(), title:t[0], notes:t[1], when:T(), part:null, deadline:null, projectId:null, done:false, doneAt:null, createdAt:now+i, order:now+i, tip:true }));
   db.seeded = true; save();
 }
+/* ================= sync: phone and laptop share one private file in your GitHub ================= */
+const SYNC = KEY + ".sync";
+var sync = null; try { sync = JSON.parse(localStorage.getItem(SYNC) || "null"); } catch(e){}
+if (sync) sync.etag = null;
+const saveSync = () => { try { localStorage.setItem(SYNC, JSON.stringify(sync)); } catch(e){} };
+var snap = new Map();                                   // what each to-do and project looked like at the last save
+const sig = x => { const { u, ...rest } = x; return JSON.stringify(rest); };
+function takeSnap(){ snap = new Map(); db.tasks.forEach(t => snap.set("t:" + t.id, sig(t))); db.projects.forEach(p => snap.set("p:" + p.id, sig(p))); }
+takeSnap();
+// give every changed to-do a time stamp, and remember what was deleted, so two devices can be merged
+function stamp(){
+  const now = Date.now(), seen = new Set();
+  const look = (pre, x) => { const k = pre + x.id, s = sig(x); seen.add(k); if (snap.get(k) !== s){ x.u = now; snap.set(k, s); } };
+  db.tasks.forEach(t => look("t:", t)); db.projects.forEach(p => look("p:", p));
+  db.gone = db.gone || [];
+  [...snap.keys()].forEach(k => { if (!seen.has(k)){ db.gone.push({ id: k, u: now }); snap.delete(k); } });
+}
+const byId = (x, y) => x.id < y.id ? -1 : x.id > y.id ? 1 : 0;
+const sortKeys = o => Object.fromEntries(Object.entries(o || {}).sort(([x], [y]) => x < y ? -1 : 1));
+// the part of your data that is shared between devices (settings like card style stay on each device)
+const shared = d => ({ v: 2, seeded: true, tasks: (d.tasks || []).map(sortKeys).sort(byId), projects: (d.projects || []).map(sortKeys).sort(byId),
+  dayLog: sortKeys(d.dayLog), planLog: sortKeys(d.planLog), planDay: d.planDay || null, gone: (d.gone || []).slice().sort(byId) });
+const canon = d => JSON.stringify(shared(d));
+function mergeDb(a, b){
+  const gone = new Map();
+  [...(a.gone || []), ...(b.gone || [])].forEach(g => { if ((gone.get(g.id) || 0) < g.u) gone.set(g.id, g.u); });
+  const pick = (xs, ys, pre) => { const m = new Map();
+    [...(xs || []), ...(ys || [])].forEach(x => { const c = m.get(x.id); if (!c || (x.u || 0) > (c.u || 0)) m.set(x.id, x); });
+    return [...m.values()].filter(x => !(gone.has(pre + x.id) && gone.get(pre + x.id) >= (x.u || 0))); };
+  const planLog = { ...(b.planLog || {}) };
+  Object.entries(a.planLog || {}).forEach(([d, ids]) => { planLog[d] = [...new Set([...(planLog[d] || []), ...ids])]; });
+  const keep = Date.now() - 90 * 864e5;
+  return { tasks: pick(a.tasks, b.tasks, "t:"), projects: pick(a.projects, b.projects, "p:"),
+    dayLog: { ...(b.dayLog || {}), ...(a.dayLog || {}) }, planLog,
+    planDay: [a.planDay, b.planDay].filter(Boolean).sort().pop() || null,
+    gone: [...gone].filter(([, u]) => u > keep).map(([id, u]) => ({ id, u })) };
+}
+let pointersDown = 0;
+addEventListener("pointerdown", () => pointersDown++, true);
+addEventListener("pointerup", () => pointersDown = Math.max(0, pointersDown - 1), true);
+addEventListener("pointercancel", () => pointersDown = Math.max(0, pointersDown - 1), true);
+function redrawWhenFree(){ if (pointersDown || document.querySelector(".row.sw, .lifted, .dragging")) return setTimeout(redrawWhenFree, 500); renderAll(); if (WIDE) renderHome(); }
+function applyShared(m){
+  db.tasks = m.tasks; db.projects = m.projects; db.dayLog = m.dayLog; db.planLog = m.planLog; db.planDay = m.planDay; db.gone = m.gone; db.seeded = true;
+  takeSnap(); try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){}
+  redrawWhenFree();
+}
+// talking to GitHub
+const GH = "https://api.github.com/repos/";
+const ghHeaders = () => ({ Authorization: "Bearer " + sync.token, Accept: "application/vnd.github+json" });
+const toB64 = s => { const b = new TextEncoder().encode(s); let x = ""; for (let i = 0; i < b.length; i += 0x8000) x += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(x); };
+const fromB64 = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g, "")), c => c.charCodeAt(0)));
+const ghError = (r) => Object.assign(new Error(r.status === 401 ? "The key isn't working anymore. Set up sync again with a new key." : r.status === 403 ? "GitHub said no. Check the key can read and write daily-data." : r.status === 404 ? "Can't find the repository. Check its name and the key." : "GitHub said " + r.status), { status: r.status });
+async function ghGet(){
+  const h = ghHeaders(); if (sync.etag) h["If-None-Match"] = sync.etag;
+  const r = await fetch(GH + sync.repo + "/contents/daily.json", { headers: h, cache: "no-store" });
+  if (r.status === 304) return { same: true };
+  if (r.status === 404){ const repo = await fetch(GH + sync.repo, { headers: ghHeaders(), cache: "no-store" }); if (!repo.ok) throw ghError(repo); return { data: null, sha: null }; }
+  if (!r.ok) throw ghError(r);
+  const j = await r.json(); sync.etag = r.headers.get("ETag") || null; sync.sha = j.sha;
+  return { data: JSON.parse(fromB64(j.content)), sha: j.sha };
+}
+async function ghPut(obj, sha){
+  const body = { message: "Daily sync", content: toB64(JSON.stringify(obj)) }; if (sha) body.sha = sha;
+  const r = await fetch(GH + sync.repo + "/contents/daily.json", { method: "PUT", headers: { ...ghHeaders(), "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (!r.ok) throw ghError(r);
+  const j = await r.json(); sync.sha = j.content.sha; sync.etag = null;
+}
+var syncing = false, syncAgain = false, lastCanon = null, syncTimer = null;
+function syncSoon(){ if (!sync) return; clearTimeout(syncTimer); syncTimer = setTimeout(syncNow, 1200); }
+async function syncNow(){
+  if (!sync || !sync.token) return;
+  if (syncing){ syncAgain = true; return; }
+  syncing = true; syncState("Syncing…");
+  try {
+    for (let i = 0; i < 4; i++){
+      const g = await ghGet();
+      if (g.same && lastCanon === null){ sync.etag = null; continue; }      // need the data itself once per launch
+      if (!g.same){
+        lastCanon = g.data ? canon(g.data) : "";
+        if (g.data){ const m = mergeDb(db, g.data); if (canon(m) !== canon(db)) applyShared(m); }
+      }
+      const mine = canon(db);
+      if (mine === lastCanon) break;                                      // GitHub already has exactly this
+      try { await ghPut(shared(db), sync.sha); lastCanon = mine; break; }
+      catch(e){ if (e.status === 409 || e.status === 422){ sync.etag = null; continue; } throw e; }  // someone else saved first: fetch, merge, try again
+    }
+    sync.last = Date.now(); sync.err = "";
+  } catch(e){ sync.err = navigator.onLine ? (e.message || "Couldn't sync") : "Offline. It will sync when you're back online."; }
+  saveSync(); syncing = false; syncState();
+  if (syncAgain){ syncAgain = false; setTimeout(syncNow, 200); }
+}
+function syncText(){
+  if (!sync) return "";
+  if (sync.err) return sync.err;
+  if (!sync.last) return "Not synced yet";
+  const s = Math.round((Date.now() - sync.last) / 1000);
+  return "Synced " + (s < 45 ? "just now" : s < 3600 ? Math.round(s / 60) + " min ago" : new Date(sync.last).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }));
+}
+function syncState(busy){ document.querySelectorAll("[data-syncstate]").forEach(el => { el.textContent = busy || syncText(); el.classList.toggle("err", !busy && !!(sync && sync.err)); }); }
+if (sync){
+  setTimeout(syncNow, 300);
+  setInterval(() => { if (!document.hidden) syncNow(); else syncState(); }, 20000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) syncNow(); });
+  addEventListener("focus", () => syncNow());
+  addEventListener("online", () => syncNow());
+}
+async function connectSync(repo, token){
+  const s = { repo: repo.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$|\/$/g, ""), token: token.trim(), etag: null };
+  if (!/^[\w.-]+\/[\w.-]+$/.test(s.repo)) throw new Error("Write it like this: yourname/daily-data");
+  if (!s.token) throw new Error("Paste the key first.");
+  const r = await fetch(GH + s.repo, { headers: { Authorization: "Bearer " + s.token, Accept: "application/vnd.github+json" }, cache: "no-store" });
+  if (r.status === 401) throw new Error("That key didn't work. Copy it again from GitHub.");
+  if (r.status === 404) throw new Error("Can't see that repository. Check the name, and that the key was given access to it.");
+  if (!r.ok) throw new Error("GitHub said " + r.status);
+  const info = await r.json(); if (!info.private) throw new Error("That repository is public. Make it private first, so only you can see your to-dos.");
+  db.tasks = db.tasks.filter(t => !(t.tip && !t.done)); takeSnap();          // the welcome tips aren't real to-dos
+  try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){}
+  sync = s; lastCanon = null; saveSync();
+  await syncNow();
+  if (sync.err) throw new Error(sync.err);
+  if (!openedSyncTimers){ openedSyncTimers = true; setInterval(() => { if (!document.hidden) syncNow(); }, 20000); document.addEventListener("visibilitychange", () => { if (!document.hidden) syncNow(); }); addEventListener("focus", () => syncNow()); }
+}
+let openedSyncTimers = !!sync;
+function openSyncSetup(){
+  openSheet({
+    head: `<button class="txt-btn" data-x>Cancel</button><h3>Sync</h3><span style="width:60px"></span>`,
+    body: `<p class="note" style="margin-top:4px">Your to-dos will be kept in a private repository in your own GitHub, so your phone and laptop show the same list. Do this once on each device.</p>
+      <ol class="steps">
+        <li><b>Make a private repository</b> called daily-data. Tick “Add a README”. <a href="https://github.com/new?name=daily-data&visibility=private" target="_blank" rel="noopener">Open GitHub</a></li>
+        <li><b>Make a key for Daily.</b> <a href="https://github.com/settings/personal-access-tokens/new?name=Daily%20sync&description=Lets%20Daily%20keep%20my%20to-dos%20in%20sync&expires_in=none&contents=write" target="_blank" rel="noopener">Open the key page</a>. Under “Repository access” pick “Only select repositories”, then daily-data. Tap “Generate token” and copy it.</li>
+        <li><b>Paste it below</b> and tap Connect. On your laptop, paste the same key.</li>
+      </ol>
+      <input class="field" data-syncrepo value="${esc((sync && sync.repo) || "nitpaudel/daily-data")}" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="yourname/daily-data">
+      <input class="field" data-synctoken type="password" autocomplete="off" placeholder="Paste the key (starts with github_pat_)">
+      <button class="primary" data-syncgo>Connect</button>
+      <p class="note" data-syncmsg></p>`,
+  });
+  sheetHead.querySelector("[data-x]").onclick = () => closeSheet();
+  const go = sheetBody.querySelector("[data-syncgo]"), msg = sheetBody.querySelector("[data-syncmsg]");
+  go.onclick = async () => {
+    go.disabled = true; go.textContent = "Connecting…"; msg.textContent = ""; msg.classList.remove("err");
+    try { await connectSync(sheetBody.querySelector("[data-syncrepo]").value, sheetBody.querySelector("[data-synctoken]").value);
+      haptic(); closeSheet(); renderAll(); sideSync(); toast("Sync is on");
+    } catch(e){ msg.textContent = e.message; msg.classList.add("err"); go.disabled = false; go.textContent = "Connect"; }
+  };
+}
+
 
 /* ================= model ================= */
 const isDate = w => w && w !== "someday";
@@ -705,18 +924,18 @@ function partsBody(items, when, o){
 function renderHome(){
   const d = new Date();
   const todayCount = count("today"), overdue = db.tasks.filter(t => !t.done && t.deadline && t.deadline <= T()).length;
-  const row = (key, cnt, hot) => `<button class="nav-row" data-go="${key}" data-drop="${key}">${I[LISTS[key].icon]}<span class="label">${LISTS[key].name}</span>${hot ? `<span class="count hot">${hot}</span>` : ""}${cnt ? `<span class="count">${cnt}</span>` : ""}</button>`;
+  const row = (key, cnt, hot) => `<button class="nav-row${WIDE && current && current.type === "list" && current.key === key ? " active" : ""}" data-go="${key}" data-drop="${key}">${I[LISTS[key].icon]}<span class="label">${LISTS[key].name}</span>${hot ? `<span class="count hot">${hot}</span>` : ""}${cnt ? `<span class="count">${cnt}</span>` : ""}</button>`;
   let html = `<div class="top"><label class="search">${I.search}<input id="q" type="search" placeholder="Search" value="${esc(query)}" autocomplete="off" enterkeyhint="search"></label><button class="round gbtn" data-settings aria-label="Settings">${I.gear}</button></div>`;
   if (query.trim()){
     html += `<div id="results">${renderResults()}</div>`;
   } else {
-    html += todayWidget();
+    if (!WIDE) html += todayWidget();
     html += `<div class="group glass">${row("today", todayCount, overdue)}${row("tomorrow", count("tomorrow"))}${row("upcoming", count("upcoming"))}${row("someday", 0)}</div>
       <div class="group glass">${row("logbook", 0)}${row("inbox", count("inbox"))}</div>`;
     const ps = db.projects.slice().sort(byOrder), open = db.ui.projOpen !== false;
     html += `<button class="fold${open ? "" : " closed"}" data-fold><span>Projects</span>${I.chev}</button>
       <div class="foldbox" id="projbox" style="${open ? "" : "height:0;opacity:0"}"><div class="group glass">` +
-      ps.map(p => { const s = projStats(p.id); return `<button class="nav-row" data-proj="${p.id}" data-drop="proj:${p.id}">${pie(s.frac)}<span class="label">${esc(p.name)}</span>${s.open?`<span class="count">${s.open}</span>`:""}</button>`; }).join("") +
+      ps.map(p => { const s = projStats(p.id); return `<button class="nav-row${WIDE && current && current.type === "project" && current.key === p.id ? " active" : ""}" data-proj="${p.id}" data-drop="proj:${p.id}">${pie(s.frac)}<span class="label">${esc(p.name)}</span>${s.open?`<span class="count">${s.open}</span>`:""}</button>`; }).join("") +
       `<button class="nav-row new-proj" data-newproj>${I.plusSmall}<span class="label">New Project</span></button></div></div>`;
   }
   const hadFocus = document.activeElement && document.activeElement.id === "q";
@@ -1005,10 +1224,14 @@ function renderList(){
 }
 function updateBar(){ const b = list.querySelector(".bar"); if (b) b.classList.toggle("scrolled", list.scrollTop > 30); }
 list.addEventListener("scroll", updateBar, {passive:true});
-function chrome(){ fab.classList.toggle("gone", !!current && current.key === "logbook"); }
+function chrome(){ const hide = !!current && current.key === "logbook"; fab.classList.toggle("gone", hide); const nb = document.getElementById("newBtn"); if (nb) nb.classList.toggle("gone", hide); }
 // draw only the screen you're looking at; the home screen catches up when you go back to it
 let homeDirty = false;
-function renderAll(){ if (current){ renderList(); homeDirty = true; } else { renderHome(); homeDirty = false; } chrome(); }
+function renderAll(){
+  if (WIDE){ renderHome(); if (current) renderList(); homeDirty = false; }
+  else if (current){ renderList(); homeDirty = true; } else { renderHome(); homeDirty = false; }
+  chrome();
+}
 function freshHome(){ if (homeDirty){ renderHome(); homeDirty = false; } }
 
 /* ================= navigation ================= */
@@ -1022,10 +1245,12 @@ function push(target){
   closeOpenRow(); recentDone = new Set();
   current = target; if (target.key === "upcoming"){ upSel = null; upMonth = T().slice(0,7); }
   list.scrollTop = 0; list.classList.remove("hidden"); renderList(); chrome();
+  if (WIDE){ renderHome(); return; }
   navAnim && navAnim.stop();
   navAnim = spring({ from: navX || W(), to: 0, response: .42, onUpdate: setNav });
 }
 function pop(velocity=0){
+  if (WIDE){ push({ type:"list", key:"today" }); return; }
   closeOpenRow(); navAnim && navAnim.stop(); freshHome();
   navAnim = spring({ from: navX, to: W(), velocity, response: .4, onUpdate: setNav, onDone(){ list.classList.add("hidden"); current = null; const had = recentDone.size; recentDone = new Set(); if (had) renderHome(); chrome(); } });
 }
@@ -1034,7 +1259,7 @@ window.addEventListener("resize", () => { if (!current) setNav(W()); });
 (() => { // swipe in from the left edge to go back
   let s = null;
   list.addEventListener("pointerdown", e => {
-    if (!current || e.clientX > 26 || sheetOpen) return;
+    if (WIDE || !current || e.clientX > 26 || sheetOpen) return;
     navAnim && navAnim.stop();
     s = { x0: e.clientX - navX, tr: tracker(), id: e.pointerId, started:false }; s.tr.add(e.clientX, e.clientY);
   });
@@ -1213,7 +1438,10 @@ home.addEventListener("input", e => { if (e.target.id === "q"){ query = e.target
 
 /* ================= sheet ================= */
 let sheetOpen = false, sheetY = 0, sheetAnim = null, onSheetClose = null;
-function setSheet(y){ sheetY = y; const H = sheet.offsetHeight || innerHeight; sheet.style.transform = `translateY(${y}px)`; scrim.style.opacity = Math.max(0, 1 - y / H); }
+function setSheet(y){ sheetY = y; const H = sheet.offsetHeight || innerHeight;
+  if (WIDE){ const p = Math.min(1, Math.max(0, y / H)); sheet.style.transform = `translateY(${(p * 36).toFixed(1)}px) scale(${(1 - p * .04).toFixed(4)})`; sheet.style.opacity = (1 - p).toFixed(3); }
+  else sheet.style.transform = `translateY(${y}px)`;
+  scrim.style.opacity = Math.max(0, 1 - y / H); }
 function openSheet({ head, body, onClose, focus }){
   closeOpenRow();
   sheetHead.innerHTML = head; sheetBody.innerHTML = body; sheetBody.scrollTop = 0;
@@ -1423,14 +1651,22 @@ function openSettings(){
     head: `<span style="width:60px"></span><h3>Settings</h3><button class="txt-btn strong" data-x>Done</button>`,
     body: `<div class="field-label" style="margin-top:6px">Card style</div>
       <div class="seg" style="margin:0 0 12px">${[["glass","Glass"],["default","Default"]].map(([v,l]) => `<button class="${db.ui.card===v?"on":""}" data-cardstyle="${v}">${l}</button>`).join("")}</div>
+      <div class="field-label">Sync between phone and laptop</div>
+      ${sync ? `<p class="note" style="margin:0 0 8px"><span data-syncstate>${syncText()}</span> · ${esc(sync.repo)}</p>
+        <button class="set-row" data-syncnow>${I.repeat}<span>Sync now</span></button>
+        <button class="set-row danger" data-syncoff>${I.trash}<span>Turn off sync on this device</span></button>`
+        : `<button class="set-row" data-syncsetup>${I.repeat}<span>Set up sync</span></button>`}
+      <div class="field-label">Backup</div>
       <button class="set-row" data-export>${I.export}<span>Back up my to-dos</span></button>
       <label class="set-row" style="cursor:pointer">${I.import}<span>Restore from a backup</span><input type="file" accept="application/json,.json" data-import hidden></label>
-      <p class="note">Everything lives only on this phone. Back up every week or so and keep the file in iCloud Drive or Files.</p>
+      <p class="note">${sync ? "Your to-dos are on this device and in your private daily-data on GitHub." : "Everything lives only on this device. Back up every week or so and keep the file in iCloud Drive or Files."}</p>
       <p class="note">${open} open, ${done} done, ${db.projects.length} project${db.projects.length===1?"":"s"}.</p>
       <p class="note">${speedLine()}</p>`,
   });
   sheetHead.querySelector("[data-x]").onclick = () => closeSheet();
   sheetBody.querySelector("[data-export]").onclick = exportData;
+  const sn = sheetBody.querySelector("[data-syncnow]"); if (sn) sn.onclick = () => { syncNow(); haptic(); };
+  const so = sheetBody.querySelector("[data-syncoff]"); if (so) so.onclick = () => { sync = null; try { localStorage.removeItem(SYNC); } catch(e){} closeSheet(); sideSync(); toast("Sync is off on this device"); };
   sheetBody.querySelectorAll("[data-cardstyle]").forEach(b => b.onclick = () => {
     db.ui.card = b.dataset.cardstyle; document.documentElement.dataset.card = db.ui.card; save();
     sheetBody.querySelectorAll("[data-cardstyle]").forEach(x => x.classList.toggle("on", x === b)); haptic();
@@ -1625,6 +1861,19 @@ function openPlan(){
 }
 
 /* ================= start ================= */
+function sideSync(){ const el = document.getElementById("sideSync"); if (!el) return; el.innerHTML = sync ? `<span data-syncstate>${syncText()}</span>` : `<button data-syncsetup>Sync with your phone</button>`; }
+document.addEventListener("click", e => { if (e.target.closest("[data-syncsetup]")){ e.preventDefault(); if (sheetOpen){ closeSheet(); setTimeout(openSyncSetup, 380); } else openSyncSetup(); } });
+if (WIDE){
+  current = { type:"list", key:"today" }; list.classList.remove("hidden"); sideSync();
+  document.getElementById("newBtn").addEventListener("click", () => openEditor(null));
+  document.addEventListener("keydown", e => {
+    const typing = /INPUT|TEXTAREA/.test((document.activeElement || {}).tagName || "");
+    if (e.key === "Escape"){ if (sheetOpen){ e.preventDefault(); closeSheet(); } else if (typing) document.activeElement.blur(); return; }
+    if (typing || e.metaKey || e.ctrlKey || e.altKey || sheetOpen) return;
+    if (e.key === "n" || e.key === "N"){ e.preventDefault(); openEditor(null); }
+    else if (e.key === "/"){ e.preventDefault(); const q = document.getElementById("q"); if (q) q.focus(); }
+  });
+}
 let lastDay = T();
 document.addEventListener("visibilitychange", () => { if (!document.hidden && T() !== lastDay){ lastDay = T(); renderAll(); maybePlan(); } });
 renderAll();
