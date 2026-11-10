@@ -419,11 +419,16 @@ html[data-card="default"] .gpanel{background:rgba(246,246,248,.80);
 /* ================= storage ================= */
 const KEY = "nit.daily.v1";
 let db;
+const SPARE = KEY + ".spare";   // a second copy of your to-dos, refreshed once a day
 function load(){
-  try { const s = localStorage.getItem(KEY); if (s){ const d = JSON.parse(s); if (d && Array.isArray(d.tasks)) return d; } } catch(e){}
-  return { v:2, tasks:[], projects:[], seeded:false };
+  const read = k => { try { const s = localStorage.getItem(k); if (!s) return null; const d = JSON.parse(s); return d && Array.isArray(d.tasks) ? d : null; } catch(e){ return null; } };
+  const main = read(KEY); if (main) return main;
+  // the main copy is missing or can't be read: keep whatever is there safe, then use the spare
+  try { const raw = localStorage.getItem(KEY); if (raw) localStorage.setItem(KEY + ".broken-" + Date.now(), raw); } catch(e){}
+  return read(SPARE) || { v:2, tasks:[], projects:[], seeded:false };
 }
 db = load();
+try { if (db.tasks.length && localStorage.getItem(SPARE + "Day") !== new Date().toDateString()){ localStorage.setItem(SPARE, JSON.stringify(db)); localStorage.setItem(SPARE + "Day", new Date().toDateString()); } } catch(e){}
 // older versions used "evening: true"; now every task can be morning, afternoon or evening
 db.tasks.forEach(t => { if (t.part === undefined){ t.part = t.evening ? "evening" : null; } delete t.evening; });
 db.ui = db.ui || { projOpen: true }; db.ui.fabCorner = db.ui.fabCorner || "br"; db.ui.doneRange = db.ui.doneRange || "7"; db.ui.card = db.ui.card || "glass";
@@ -1001,7 +1006,10 @@ function renderList(){
 function updateBar(){ const b = list.querySelector(".bar"); if (b) b.classList.toggle("scrolled", list.scrollTop > 30); }
 list.addEventListener("scroll", updateBar, {passive:true});
 function chrome(){ fab.classList.toggle("gone", !!current && current.key === "logbook"); }
-function renderAll(){ renderHome(); if (current) renderList(); chrome(); }
+// draw only the screen you're looking at; the home screen catches up when you go back to it
+let homeDirty = false;
+function renderAll(){ if (current){ renderList(); homeDirty = true; } else { renderHome(); homeDirty = false; } chrome(); }
+function freshHome(){ if (homeDirty){ renderHome(); homeDirty = false; } }
 
 /* ================= navigation ================= */
 const W = () => window.innerWidth;
@@ -1018,8 +1026,8 @@ function push(target){
   navAnim = spring({ from: navX || W(), to: 0, response: .42, onUpdate: setNav });
 }
 function pop(velocity=0){
-  closeOpenRow(); navAnim && navAnim.stop();
-  navAnim = spring({ from: navX, to: W(), velocity, response: .4, onUpdate: setNav, onDone(){ list.classList.add("hidden"); current = null; recentDone = new Set(); renderHome(); chrome(); } });
+  closeOpenRow(); navAnim && navAnim.stop(); freshHome();
+  navAnim = spring({ from: navX, to: W(), velocity, response: .4, onUpdate: setNav, onDone(){ list.classList.add("hidden"); current = null; const had = recentDone.size; recentDone = new Set(); if (had) renderHome(); chrome(); } });
 }
 setNav(W());
 window.addEventListener("resize", () => { if (!current) setNav(W()); });
@@ -1034,7 +1042,7 @@ window.addEventListener("resize", () => { if (!current) setNav(W()); });
     if (!s || e.pointerId !== s.id) return;
     s.tr.add(e.clientX, e.clientY);
     const x = Math.max(0, e.clientX - s.x0);
-    if (!s.started && x > 6){ s.started = true; try{ list.setPointerCapture(e.pointerId); }catch(_){} }
+    if (!s.started && x > 6){ s.started = true; freshHome(); try{ list.setPointerCapture(e.pointerId); }catch(_){} }
     if (s.started) setNav(x);
   });
   const end = e => {
@@ -1403,6 +1411,12 @@ function openProjectSheet(id){
 }
 
 /* ================= settings / backup ================= */
+function speedLine(){
+  try {
+    const a = JSON.parse(localStorage.getItem(KEY + ".speed") || "[]"); if (!a.length) return "";
+    return "Speed check, last opens: " + a.map(x => (x.ms < 100 ? "under 0.1s" : (x.ms / 1000).toFixed(1) + "s") + (x.off ? "" : " (no saved copy)")).join(", ");
+  } catch(e){ return ""; }
+}
 function openSettings(){
   const open = db.tasks.filter(t => !t.done).length, done = db.tasks.length - open;
   openSheet({
@@ -1412,7 +1426,8 @@ function openSettings(){
       <button class="set-row" data-export>${I.export}<span>Back up my to-dos</span></button>
       <label class="set-row" style="cursor:pointer">${I.import}<span>Restore from a backup</span><input type="file" accept="application/json,.json" data-import hidden></label>
       <p class="note">Everything lives only on this phone. Back up every week or so and keep the file in iCloud Drive or Files.</p>
-      <p class="note">${open} open, ${done} done, ${db.projects.length} project${db.projects.length===1?"":"s"}.</p>`,
+      <p class="note">${open} open, ${done} done, ${db.projects.length} project${db.projects.length===1?"":"s"}.</p>
+      <p class="note">${speedLine()}</p>`,
   });
   sheetHead.querySelector("[data-x]").onclick = () => closeSheet();
   sheetBody.querySelector("[data-export]").onclick = exportData;
@@ -1613,17 +1628,20 @@ function openPlan(){
 let lastDay = T();
 document.addEventListener("visibilitychange", () => { if (!document.hidden && T() !== lastDay){ lastDay = T(); renderAll(); maybePlan(); } });
 renderAll();
+// speed check: remember how long the last few opens took (shown in Settings)
+requestAnimationFrame(() => { try {
+  const k = KEY + ".speed", a = JSON.parse(localStorage.getItem(k) || "[]");
+  a.unshift({ ms: Math.round(performance.now()), off: !!(navigator.serviceWorker && navigator.serviceWorker.controller) });
+  localStorage.setItem(k, JSON.stringify(a.slice(0, 8)));
+} catch(e){} });
 
 setTimeout(maybePlan, 250);
 if ("serviceWorker" in navigator){
   navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).catch(() => {});
-  // a newer Daily was just downloaded: reload right away if you only just opened the app, otherwise offer it
-  const openedAt = Date.now();
+  // a newer Daily was downloaded in the background: it shows next time you open the app (or tap Reload now)
   navigator.serviceWorker.addEventListener("message", e => {
     if (!e.data || e.data.type !== "daily-updated") return;
-    const again = () => location.reload();
-    if (Date.now() - openedAt < 6000 && !sheetOpen) again();
-    else toast("Daily was updated", "Reload", again);
+    toast("Daily was updated", "Reload", () => location.reload());
   });
 }
 })();
