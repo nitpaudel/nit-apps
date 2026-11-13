@@ -9,14 +9,6 @@
 const MUSCLES = ["Chest", "Shoulders", "Lats", "Traps", "Biceps", "Triceps",
   "Forearms", "Abs", "Lower back", "Quads", "Hamstrings", "Glutes", "Calves"];
 
-// How many hard sets a week each muscle wants. Low end keeps it, high end grows it.
-const SET_BAND = {
-  Chest: [10, 18], Shoulders: [12, 22], Lats: [12, 20], Traps: [6, 14],
-  Biceps: [8, 16], Triceps: [8, 16], Forearms: [4, 10], Abs: [6, 14],
-  "Lower back": [4, 10], Quads: [8, 16], Hamstrings: [8, 14],
-  Glutes: [6, 12], Calves: [8, 16],
-};
-
 const STEP_BY_EQ = { db: 2.5, bb: 2.5, smith: 2.5, cable: 5, machine: 5, bw: 2.5 };
 
 // id, n name, m main muscle, s helper muscles, eq kit, kind c compound i isolation,
@@ -178,35 +170,4 @@ const DEFAULT_PLAN = {
 // under the fifteen minute ceiling.
 // ---------------------------------------------------------------------------
 
-const WARMUP = [
-  { n: "Easy cardio", d: "Treadmill or bike, enough to break a light sweat. Not a workout.", s: 180 },
-  { n: "Dead hang", d: "Hang off the pull-up bar, shoulders relaxed. Resets the spine after a night in bed.", s: 30 },
-  { n: "Chin tucks", d: "Pull the chin straight back, hold two seconds. Ten of them. Undoes the phone posture.", s: 45 },
-  { n: "Wall slides", d: "Back to the wall, arms up and down slowly. Ten slow ones. Opens the shoulders.", s: 60 },
-  { n: "Cat cow", d: "On the floor, arch and round the spine slowly. Ten rounds. Wakes the lower back gently.", s: 60 },
-  { n: "Hip hinge drill", d: "Hands on hips, push them back and come up. Fifteen. Grooves the pattern before you load it.", s: 45 },
-  { n: "Light face pulls", d: "One easy set of fifteen on the cable. Switches the rear shoulders on.", s: 60 },
-];
-
-const COOLDOWN = [
-  { n: "Dead hang", d: "Thirty seconds again. Decompresses everything you just loaded.", s: 30 },
-  { n: "Chest stretch", d: "Forearm on the rack upright, turn away. Thirty seconds each side.", s: 60 },
-  { n: "Hip flexor stretch", d: "Half kneeling, squeeze the back glute, push the hips forward. Thirty each side.", s: 60 },
-  { n: "Hamstring stretch", d: "Heel on a bench, hinge forward with a flat back. Thirty each side.", s: 60 },
-  { n: "Child's pose", d: "Sit back on your heels, arms long. Breathe out slowly. Sixty seconds.", s: 60 },
-];
-
-// Poses for progress photos, and the tape sites worth tracking.
-const POSES = [["front", "Front"], ["back", "Back"], ["side", "Side"]];
-const MEASURE_SITES = [
-  ["shoulders", "Shoulders", "the widest point, arms relaxed at your sides"],
-  ["chest", "Chest", "across the nipple line, breathing out normally"],
-  ["waist", "Waist", "right over the belly button, do not suck in"],
-  ["arm", "Arm", "the biggest part of the upper arm, flexed"],
-  ["forearm", "Forearm", "the biggest part, hand open"],
-  ["thigh", "Thigh", "the biggest part, standing relaxed"],
-  ["calf", "Calf", "the biggest part, standing"],
-  ["neck", "Neck", "just under the Adam's apple"],
-];
-
-if (typeof module !== "undefined") module.exports = { MUSCLES, SET_BAND, STEP_BY_EQ, EXERCISES, EXMAP, DAY_NAMES, DAY_ORDER, DEFAULT_DAYMAP, DEFAULT_PLAN, WARMUP, COOLDOWN, POSES, MEASURE_SITES };
+if (typeof module !== "undefined") module.exports = { MUSCLES, STEP_BY_EQ, EXERCISES, EXMAP, DAY_NAMES, DAY_ORDER, DEFAULT_DAYMAP, DEFAULT_PLAN };

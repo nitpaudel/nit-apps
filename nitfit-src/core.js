@@ -20,7 +20,7 @@ const niceDate = d => { const t = new Date(d + "T12:00:00"); return t.getDate() 
 let IDB = null; const KV = {};
 function idbOpen() {
   return new Promise((res, rej) => {
-    const r = indexedDB.open(DEMO ? "nitfit-demo" : "nitfit", 1);
+    const r = indexedDB.open("nitfit", 1);
     r.onupgradeneeded = () => { const db = r.result; db.createObjectStore("events", { keyPath: "id" }); db.createObjectStore("kv"); db.createObjectStore("media"); };
     r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
   });
@@ -43,7 +43,7 @@ function storageFail(e) { storageBroken = (e && e.name === "QuotaExceededError")
 const DEFAULT_SETTINGS = { heightCm: 177, bfGuess: 14, sleepBadH: 7, vol: 0.6, mix: true, restOn: true, theme: "light", blockStart: null, easyOff: null, easyOn: null };
 let EV = []; const EVIDS = new Set(); let S = null;
 function freshState() {
-  return { sessions: {}, sets: {}, bySession: {}, byEx: {}, weights: {}, measures: [], photos: [], settings: clone(DEFAULT_SETTINGS), plan: clone(DEFAULT_PLAN), dayMap: DEFAULT_DAYMAP.slice(), exo: {}, sleepManual: {}, energy: {} };
+  return { sessions: {}, sets: {}, bySession: {}, byEx: {}, weights: {}, settings: clone(DEFAULT_SETTINGS), plan: clone(DEFAULT_PLAN), dayMap: DEFAULT_DAYMAP.slice(), exo: {}, sleepManual: {}, energy: {} };
 }
 const evSort = (a, b) => a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 function rebuild() {
@@ -55,7 +55,7 @@ function removeRef(id) {
   const st = S.sets[id];
   if (st) { delete S.sets[id]; const a = S.bySession[st.sessionId], b = S.byEx[st.exId]; if (a) a.splice(a.indexOf(id), 1); if (b) b.splice(b.indexOf(id), 1); return; }
   if (S.sessions[id]) { delete S.sessions[id]; return; }
-  for (const k of ["measures", "photos"]) { const i = S[k].findIndex(x => x.id === id); if (i >= 0) { S[k].splice(i, 1); return; } }
+  for (const k of [])  { const i = S[k].findIndex(x => x.id === id); if (i >= 0) { S[k].splice(i, 1); return; } }
   for (const d in S.weights) if (S.weights[d].id === id) { delete S.weights[d]; return; }
 }
 function applyEvent(e) {
@@ -69,8 +69,6 @@ function applyEvent(e) {
     case "set.rir": if (S.sets[p.ref]) S.sets[p.ref].rir = p.rir; break;
     case "entity.deleted": removeRef(p.ref); break;
     case "weight.logged": S.weights[e.d] = { id: e.id, d: e.d, kg: p.kg }; break;
-    case "measure.logged": S.measures.push({ id: e.id, d: e.d, site: p.site, cm: p.cm }); break;
-    case "photo.added": S.photos.push({ id: e.id, d: e.d, pose: p.pose, photoId: p.photoId }); break;
     case "settings.upserted": Object.assign(S.settings, p); break;
     case "plan.upserted": if (p.plan) S.plan = p.plan; if (p.dayMap) S.dayMap = p.dayMap; break;
     case "exercise.upserted": S.exo[p.exId] = Object.assign(S.exo[p.exId] || {}, p); break;
@@ -138,7 +136,7 @@ async function ghPut(path, text, sha, message) {
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const monthPath = m => "log/" + m.slice(0, 4) + "/" + m + ".jsonl";
 let syncing = false, syncAgain = false, syncTimer = null, syncPulled = 0;
-function syncSoon() { if (DEMO || !KV.token) return; clearTimeout(syncTimer); syncTimer = setTimeout(() => syncNow(), 4000); }
+function syncSoon() { if (!KV.token) return; clearTimeout(syncTimer); syncTimer = setTimeout(() => syncNow(), 4000); }
 async function syncMonth(m) {
   for (let attempt = 0; ; attempt++) {
     const f = await ghGet(monthPath(m)), remote = [], keep = [];
@@ -174,7 +172,7 @@ async function monthlyBackup() {
   await kvSet("backupMonth", m);
 }
 async function syncNow(full) {
-  if (DEMO || !KV.token) return false;
+  if (!KV.token) return false;
   if (syncing) { syncAgain = true; return false; }
   syncing = true; syncPulled = 0; if (typeof syncPaint === "function") syncPaint();
   let okAll = true;
@@ -193,7 +191,6 @@ async function syncNow(full) {
   return okAll;
 }
 async function connectKey(token) {
-  if (DEMO) throw new Error("This is the demo. It never saves anywhere.");
   token = (token || "").trim(); if (!token) throw new Error("Paste the key first.");
   const r = await fetch(GH + repoName(), { headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" }, cache: "no-store" });
   if (r.status === 401) throw new Error("That key did not work. Copy it again from GitHub.");
@@ -205,8 +202,7 @@ async function connectKey(token) {
   const ok = await syncNow(true);
   if (!ok) { const msg = KV.syncErr; if (/Contents|said no/.test(msg)) { await kvSet("token", ""); } throw new Error(msg); }
 }
-function syncStatus() {
-  if (DEMO) return { c: "amber", t: "Demo" };                      // {color, text}
+function syncStatus() {                      // {color, text}
   if (storageBroken) return { c: "red", t: storageBroken };
   if (!KV.token) return { c: "red", t: "Not backed up" };
   if (KV.syncErr) return { c: /Offline/.test(KV.syncErr) ? "amber" : "red", t: KV.syncErr };
