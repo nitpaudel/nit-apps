@@ -90,10 +90,12 @@ function warmupSets(ex, kg) {
 
 // best strength score per session for an exercise, and whether it has stalled
 function stalled(hist) {
-  if (hist.length < 4) return false;
+  // Small lifts sit still for a session or two between weight jumps. That is
+  // normal. Stuck means four sessions with nothing better than before them.
+  if (hist.length < 6) return false;
   const best = h => Math.max(...h.sets.map(s => e1rm(s.kg || 0, s.reps)));
-  const b = hist.map(best), before = Math.max(...b.slice(0, -3)), recent = Math.max(...b.slice(-3));
-  return recent <= before * 1.005;
+  const b = hist.map(best), before = Math.max(...b.slice(0, -4)), recent = Math.max(...b.slice(-4));
+  return recent <= before * 1.002;
 }
 
 // smooth weight trend: each day moves 10% toward the new weight. Missing days are filled in a straight line.

@@ -20,7 +20,7 @@ const niceDate = d => { const t = new Date(d + "T12:00:00"); return t.getDate() 
 let IDB = null; const KV = {};
 function idbOpen() {
   return new Promise((res, rej) => {
-    const r = indexedDB.open("nitfit", 1);
+    const r = indexedDB.open(DEMO ? "nitfit-demo" : "nitfit", 1);
     r.onupgradeneeded = () => { const db = r.result; db.createObjectStore("events", { keyPath: "id" }); db.createObjectStore("kv"); db.createObjectStore("media"); };
     r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
   });
@@ -40,7 +40,7 @@ let storageBroken = "";
 function storageFail(e) { storageBroken = (e && e.name === "QuotaExceededError") ? "Your phone is out of space. Free some space now." : "Could not save to the phone. Close NitFit and open it again."; if (typeof render === "function") render(); }
 
 // ----- events and state -----
-const DEFAULT_SETTINGS = { heightCm: 177, bfGuess: 14, sleepBadH: 7, vol: 0.6, mix: true, restOn: true, theme: "dark", blockStart: null, easyOff: null, easyOn: null };
+const DEFAULT_SETTINGS = { heightCm: 177, bfGuess: 14, sleepBadH: 7, vol: 0.6, mix: true, restOn: true, theme: "light", blockStart: null, easyOff: null, easyOn: null };
 let EV = []; const EVIDS = new Set(); let S = null;
 function freshState() {
   return { sessions: {}, sets: {}, bySession: {}, byEx: {}, weights: {}, measures: [], photos: [], settings: clone(DEFAULT_SETTINGS), plan: clone(DEFAULT_PLAN), dayMap: DEFAULT_DAYMAP.slice(), exo: {}, sleepManual: {}, energy: {} };
@@ -138,7 +138,7 @@ async function ghPut(path, text, sha, message) {
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const monthPath = m => "log/" + m.slice(0, 4) + "/" + m + ".jsonl";
 let syncing = false, syncAgain = false, syncTimer = null, syncPulled = 0;
-function syncSoon() { if (!KV.token) return; clearTimeout(syncTimer); syncTimer = setTimeout(() => syncNow(), 4000); }
+function syncSoon() { if (DEMO || !KV.token) return; clearTimeout(syncTimer); syncTimer = setTimeout(() => syncNow(), 4000); }
 async function syncMonth(m) {
   for (let attempt = 0; ; attempt++) {
     const f = await ghGet(monthPath(m)), remote = [], keep = [];
@@ -174,7 +174,7 @@ async function monthlyBackup() {
   await kvSet("backupMonth", m);
 }
 async function syncNow(full) {
-  if (!KV.token) return false;
+  if (DEMO || !KV.token) return false;
   if (syncing) { syncAgain = true; return false; }
   syncing = true; syncPulled = 0; if (typeof syncPaint === "function") syncPaint();
   let okAll = true;
@@ -193,6 +193,7 @@ async function syncNow(full) {
   return okAll;
 }
 async function connectKey(token) {
+  if (DEMO) throw new Error("This is the demo. It never saves anywhere.");
   token = (token || "").trim(); if (!token) throw new Error("Paste the key first.");
   const r = await fetch(GH + repoName(), { headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" }, cache: "no-store" });
   if (r.status === 401) throw new Error("That key did not work. Copy it again from GitHub.");
@@ -204,7 +205,8 @@ async function connectKey(token) {
   const ok = await syncNow(true);
   if (!ok) { const msg = KV.syncErr; if (/Contents|said no/.test(msg)) { await kvSet("token", ""); } throw new Error(msg); }
 }
-function syncStatus() {                      // {color, text}
+function syncStatus() {
+  if (DEMO) return { c: "amber", t: "Demo" };                      // {color, text}
   if (storageBroken) return { c: "red", t: storageBroken };
   if (!KV.token) return { c: "red", t: "Not backed up" };
   if (KV.syncErr) return { c: /Offline/.test(KV.syncErr) ? "amber" : "red", t: KV.syncErr };

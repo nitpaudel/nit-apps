@@ -51,8 +51,8 @@ ACT.closeSheet = closeSheet;
 // ----- theme -----
 
 function applyTheme() {
-  const want = (S && S.settings.theme) || "dark";
-  const dark = want === "dark" || (want === "system" && !matchMedia("(prefers-color-scheme: light)").matches);
+  const want = (S && S.settings.theme) || "light";
+  const dark = want === "dark" || (want === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
   document.documentElement.dataset.theme = dark ? "dark" : "light";
   const meta = $('meta[name="theme-color"]'); if (meta) meta.content = dark ? "#000000" : "#F2F2F5";
 }
@@ -140,7 +140,7 @@ function coachLines() {
 
   if (!S.weights[d]) out.push("Weigh in. Every morning, before food, before clothes.");
   if (anySession && yKey !== "reset" && !trainedY) out.push("You skipped yesterday. It is gone, you do not get it back. Do not skip today.");
-  if (trainedT) out.push("Logged. Now go eat and get your sleep. That is the other half.");
+  if (trainedT) out.push("Workout logged. Now go and eat, then sleep. That is the other half of it.");
   else if (S.dayMap[dow(d)] !== "reset") {
     const h = new Date().getHours();
     if (h >= 10 && h < 20) out.push("It is past your slot. The gym is open until eight. Late still counts, skipping does not.");
@@ -167,11 +167,6 @@ function vToday() {
     + '</div><h1>' + (rest ? "Reset day" : esc(DAY_NAMES[dayKey])) + "</h1></div>" + syncChip() + "</div>";
   h += bannerHtml();
 
-  // the body
-  const mus = dayMuscles(dayKey), heat = figHeat(mus.prim, mus.sec);
-  if (UI.side === null) UI.side = bestSide(mus.prim);
-  h += figureBlock(heat, wi, rest);
-
   const cl = coachLines();
   if (cl.length) h += '<div class="coach">' + cl.map(x => "<p>" + esc(x) + "</p>").join("") + "</div>";
 
@@ -188,7 +183,7 @@ function vToday() {
         + '<div><div class="eyebrow">Done</div><h3>' + esc(DAY_NAMES[s.dayKey] || "Workout") + '</h3></div>'
         + '<div class="mut num" style="font-weight:700">' + n + " sets, " + min + " min</div></div></button>";
     });
-    if (!doneT.some(s => s.dayKey === dayKey)) h += planCard(dayKey, ctx);
+    if (!doneT.some(s => s.dayKey === dayKey)) h += planCard(dayKey, ctx, wi, rest);
   }
 
   h += '<h2>Before and after</h2><div class="card flush">'
@@ -217,63 +212,23 @@ function rowBtn(a, t, s, extra) {
     + '</div><div class="s">' + esc(s) + '</div></div><span class="chev">' + ICON.chev + "</span></button>";
 }
 
-// The figure, its flip controls and the label underneath.
-function figureBlock(heat, wi, rest) {
-  const side = UI.side || "front";
-  let h = '<div class="card" style="padding:14px 16px 26px">';
-  h += '<div class="figwrap" id="figwrap">';
-  h += '<button class="figside l" data-a="figFlip">' + ICON.left + "</button>";
-  h += '<div class="flipper">' + figSvg(side, heat, { tapped: UI.tapped }) + "</div>";
-  h += '<button class="figside r" data-a="figFlip">' + ICON.right + "</button>";
-  h += '<div class="figlabel">' + (side === "front" ? "Front" : "Back") + "</div>";
-  h += "</div>";
-  const lit = Object.keys(heat).filter(k => heat[k] === 2).map(k => FIG_NAME[k]);
-  const uniq = lit.filter((x, i) => lit.indexOf(x) === i);
-  h += '<p class="tiny" style="text-align:center;margin-top:16px">'
-    + (rest ? "No lifting today. Core, posture and neck, then go home."
-       : uniq.length ? "Today you hit <b style=\"color:var(--t0)\">" + esc(uniq.join(", ")) + "</b>. Tap a muscle to see its work."
-       : "Nothing planned. Pick a day below.")
-    + "</p>";
-  h += '<div style="text-align:center;margin-top:10px">' + (wi.easy
-    ? '<button class="tag hot" data-a="easyToggle">Easy week</button>'
-    : '<span class="tag">Week ' + wi.week + " of 6</span>") + "</div>";
-  return h + "</div>";
-}
-
-ACT.figFlip = () => { UI.side = UI.side === "front" ? "back" : "front"; UI.tapped = null; haptic(); render(); };
-
-ACT.figTap = el => {
-  const key = el.dataset.m, dayKey = S.dayMap[dow(today())];
-  const names = FIG_TO_MUSCLE[key] || [];
-  const items = (S.plan[dayKey] || []).filter(it => {
-    const ex = getEx(it.ex); if (!ex) return false;
-    return names.indexOf(ex.m) >= 0 || (ex.s || []).some(m => names.indexOf(m) >= 0);
-  });
-  haptic();
-  const ctx = { flags: readinessFlags(today()), deload: weekInfo(today()).easy, gap: gapDays(today()) };
-  let h = "<h3>" + esc(FIG_NAME[key] || "Muscle") + "</h3>";
-  if (!items.length) {
-    h += "<p>Nothing today works this. It gets its turn on another day.</p>";
-  } else {
-    h += "<p>" + items.length + (items.length === 1 ? " exercise" : " exercises") + " today.</p>";
-    h += '<div class="card flush">' + items.map(it => {
-      const ex = getEx(it.ex), t = coachTarget(ex, histFor(it.ex), Object.assign({ sets: it.sets }, ctx));
-      const main = ex.m === (names[0] || "") || names.indexOf(ex.m) >= 0;
-      return '<div class="row"><div class="grow"><div class="t">' + esc(ex.n) + '</div><div class="s num">'
-        + esc(tgtTxt(t, ex).replace(/, find your.*/, "")) + (main ? "" : " · helps out") + "</div></div></div>";
-    }).join("") + "</div>";
-  }
-  openSheet(h);
-};
-
-function planCard(dayKey, ctx) {
+// What today is, what it works, and the button that starts it.
+function planCard(dayKey, ctx, wi, rest) {
   const items = S.plan[dayKey] || [];
-  let h = '<div class="card">';
-  if (dayKey === "reset") h += '<p class="sub" style="margin:0 0 14px">No lifting. This is the ten minutes that fixes the core, back and neck you have never trained.</p>';
+  const mus = dayMuscles(dayKey);
+  const uniq = mus.prim.filter((x, i) => mus.prim.indexOf(x) === i);
+  let h = '<div class="card"><div class="top" style="margin:0 0 16px"><div style="min-width:0">'
+    + '<div class="eyebrow">' + (rest ? "Today" : "Muscles today") + "</div>"
+    + '<div style="font-size:17px;font-weight:700;letter-spacing:-.015em">'
+    + esc(rest ? "Core, posture and neck" : (uniq.join(", ") || "Nothing planned")) + "</div></div>"
+    + (wi && wi.easy ? '<button class="tag hot" data-a="easyToggle">Easy week</button>'
+       : '<span class="tag">Week ' + (wi ? wi.week : 1) + " of 6</span>") + "</div>";
+  if (rest) h += '<p class="sub" style="margin:0 0 14px">No lifting. This is the ten minutes that fixes the core, back and neck you have never trained.</p>';
   h += items.map(it => {
     const ex = getEx(it.ex); if (!ex) return "";
     const t = coachTarget(ex, histFor(it.ex), Object.assign({ sets: it.sets }, ctx));
-    return '<div class="pli"><div class="n">' + esc(ex.n) + '</div><div class="v num">' + esc(tgtTxt(t, ex).replace(/, find your.*/, "")) + "</div></div>";
+    return '<div class="pli"><div class="n">' + esc(ex.n) + '</div><div class="v num">'
+      + esc(tgtTxt(t, ex).replace(/, find your.*/, "")) + "</div></div>";
   }).join("");
   h += '<div style="height:18px"></div><button class="btn" data-a="start" data-day="' + dayKey + '">Start ' + esc(DAY_NAMES[dayKey]) + "</button>";
   h += '<div style="height:8px"></div><button class="btn ghost sm" data-a="pickDay">Train a different day</button>';
@@ -290,6 +245,7 @@ function syncPaint() {
   $$("[data-syncdot]").forEach(e => e.className = "dot " + s.c);
 }
 function bannerHtml() {
+  if (DEMO) return '<div class="banner"><span>Example data. Nothing here is real and nothing is saved. Your own NitFit is a separate app.</span></div>';
   if (storageBroken) return '<div class="banner"><span>' + esc(storageBroken) + "</span></div>";
   if (!KV.token) return '<div class="banner"><span>Not backed up. If this phone dies, every workout dies with it.</span><button data-a="keySetup">Fix</button></div>';
   if (KV.syncErr && !/Offline/.test(KV.syncErr)) return '<div class="banner"><span>' + esc(KV.syncErr) + '</span><button data-a="syncNow">Retry</button></div>';
@@ -675,18 +631,3 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-// swipe the figure to turn it round
-(function () {
-  let x0 = null, y0 = null;
-  document.addEventListener("touchstart", e => {
-    const w = e.target.closest && e.target.closest("#figwrap");
-    if (!w) { x0 = null; return; }
-    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
-  }, { passive: true });
-  document.addEventListener("touchend", e => {
-    if (x0 === null) return;
-    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
-    x0 = null;
-    if (Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy) * 1.6) ACT.figFlip();
-  }, { passive: true });
-})();

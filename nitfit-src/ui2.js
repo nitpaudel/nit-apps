@@ -100,20 +100,7 @@ ACT.savePastWeight = () => {
 // Where the week's work actually went, shown on the body and in numbers.
 function progMuscles() {
   const d = today(), cnt = weekVolume(d);
-  const heat = {};
-  MUSCLES.forEach(m => {
-    const band = SET_BAND[m] || [8, 16], v = cnt[m] || 0;
-    const lvl = v >= band[0] ? 2 : v > 0 ? 1 : 0;
-    if (lvl) (MUSCLE_TO_FIG[m] || []).forEach(k => { if ((heat[k] || 0) < lvl) heat[k] = lvl; });
-  });
-  const side = UI.side || "front";
-  let h = '<div class="card" style="padding:10px 16px 20px"><div class="figwrap" id="figwrap">'
-    + '<button class="figside l" data-a="figFlip">' + ICON.left + "</button>"
-    + '<div class="flipper">' + figSvg(side, heat, { flat: true }) + "</div>"
-    + '<button class="figside r" data-a="figFlip">' + ICON.right + "</button>"
-    + '<div class="figlabel">' + (side === "front" ? "Front" : "Back") + "</div></div>"
-    + '<p class="tiny" style="text-align:center;margin-top:16px">Red means that muscle got enough work this week. Dark red means some, but not enough. Grey means you ignored it.</p></div>';
-
+  let h = "";
   const under = MUSCLES.filter(m => (cnt[m] || 0) < (SET_BAND[m] || [8])[0]);
   if (Object.keys(cnt).length && under.length) {
     h += '<div class="coach"><p>Short this week on ' + esc(under.slice(0, 3).join(", ")) + ".</p>"

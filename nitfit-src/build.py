@@ -1,6 +1,10 @@
-import sys, os, re, base64
+import sys, os, re, base64, json
+
+# Usage:  build.py <src> <out>            builds the real app
+#         build.py <src> <out> --demo     builds the demo, filled with invented data
 
 src, out = sys.argv[1], sys.argv[2]
+DEMO = "--demo" in sys.argv[3:]
 rd = lambda f: open(os.path.join(src, f), encoding="utf-8").read()
 
 # --- fonts: baked straight into the page so there is no font flash and it works offline ---
@@ -16,11 +20,20 @@ def font_css():
         )
     return "\n".join(css)
 
-js = "\n".join(rd(f) for f in ["data.js", "body.js", "coach.js", "core.js", "ui1.js", "ui2.js", "ui3.js"])
+files = ["data.js", "coach.js", "core.js", "ui1.js", "ui2.js", "ui3.js"]
+if DEMO:
+    files.insert(4, "demo.js")          # after ui1, where ACT exists for it to hang off
+
+js = "const DEMO = %s;\n" % ("true" if DEMO else "false")
+js += "\n".join(rd(f) for f in files)
 js = re.sub(r'^if \(typeof module !== "undefined"\).*$', "", js, flags=re.M)
 
 css = rd("style.css").replace("/*FONTS*/", font_css())
 html = rd("index.tpl.html").replace("/*CSS*/", css).replace("/*JS*/", js)
+
+if DEMO:
+    html = html.replace("<title>NitFit</title>", "<title>NitFit Demo</title>")
+    html = html.replace('content="NitFit"', 'content="NitFit Demo"')
 
 # Guards. Em dashes are out by Nit's rule, and no other app's name ships inside his app.
 bad = [n for n in ["—", "Hevy", "MacroFactor", "Strong app", "Fitbod", "Caliber", "Cal AI"] if n in html]
@@ -29,6 +42,17 @@ if bad:
 
 os.makedirs(os.path.join(out, "icons"), exist_ok=True)
 open(os.path.join(out, "index.html"), "w", encoding="utf-8").write(html)
-for f in ["sw.js", "manifest.webmanifest"]:
-    open(os.path.join(out, f), "w", encoding="utf-8").write(rd(f))
-print("built %s  (%.0f KB)" % (os.path.join(out, "index.html"), len(html.encode()) / 1024))
+
+# The demo needs its own cache name and its own manifest id, so the phone
+# treats it as a separate app and the two never share anything.
+sw = rd("sw.js")
+man = json.loads(rd("manifest.webmanifest"))
+if DEMO:
+    sw = sw.replace('const CACHE = "nitfit-', 'const CACHE = "nitfitdemo-')
+    man["name"] = "NitFit Demo"
+    man["short_name"] = "NitFit Demo"
+    man["id"] = "/nit-apps/nitfit-demo/"
+open(os.path.join(out, "sw.js"), "w", encoding="utf-8").write(sw)
+open(os.path.join(out, "manifest.webmanifest"), "w", encoding="utf-8").write(json.dumps(man, indent=2) + "\n")
+
+print("built %s%s  (%.0f KB)" % (os.path.join(out, "index.html"), "  [demo]" if DEMO else "", len(html.encode()) / 1024))

@@ -222,6 +222,12 @@ function vMore() {
       '<button class="' + ((st.theme || "dark") === t[0] ? "on" : "") + '" data-a="theme" data-v="' + t[0] + '">' + t[1] + "</button>").join("")
     + "</div></div>";
 
+  if (DEMO) {
+    h += '<h2>This is the demo</h2><div class="card">'
+      + '<p class="sub" style="margin:0 0 14px">Everything in here is invented so you can see every screen full. '
+      + 'It is kept in its own box on the phone and never goes to GitHub. Your real NitFit is a separate app with its own icon.</p>'
+      + '<button class="btn ghost" data-a="demoReset">Rebuild the example data</button></div>';
+  } else
   h += '<h2>Your data</h2><div class="card">'
     + '<div class="top" style="margin-bottom:14px"><div style="font-size:16px;font-weight:700;display:flex;align-items:center;gap:9px">'
     + '<span class="dot ' + s.c + '" data-syncdot></span><span data-synctxt>' + esc(s.t) + "</span></div>"
@@ -384,7 +390,7 @@ function render() {
   hydratePhotos(app);
   $$("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB));
 }
-ACT.tab = el => { if (TAB !== el.dataset.tab) { TAB = el.dataset.tab; UI.tapped = null; haptic(); render(); window.scrollTo(0, 0); } };
+ACT.tab = el => { if (TAB !== el.dataset.tab) { TAB = el.dataset.tab; haptic(); render(); window.scrollTo(0, 0); } };
 
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-a]");
@@ -420,14 +426,19 @@ async function boot() {
     const r = JSON.parse(localStorage.getItem("nitfit:rest") || "null");
     if (r && r.end > Date.now() - 15000) { REST = r; REST.fired = REST.end < Date.now(); restIv = setInterval(paintRest, 250); }
   } catch (_) {}
+  if (DEMO && KV.demoSeeded !== 2) {
+    $("#app").innerHTML = '<div class="center"><h1>Building the example</h1><p class="sub">Two months of invented training, so every screen has something in it.</p></div>';
+    try { await seedDemo(); } catch (e) { toast("Could not build the example data."); }
+    applyTheme();
+  }
   render();
-  if (KV.token) syncNow();
-  else if (!KV.skipSetup) ACT.keySetup();
-  setInterval(() => { if (!document.hidden && KV.token) syncNow(); syncPaint(); }, 5 * 60e3);
+  if (!DEMO && KV.token) syncNow();
+  else if (!DEMO && !KV.skipSetup) ACT.keySetup();
+  if (!DEMO) setInterval(() => { if (!document.hidden && KV.token) syncNow(); syncPaint(); }, 5 * 60e3);
   setInterval(syncPaint, 30e3);
-  addEventListener("online", () => syncNow());
+  if (!DEMO) addEventListener("online", () => syncNow());
   addEventListener("resize", fitCmp);
   let lastDay = today();
-  setInterval(() => { if (today() !== lastDay) { lastDay = today(); UI.side = null; render(); } }, 60e3);
+  setInterval(() => { if (today() !== lastDay) { lastDay = today(); render(); } }, 60e3);
 }
 boot();

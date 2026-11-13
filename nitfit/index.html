@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="NitFit">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F2F2F5">
 <meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
@@ -243,6 +243,7 @@ button.row:active { background: var(--s2c); }
 /* tag */
 .tag {
   display: inline-flex; align-items: center; padding: 3px 9px;
+  white-space: nowrap; flex: none;
   border-radius: var(--r-full); background: var(--s1c);
   font-size: 11.5px; font-weight: 700; letter-spacing: .03em;
   text-transform: uppercase; color: var(--t1);
@@ -261,54 +262,6 @@ button.row:active { background: var(--s2c); }
 .inp:focus { border-color: var(--line-strong); }
 .inp::placeholder { color: var(--t3); font-weight: 500; }
 .field { display: flex; gap: var(--s2); align-items: center; }
-
-/* ===========================  the body figure  =========================== */
-
-.figwrap {
-  position: relative;
-  display: flex; align-items: center; justify-content: center;
-  padding: var(--s2) 0;
-  touch-action: pan-y;
-}
-.fig {
-  width: 100%; max-width: 186px; height: auto;
-  transition: opacity var(--mid) var(--ease);
-}
-.fig .skin { fill: var(--body-fill); }
-.fig .edge { fill: none; stroke: var(--body-line); stroke-width: 1.1; }
-.fig .mg {                              /* a muscle group */
-  fill: var(--m0);
-  transition: fill var(--slow) var(--ease), opacity var(--slow) var(--ease);
-}
-.fig .mg.lvl1 { fill: var(--m1); }
-.fig .mg.lvl2 { fill: var(--m2); }
-.fig .mg.tapped { opacity: .62; }
-
-/* the soft red bloom behind lit muscles */
-.fig .bloom { opacity: 0; transition: opacity var(--slow) var(--ease); }
-.fig .bloom.on { opacity: 1; }
-
-/* front / back flip */
-.flipper { position: relative; width: 100%; max-width: 186px; }
-.flipper .face { transition: opacity var(--mid) var(--ease), transform var(--slow) var(--spring); }
-.flipper .face.hide { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
-
-.figside {
-  position: absolute; top: 50%; transform: translateY(-50%);
-  width: 40px; height: 40px; border-radius: var(--r-full);
-  display: flex; align-items: center; justify-content: center;
-  background: var(--s1c); border: .5px solid var(--line); color: var(--t1);
-  transition: transform var(--fast) var(--ease);
-}
-.figside:active { transform: translateY(-50%) scale(.9); }
-.figside.l { left: 0; } .figside.r { right: 0; }
-.figside svg { width: 15px; height: 15px; }
-
-.figlabel {
-  position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
-  font-size: 11.5px; font-weight: 700; letter-spacing: .085em;
-  text-transform: uppercase; color: var(--t2);
-}
 
 /* ===========================  muscle volume bars  =========================== */
 
@@ -634,6 +587,7 @@ button.row:active { background: var(--s2c); }
 <input type="file" id="importIn" accept="application/json,.json" hidden>
 
 <script>
+const DEMO = false;
 // ---------------------------------------------------------------------------
 // Everything NitFit knows before Nit touches it.
 //
@@ -847,160 +801,6 @@ const MEASURE_SITES = [
 
 
 
-// ---------------------------------------------------------------------------
-// The body figure.
-//
-// Drawn by hand as vector shapes so it stays razor sharp at any size, loads
-// with the page, and tints instantly. Only the left half is drawn; the right
-// half is the same shapes flipped across the middle. Perfect symmetry, half
-// the drawing. Nothing is outlined, so the mirror line never shows.
-//
-// Box is 200 wide, 440 tall. The middle line is x = 100.
-// Built on a wide-shoulder, narrow-waist frame, because that is the shape
-// being trained towards.
-// ---------------------------------------------------------------------------
-
-// ---- the plain body shape, no muscles ----
-
-const SIL_BODY = "M100,40 L90,41 L89,56 C79,60 70,65 63,71 C54,77 45,83 38,91 "
-  + "C36,99 36,106 38,114 C45,119 50,125 53,133 C58,145 63,155 67,166 "
-  + "C68,171 69,175 69,181 C66,188 64,195 63,203 C63,211 64,216 66,222 "
-  + "C68,230 66,241 65,253 C64,268 65,282 68,296 C70,302 72,307 74,312 "
-  + "C72,318 70,326 70,336 C71,350 73,364 76,378 C78,386 79,392 80,398 "
-  + "C78,404 75,410 73,417 C72,421 74,425 78,425 L94,425 L95,404 "
-  + "C96,390 97,374 97,358 C98,342 98,328 97,314 C97,298 97,282 97,266 "
-  + "C98,248 99,230 99,214 L100,210 Z";
-
-const SIL_ARM = "M38,90 C34,100 32,110 31,121 C30,133 29,143 28,153 "
-  + "C28,164 27,175 27,186 C27,197 27,207 28,217 C29,227 29,236 30,244 "
-  + "C31,252 34,258 39,259 C43,259 45,255 44,248 C44,240 43,232 43,224 "
-  + "C44,214 45,205 47,196 C49,186 51,177 53,167 C55,156 56,145 57,134 "
-  + "C58,123 58,112 57,101 C56,96 55,93 54,91 Z";
-
-// ---- muscle groups ----
-
-const MUSCLES_FRONT = {
-  traps: { n: "Traps", d: [
-    "M95,62 C89,63 82,65 76,69 C67,74 58,79 51,85 C58,89 69,91 80,90 C86,89 92,87 95,84 Z"] },
-  delts: { n: "Shoulders", d: [
-    "M43,89 C38,96 36,104 37,114 C42,118 48,119 52,116 C54,106 51,96 46,90 C45,88 44,88 43,89 Z"] },
-  chest: { n: "Chest", d: [
-    "M95,89 C87,88 76,91 67,97 C63,102 62,109 64,116 C71,125 82,129 91,128 C93,127 95,125 95,120 L95,89 Z"] },
-  biceps: { n: "Biceps", d: [
-    "M54,113 C49,122 45,133 42,144 C40,153 39,161 40,169 C44,171 48,170 51,166 C53,154 55,141 56,129 C57,121 57,117 54,113 Z"] },
-  forearm: { n: "Forearms", d: [
-    "M42,182 C39,193 37,204 35,215 C33,225 32,234 33,242 C36,245 40,244 43,240 C44,230 45,219 47,208 C48,197 47,189 42,182 Z"] },
-  abs: { n: "Abs", d: [
-    "M96,135 L89,136 C86,138 85,142 86,146 C86,150 87,152 89,153 L96,153 Z",
-    "M96,157 L89,158 C86,160 85,164 86,168 C86,172 87,174 89,175 L96,175 Z",
-    "M96,179 L90,180 C87,182 86,186 87,190 C87,194 88,196 90,197 L96,197 Z",
-    "M96,201 L91,202 C89,205 88,209 90,213 C92,216 94,217 96,216 Z"] },
-  obliques: { n: "Obliques", d: [
-    "M84,150 C80,153 77,158 76,165 C75,173 75,181 77,188 C79,194 81,198 84,200 Z"] },
-  quads: { n: "Quads", d: [
-    "M96,224 C87,223 77,227 70,234 C66,246 64,261 65,275 C66,288 69,297 74,304 C82,305 89,301 94,295 C96,272 97,248 96,224 Z"] },
-  calves: { n: "Calves", d: [
-    "M94,318 C88,317 82,320 78,326 C75,338 74,351 76,363 C78,373 80,379 84,383 C88,382 91,378 92,372 C93,354 94,336 94,318 Z"] },
-};
-
-const MUSCLES_BACK = {
-  traps: { n: "Traps", d: [
-    "M97,62 C90,63 83,65 77,69 C68,74 59,79 52,85 C58,92 67,97 76,101 C81,104 85,108 88,112 C91,115 94,116 97,115 Z"] },
-  delts: { n: "Shoulders", d: [
-    "M43,89 C38,96 36,104 37,114 C42,118 48,119 52,116 C54,106 51,96 46,90 C45,88 44,88 43,89 Z"] },
-  lats: { n: "Lats", d: [
-    "M96,120 C88,121 78,124 70,129 C66,133 64,140 65,148 C70,158 77,168 84,176 C89,181 93,184 96,185 Z"] },
-  triceps: { n: "Triceps", d: [
-    "M53,108 C48,118 43,129 39,141 C36,151 34,159 33,168 C37,171 42,170 46,166 C49,153 52,139 55,127 C57,118 56,112 53,108 Z"] },
-  forearm: { n: "Forearms", d: [
-    "M41,182 C38,193 36,204 34,215 C32,225 31,234 32,242 C35,245 39,244 42,240 C43,230 44,219 46,208 C47,197 46,189 41,182 Z"] },
-  lowback: { n: "Lower back", d: [
-    "M96,170 C92,170 88,172 85,177 C83,185 83,193 85,200 C88,205 92,208 96,208 Z"] },
-  glutes: { n: "Glutes", d: [
-    "M96,213 C88,212 79,215 72,222 C67,229 66,239 68,248 C73,257 81,262 90,262 C94,261 96,258 96,252 C97,239 97,226 96,213 Z"] },
-  hams: { n: "Hamstrings", d: [
-    "M95,268 C87,267 78,270 71,276 C67,285 65,295 66,304 C68,309 71,312 75,313 C81,312 88,309 93,304 C95,292 95,280 95,268 Z"] },
-  calves: { n: "Calves", d: [
-    "M94,320 C87,319 80,322 75,328 C71,339 70,353 72,366 C74,376 78,382 82,386 C86,385 89,381 91,375 C93,357 94,339 94,320 Z"] },
-};
-
-const FIG = { front: { m: MUSCLES_FRONT }, back: { m: MUSCLES_BACK } };
-
-// The exercise list speaks in training words. The drawing speaks in shapes.
-const MUSCLE_TO_FIG = {
-  Chest: ["chest"],
-  Shoulders: ["delts"],
-  Back: ["lats", "traps"],
-  Lats: ["lats"],
-  Traps: ["traps"],
-  Biceps: ["biceps"],
-  Triceps: ["triceps"],
-  Forearms: ["forearm"],
-  Abs: ["abs", "obliques"],
-  Obliques: ["obliques"],
-  "Lower back": ["lowback"],
-  Quads: ["quads"],
-  Hamstrings: ["hams"],
-  Glutes: ["glutes"],
-  Calves: ["calves"],
-};
-
-// Reverse lookup, so tapping a shape says which training muscles it covers.
-const FIG_TO_MUSCLE = {};
-for (const m in MUSCLE_TO_FIG) MUSCLE_TO_FIG[m].forEach(k => (FIG_TO_MUSCLE[k] = FIG_TO_MUSCLE[k] || []).push(m));
-
-const FIG_NAME = {};
-for (const k in MUSCLES_FRONT) FIG_NAME[k] = MUSCLES_FRONT[k].n;
-for (const k in MUSCLES_BACK) FIG_NAME[k] = MUSCLES_BACK[k].n;
-
-// Turn training muscle names into heat on the drawing.
-// 2 is today's target, 1 only helps out.
-function figHeat(primary, secondary) {
-  const heat = {};
-  (secondary || []).forEach(m => (MUSCLE_TO_FIG[m] || []).forEach(k => { if (!heat[k]) heat[k] = 1; }));
-  (primary || []).forEach(m => (MUSCLE_TO_FIG[m] || []).forEach(k => (heat[k] = 2)));
-  return heat;
-}
-
-// Which way to open the figure. Counts one vote per exercise, and a muscle that
-// only lives on one side votes for that side. A pull day should open on the back.
-function bestSide(primaryList) {
-  let f = 0, b = 0;
-  (primaryList || []).forEach(m => {
-    const keys = MUSCLE_TO_FIG[m] || [];
-    const onF = keys.some(k => MUSCLES_FRONT[k]), onB = keys.some(k => MUSCLES_BACK[k]);
-    if (onF && !onB) f += 2;
-    else if (onB && !onF) b += 2;
-    else if (onF) { f += 1; b += 1; }
-  });
-  return b > f ? "back" : "front";
-}
-
-// ---- draw it ----
-function figSvg(side, heat, opts) {
-  opts = opts || {}; heat = heat || {};
-  const view = FIG[side] || FIG.front;
-  const half = inner => "<g>" + inner + '</g><g transform="translate(200,0) scale(-1,1)">' + inner + "</g>";
-
-  let groups = "";
-  for (const key in view.m) {
-    const lvl = heat[key] || 0;
-    const cls = "mg" + (lvl === 2 ? " lvl2" : lvl === 1 ? " lvl1" : "") + (opts.tapped === key ? " tapped" : "");
-    const shapes = view.m[key].d.map(d => '<path d="' + d + '"/>').join("");
-    groups += '<g class="' + cls + '"' + (opts.flat ? "" : ' data-a="figTap" data-m="' + key + '"')
-      + ' data-mg="' + key + '">' + half(shapes) + "</g>";
-  }
-
-  return '<svg class="fig" viewBox="0 0 200 440" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-    + '<ellipse class="skin" cx="100" cy="25" rx="15" ry="19"/>'
-    + half('<path class="skin" d="' + SIL_BODY + '"/>')
-    + half('<path class="skin" d="' + SIL_ARM + '"/>')
-    + groups
-    + "</svg>";
-}
-
-
-
 // ---------- NitFit coach: pure rules, no screen code ----------
 const kgTxt = k => (Math.round(k * 100) / 100).toString();
 function snap(kg, step, dir) {
@@ -1093,10 +893,12 @@ function warmupSets(ex, kg) {
 
 // best strength score per session for an exercise, and whether it has stalled
 function stalled(hist) {
-  if (hist.length < 4) return false;
+  // Small lifts sit still for a session or two between weight jumps. That is
+  // normal. Stuck means four sessions with nothing better than before them.
+  if (hist.length < 6) return false;
   const best = h => Math.max(...h.sets.map(s => e1rm(s.kg || 0, s.reps)));
-  const b = hist.map(best), before = Math.max(...b.slice(0, -3)), recent = Math.max(...b.slice(-3));
-  return recent <= before * 1.005;
+  const b = hist.map(best), before = Math.max(...b.slice(0, -4)), recent = Math.max(...b.slice(-4));
+  return recent <= before * 1.002;
 }
 
 // smooth weight trend: each day moves 10% toward the new weight. Missing days are filled in a straight line.
@@ -1177,7 +979,7 @@ const niceDate = d => { const t = new Date(d + "T12:00:00"); return t.getDate() 
 let IDB = null; const KV = {};
 function idbOpen() {
   return new Promise((res, rej) => {
-    const r = indexedDB.open("nitfit", 1);
+    const r = indexedDB.open(DEMO ? "nitfit-demo" : "nitfit", 1);
     r.onupgradeneeded = () => { const db = r.result; db.createObjectStore("events", { keyPath: "id" }); db.createObjectStore("kv"); db.createObjectStore("media"); };
     r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
   });
@@ -1197,7 +999,7 @@ let storageBroken = "";
 function storageFail(e) { storageBroken = (e && e.name === "QuotaExceededError") ? "Your phone is out of space. Free some space now." : "Could not save to the phone. Close NitFit and open it again."; if (typeof render === "function") render(); }
 
 // ----- events and state -----
-const DEFAULT_SETTINGS = { heightCm: 177, bfGuess: 14, sleepBadH: 7, vol: 0.6, mix: true, restOn: true, theme: "dark", blockStart: null, easyOff: null, easyOn: null };
+const DEFAULT_SETTINGS = { heightCm: 177, bfGuess: 14, sleepBadH: 7, vol: 0.6, mix: true, restOn: true, theme: "light", blockStart: null, easyOff: null, easyOn: null };
 let EV = []; const EVIDS = new Set(); let S = null;
 function freshState() {
   return { sessions: {}, sets: {}, bySession: {}, byEx: {}, weights: {}, measures: [], photos: [], settings: clone(DEFAULT_SETTINGS), plan: clone(DEFAULT_PLAN), dayMap: DEFAULT_DAYMAP.slice(), exo: {}, sleepManual: {}, energy: {} };
@@ -1295,7 +1097,7 @@ async function ghPut(path, text, sha, message) {
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const monthPath = m => "log/" + m.slice(0, 4) + "/" + m + ".jsonl";
 let syncing = false, syncAgain = false, syncTimer = null, syncPulled = 0;
-function syncSoon() { if (!KV.token) return; clearTimeout(syncTimer); syncTimer = setTimeout(() => syncNow(), 4000); }
+function syncSoon() { if (DEMO || !KV.token) return; clearTimeout(syncTimer); syncTimer = setTimeout(() => syncNow(), 4000); }
 async function syncMonth(m) {
   for (let attempt = 0; ; attempt++) {
     const f = await ghGet(monthPath(m)), remote = [], keep = [];
@@ -1331,7 +1133,7 @@ async function monthlyBackup() {
   await kvSet("backupMonth", m);
 }
 async function syncNow(full) {
-  if (!KV.token) return false;
+  if (DEMO || !KV.token) return false;
   if (syncing) { syncAgain = true; return false; }
   syncing = true; syncPulled = 0; if (typeof syncPaint === "function") syncPaint();
   let okAll = true;
@@ -1350,6 +1152,7 @@ async function syncNow(full) {
   return okAll;
 }
 async function connectKey(token) {
+  if (DEMO) throw new Error("This is the demo. It never saves anywhere.");
   token = (token || "").trim(); if (!token) throw new Error("Paste the key first.");
   const r = await fetch(GH + repoName(), { headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" }, cache: "no-store" });
   if (r.status === 401) throw new Error("That key did not work. Copy it again from GitHub.");
@@ -1361,7 +1164,8 @@ async function connectKey(token) {
   const ok = await syncNow(true);
   if (!ok) { const msg = KV.syncErr; if (/Contents|said no/.test(msg)) { await kvSet("token", ""); } throw new Error(msg); }
 }
-function syncStatus() {                      // {color, text}
+function syncStatus() {
+  if (DEMO) return { c: "amber", t: "Demo" };                      // {color, text}
   if (storageBroken) return { c: "red", t: storageBroken };
   if (!KV.token) return { c: "red", t: "Not backed up" };
   if (KV.syncErr) return { c: /Offline/.test(KV.syncErr) ? "amber" : "red", t: KV.syncErr };
@@ -1440,8 +1244,8 @@ ACT.closeSheet = closeSheet;
 // ----- theme -----
 
 function applyTheme() {
-  const want = (S && S.settings.theme) || "dark";
-  const dark = want === "dark" || (want === "system" && !matchMedia("(prefers-color-scheme: light)").matches);
+  const want = (S && S.settings.theme) || "light";
+  const dark = want === "dark" || (want === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
   document.documentElement.dataset.theme = dark ? "dark" : "light";
   const meta = $('meta[name="theme-color"]'); if (meta) meta.content = dark ? "#000000" : "#F2F2F5";
 }
@@ -1529,7 +1333,7 @@ function coachLines() {
 
   if (!S.weights[d]) out.push("Weigh in. Every morning, before food, before clothes.");
   if (anySession && yKey !== "reset" && !trainedY) out.push("You skipped yesterday. It is gone, you do not get it back. Do not skip today.");
-  if (trainedT) out.push("Logged. Now go eat and get your sleep. That is the other half.");
+  if (trainedT) out.push("Workout logged. Now go and eat, then sleep. That is the other half of it.");
   else if (S.dayMap[dow(d)] !== "reset") {
     const h = new Date().getHours();
     if (h >= 10 && h < 20) out.push("It is past your slot. The gym is open until eight. Late still counts, skipping does not.");
@@ -1556,11 +1360,6 @@ function vToday() {
     + '</div><h1>' + (rest ? "Reset day" : esc(DAY_NAMES[dayKey])) + "</h1></div>" + syncChip() + "</div>";
   h += bannerHtml();
 
-  // the body
-  const mus = dayMuscles(dayKey), heat = figHeat(mus.prim, mus.sec);
-  if (UI.side === null) UI.side = bestSide(mus.prim);
-  h += figureBlock(heat, wi, rest);
-
   const cl = coachLines();
   if (cl.length) h += '<div class="coach">' + cl.map(x => "<p>" + esc(x) + "</p>").join("") + "</div>";
 
@@ -1577,7 +1376,7 @@ function vToday() {
         + '<div><div class="eyebrow">Done</div><h3>' + esc(DAY_NAMES[s.dayKey] || "Workout") + '</h3></div>'
         + '<div class="mut num" style="font-weight:700">' + n + " sets, " + min + " min</div></div></button>";
     });
-    if (!doneT.some(s => s.dayKey === dayKey)) h += planCard(dayKey, ctx);
+    if (!doneT.some(s => s.dayKey === dayKey)) h += planCard(dayKey, ctx, wi, rest);
   }
 
   h += '<h2>Before and after</h2><div class="card flush">'
@@ -1606,63 +1405,23 @@ function rowBtn(a, t, s, extra) {
     + '</div><div class="s">' + esc(s) + '</div></div><span class="chev">' + ICON.chev + "</span></button>";
 }
 
-// The figure, its flip controls and the label underneath.
-function figureBlock(heat, wi, rest) {
-  const side = UI.side || "front";
-  let h = '<div class="card" style="padding:14px 16px 26px">';
-  h += '<div class="figwrap" id="figwrap">';
-  h += '<button class="figside l" data-a="figFlip">' + ICON.left + "</button>";
-  h += '<div class="flipper">' + figSvg(side, heat, { tapped: UI.tapped }) + "</div>";
-  h += '<button class="figside r" data-a="figFlip">' + ICON.right + "</button>";
-  h += '<div class="figlabel">' + (side === "front" ? "Front" : "Back") + "</div>";
-  h += "</div>";
-  const lit = Object.keys(heat).filter(k => heat[k] === 2).map(k => FIG_NAME[k]);
-  const uniq = lit.filter((x, i) => lit.indexOf(x) === i);
-  h += '<p class="tiny" style="text-align:center;margin-top:16px">'
-    + (rest ? "No lifting today. Core, posture and neck, then go home."
-       : uniq.length ? "Today you hit <b style=\"color:var(--t0)\">" + esc(uniq.join(", ")) + "</b>. Tap a muscle to see its work."
-       : "Nothing planned. Pick a day below.")
-    + "</p>";
-  h += '<div style="text-align:center;margin-top:10px">' + (wi.easy
-    ? '<button class="tag hot" data-a="easyToggle">Easy week</button>'
-    : '<span class="tag">Week ' + wi.week + " of 6</span>") + "</div>";
-  return h + "</div>";
-}
-
-ACT.figFlip = () => { UI.side = UI.side === "front" ? "back" : "front"; UI.tapped = null; haptic(); render(); };
-
-ACT.figTap = el => {
-  const key = el.dataset.m, dayKey = S.dayMap[dow(today())];
-  const names = FIG_TO_MUSCLE[key] || [];
-  const items = (S.plan[dayKey] || []).filter(it => {
-    const ex = getEx(it.ex); if (!ex) return false;
-    return names.indexOf(ex.m) >= 0 || (ex.s || []).some(m => names.indexOf(m) >= 0);
-  });
-  haptic();
-  const ctx = { flags: readinessFlags(today()), deload: weekInfo(today()).easy, gap: gapDays(today()) };
-  let h = "<h3>" + esc(FIG_NAME[key] || "Muscle") + "</h3>";
-  if (!items.length) {
-    h += "<p>Nothing today works this. It gets its turn on another day.</p>";
-  } else {
-    h += "<p>" + items.length + (items.length === 1 ? " exercise" : " exercises") + " today.</p>";
-    h += '<div class="card flush">' + items.map(it => {
-      const ex = getEx(it.ex), t = coachTarget(ex, histFor(it.ex), Object.assign({ sets: it.sets }, ctx));
-      const main = ex.m === (names[0] || "") || names.indexOf(ex.m) >= 0;
-      return '<div class="row"><div class="grow"><div class="t">' + esc(ex.n) + '</div><div class="s num">'
-        + esc(tgtTxt(t, ex).replace(/, find your.*/, "")) + (main ? "" : " · helps out") + "</div></div></div>";
-    }).join("") + "</div>";
-  }
-  openSheet(h);
-};
-
-function planCard(dayKey, ctx) {
+// What today is, what it works, and the button that starts it.
+function planCard(dayKey, ctx, wi, rest) {
   const items = S.plan[dayKey] || [];
-  let h = '<div class="card">';
-  if (dayKey === "reset") h += '<p class="sub" style="margin:0 0 14px">No lifting. This is the ten minutes that fixes the core, back and neck you have never trained.</p>';
+  const mus = dayMuscles(dayKey);
+  const uniq = mus.prim.filter((x, i) => mus.prim.indexOf(x) === i);
+  let h = '<div class="card"><div class="top" style="margin:0 0 16px"><div style="min-width:0">'
+    + '<div class="eyebrow">' + (rest ? "Today" : "Muscles today") + "</div>"
+    + '<div style="font-size:17px;font-weight:700;letter-spacing:-.015em">'
+    + esc(rest ? "Core, posture and neck" : (uniq.join(", ") || "Nothing planned")) + "</div></div>"
+    + (wi && wi.easy ? '<button class="tag hot" data-a="easyToggle">Easy week</button>'
+       : '<span class="tag">Week ' + (wi ? wi.week : 1) + " of 6</span>") + "</div>";
+  if (rest) h += '<p class="sub" style="margin:0 0 14px">No lifting. This is the ten minutes that fixes the core, back and neck you have never trained.</p>';
   h += items.map(it => {
     const ex = getEx(it.ex); if (!ex) return "";
     const t = coachTarget(ex, histFor(it.ex), Object.assign({ sets: it.sets }, ctx));
-    return '<div class="pli"><div class="n">' + esc(ex.n) + '</div><div class="v num">' + esc(tgtTxt(t, ex).replace(/, find your.*/, "")) + "</div></div>";
+    return '<div class="pli"><div class="n">' + esc(ex.n) + '</div><div class="v num">'
+      + esc(tgtTxt(t, ex).replace(/, find your.*/, "")) + "</div></div>";
   }).join("");
   h += '<div style="height:18px"></div><button class="btn" data-a="start" data-day="' + dayKey + '">Start ' + esc(DAY_NAMES[dayKey]) + "</button>";
   h += '<div style="height:8px"></div><button class="btn ghost sm" data-a="pickDay">Train a different day</button>';
@@ -1679,6 +1438,7 @@ function syncPaint() {
   $$("[data-syncdot]").forEach(e => e.className = "dot " + s.c);
 }
 function bannerHtml() {
+  if (DEMO) return '<div class="banner"><span>Example data. Nothing here is real and nothing is saved. Your own NitFit is a separate app.</span></div>';
   if (storageBroken) return '<div class="banner"><span>' + esc(storageBroken) + "</span></div>";
   if (!KV.token) return '<div class="banner"><span>Not backed up. If this phone dies, every workout dies with it.</span><button data-a="keySetup">Fix</button></div>';
   if (KV.syncErr && !/Offline/.test(KV.syncErr)) return '<div class="banner"><span>' + esc(KV.syncErr) + '</span><button data-a="syncNow">Retry</button></div>';
@@ -2064,21 +1824,6 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-// swipe the figure to turn it round
-(function () {
-  let x0 = null, y0 = null;
-  document.addEventListener("touchstart", e => {
-    const w = e.target.closest && e.target.closest("#figwrap");
-    if (!w) { x0 = null; return; }
-    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
-  }, { passive: true });
-  document.addEventListener("touchend", e => {
-    if (x0 === null) return;
-    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
-    x0 = null;
-    if (Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy) * 1.6) ACT.figFlip();
-  }, { passive: true });
-})();
 
 // ---------------------------------------------------------------------------
 // Screens, part 2: Progress. Lifts, weight, and where the week's work went.
@@ -2182,20 +1927,7 @@ ACT.savePastWeight = () => {
 // Where the week's work actually went, shown on the body and in numbers.
 function progMuscles() {
   const d = today(), cnt = weekVolume(d);
-  const heat = {};
-  MUSCLES.forEach(m => {
-    const band = SET_BAND[m] || [8, 16], v = cnt[m] || 0;
-    const lvl = v >= band[0] ? 2 : v > 0 ? 1 : 0;
-    if (lvl) (MUSCLE_TO_FIG[m] || []).forEach(k => { if ((heat[k] || 0) < lvl) heat[k] = lvl; });
-  });
-  const side = UI.side || "front";
-  let h = '<div class="card" style="padding:10px 16px 20px"><div class="figwrap" id="figwrap">'
-    + '<button class="figside l" data-a="figFlip">' + ICON.left + "</button>"
-    + '<div class="flipper">' + figSvg(side, heat, { flat: true }) + "</div>"
-    + '<button class="figside r" data-a="figFlip">' + ICON.right + "</button>"
-    + '<div class="figlabel">' + (side === "front" ? "Front" : "Back") + "</div></div>"
-    + '<p class="tiny" style="text-align:center;margin-top:16px">Red means that muscle got enough work this week. Dark red means some, but not enough. Grey means you ignored it.</p></div>';
-
+  let h = "";
   const under = MUSCLES.filter(m => (cnt[m] || 0) < (SET_BAND[m] || [8])[0]);
   if (Object.keys(cnt).length && under.length) {
     h += '<div class="coach"><p>Short this week on ' + esc(under.slice(0, 3).join(", ")) + ".</p>"
@@ -2438,6 +2170,12 @@ function vMore() {
       '<button class="' + ((st.theme || "dark") === t[0] ? "on" : "") + '" data-a="theme" data-v="' + t[0] + '">' + t[1] + "</button>").join("")
     + "</div></div>";
 
+  if (DEMO) {
+    h += '<h2>This is the demo</h2><div class="card">'
+      + '<p class="sub" style="margin:0 0 14px">Everything in here is invented so you can see every screen full. '
+      + 'It is kept in its own box on the phone and never goes to GitHub. Your real NitFit is a separate app with its own icon.</p>'
+      + '<button class="btn ghost" data-a="demoReset">Rebuild the example data</button></div>';
+  } else
   h += '<h2>Your data</h2><div class="card">'
     + '<div class="top" style="margin-bottom:14px"><div style="font-size:16px;font-weight:700;display:flex;align-items:center;gap:9px">'
     + '<span class="dot ' + s.c + '" data-syncdot></span><span data-synctxt>' + esc(s.t) + "</span></div>"
@@ -2600,7 +2338,7 @@ function render() {
   hydratePhotos(app);
   $$("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB));
 }
-ACT.tab = el => { if (TAB !== el.dataset.tab) { TAB = el.dataset.tab; UI.tapped = null; haptic(); render(); window.scrollTo(0, 0); } };
+ACT.tab = el => { if (TAB !== el.dataset.tab) { TAB = el.dataset.tab; haptic(); render(); window.scrollTo(0, 0); } };
 
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-a]");
@@ -2636,15 +2374,20 @@ async function boot() {
     const r = JSON.parse(localStorage.getItem("nitfit:rest") || "null");
     if (r && r.end > Date.now() - 15000) { REST = r; REST.fired = REST.end < Date.now(); restIv = setInterval(paintRest, 250); }
   } catch (_) {}
+  if (DEMO && KV.demoSeeded !== 2) {
+    $("#app").innerHTML = '<div class="center"><h1>Building the example</h1><p class="sub">Two months of invented training, so every screen has something in it.</p></div>';
+    try { await seedDemo(); } catch (e) { toast("Could not build the example data."); }
+    applyTheme();
+  }
   render();
-  if (KV.token) syncNow();
-  else if (!KV.skipSetup) ACT.keySetup();
-  setInterval(() => { if (!document.hidden && KV.token) syncNow(); syncPaint(); }, 5 * 60e3);
+  if (!DEMO && KV.token) syncNow();
+  else if (!DEMO && !KV.skipSetup) ACT.keySetup();
+  if (!DEMO) setInterval(() => { if (!document.hidden && KV.token) syncNow(); syncPaint(); }, 5 * 60e3);
   setInterval(syncPaint, 30e3);
-  addEventListener("online", () => syncNow());
+  if (!DEMO) addEventListener("online", () => syncNow());
   addEventListener("resize", fitCmp);
   let lastDay = today();
-  setInterval(() => { if (today() !== lastDay) { lastDay = today(); UI.side = null; render(); } }, 60e3);
+  setInterval(() => { if (today() !== lastDay) { lastDay = today(); render(); } }, 60e3);
 }
 boot();
 
