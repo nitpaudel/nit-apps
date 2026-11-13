@@ -1,121 +1,212 @@
-// ---------- NitFit data: exercises, starter plan, foods ----------
-// eq: db dumbbell, bb barbell, smith, cable, machine, bw bodyweight
-// kind: c big lift, i small lift, core
-const STEP_BY_EQ = { db: 2.5, bb: 5, smith: 5, cable: 5, machine: 5, bw: 0 };
-const X = (id, n, m, s, eq, kind, lo, hi, rest, cue, extra) => Object.assign({ id, n, m, s: s || [], eq, kind, r: [lo, hi], rest, cue: cue || "" }, extra || {});
-const EXERCISES = [
-  // chest
-  X("incline_db_press", "Incline dumbbell press", "Chest", ["Triceps", "Shoulders"], "db", "c", 8, 12, 150, "Bench at 30 degrees. Lower slow to the upper chest. Elbows a bit tucked."),
-  X("flat_db_press", "Flat dumbbell press", "Chest", ["Triceps"], "db", "c", 8, 12, 150, "Shoulder blades pinned back. Lower until the dumbbells reach chest level."),
-  X("smith_incline_press", "Smith incline press", "Chest", ["Triceps", "Shoulders"], "smith", "c", 6, 10, 180, "Bar to the upper chest. Pause for a moment at the bottom."),
-  X("bench_press", "Barbell bench press", "Chest", ["Triceps", "Shoulders"], "bb", "c", 6, 10, 180, "Feet planted. Bar to mid chest. Do not bounce."),
-  X("smith_bench", "Smith bench press", "Chest", ["Triceps"], "smith", "c", 6, 10, 180, "Bar to mid chest. Control the way down."),
-  X("pec_deck", "Pec deck", "Chest", [], "machine", "i", 12, 15, 90, "Slow stretch at the back. Squeeze for a second at the front."),
-  X("cable_fly_low_high", "Low to high cable fly", "Chest", [], "cable", "i", 12, 15, 90, "Hands start by the hips and finish at face height. This hits the upper chest."),
-  X("dips", "Dips", "Chest", ["Triceps"], "bw", "c", 6, 12, 150, "Lean forward a little. Go down until the shoulders are just below the elbows."),
-  X("push_up", "Push-up", "Chest", ["Triceps"], "bw", "i", 10, 25, 90, "Body in one straight line. Chest to the floor."),
-  // shoulders
-  X("db_shoulder_press", "Dumbbell shoulder press", "Shoulders", ["Triceps"], "db", "c", 8, 12, 150, "Seated, back supported. Lower to ear height."),
-  X("smith_shoulder_press", "Smith shoulder press", "Shoulders", ["Triceps"], "smith", "c", 6, 10, 150, "Bar comes down in front of the face to chin height."),
-  X("cable_lateral_raise", "Cable lateral raise", "Shoulders", [], "cable", "i", 12, 20, 75, "Cable behind the body. Lead with the elbow. Stop at shoulder height."),
-  X("db_lateral_raise", "Dumbbell lateral raise", "Shoulders", [], "db", "i", 12, 20, 75, "Lean forward a little. No swinging. Slow on the way down."),
-  // rear delts
-  X("reverse_pec_deck", "Reverse pec deck", "Rear delts", [], "machine", "i", 12, 20, 75, "Arms almost straight. Pull wide, not back."),
-  X("face_pull", "Face pull", "Rear delts", ["Back"], "cable", "i", 15, 20, 75, "Rope to the forehead. Elbows high. Great for posture."),
-  X("cable_rear_fly", "Cable rear delt fly", "Rear delts", [], "cable", "i", 12, 20, 75, "Cross the cables. Pull apart with straight arms."),
-  // back
-  X("pull_up", "Pull-up", "Back", ["Biceps"], "bw", "c", 5, 12, 180, "Full hang at the bottom. Chin over the bar. No kicking."),
-  X("chin_up", "Chin-up", "Back", ["Biceps"], "bw", "c", 5, 12, 180, "Palms face you. Full hang at the bottom."),
-  X("lat_pulldown", "Lat pulldown", "Back", ["Biceps"], "machine", "c", 8, 12, 150, "Pull the bar to the upper chest. Elbows drive down, not back."),
-  X("neutral_pulldown", "Close grip pulldown", "Back", ["Biceps"], "machine", "c", 8, 12, 150, "Palms face each other. Big stretch at the top."),
-  X("chest_supported_row", "Chest supported dumbbell row", "Back", ["Biceps", "Rear delts"], "db", "c", 8, 12, 150, "Lie face down on an incline bench. Pull the elbows to the hips."),
-  X("one_arm_db_row", "One arm dumbbell row", "Back", ["Biceps", "Rear delts"], "db", "c", 8, 12, 120, "Flat back. Pull to the hip, not the chest."),
-  X("one_arm_cable_row", "One arm cable row", "Back", ["Biceps", "Rear delts"], "cable", "c", 10, 12, 120, "Reach forward for the stretch. Pull the elbow past the body."),
-  X("seated_cable_row", "Seated cable row", "Back", ["Biceps", "Rear delts"], "cable", "c", 8, 12, 150, "Chest tall. Do not rock the body."),
-  X("straight_arm_pulldown", "Straight arm pulldown", "Back", [], "cable", "i", 12, 15, 90, "Arms stay straight. Pull the bar to the thighs."),
-  X("back_extension", "Back extension", "Lower back", ["Glutes", "Hamstrings"], "bw", "i", 10, 15, 90, "Slow. Stop when the body is straight. Do not arch past that."),
-  // biceps
-  X("db_curl", "Dumbbell curl", "Biceps", [], "db", "i", 8, 12, 90, "Elbows stay by the sides. No swinging."),
-  X("incline_db_curl", "Incline dumbbell curl", "Biceps", [], "db", "i", 10, 12, 90, "Lie back on an incline bench. Let the arms hang for a full stretch."),
-  X("preacher_curl", "Preacher curl", "Biceps", [], "db", "i", 10, 15, 90, "Slow on the way down. Do not lock out hard at the bottom."),
-  X("cable_curl", "Cable curl", "Biceps", [], "cable", "i", 10, 15, 90, "Elbows still. Squeeze at the top."),
-  X("hammer_curl", "Hammer curl", "Biceps", [], "db", "i", 10, 15, 90, "Palms face each other. Builds the forearm too."),
-  X("cable_hammer_curl", "Cable rope hammer curl", "Biceps", [], "cable", "i", 12, 15, 90, "Rope handle. Palms face each other."),
-  // triceps
-  X("triceps_pushdown", "Triceps pushdown", "Triceps", [], "cable", "i", 10, 15, 90, "Elbows pinned to the sides. Lock out at the bottom."),
-  X("overhead_cable_ext", "Overhead cable triceps extension", "Triceps", [], "cable", "i", 10, 15, 90, "Face away from the stack. Deep stretch behind the head."),
-  X("db_overhead_ext", "Dumbbell overhead extension", "Triceps", [], "db", "i", 10, 15, 90, "One dumbbell, both hands. Elbows point up."),
-  // legs
-  X("smith_squat", "Smith squat", "Quads", ["Glutes"], "smith", "c", 6, 10, 180, "Feet a little forward. Go down until the thighs are level with the floor."),
-  X("barbell_squat", "Barbell squat", "Quads", ["Glutes", "Lower back"], "bb", "c", 6, 10, 180, "Brace the belly. Knees track over the toes."),
-  X("leg_press", "Leg press", "Quads", ["Glutes"], "machine", "c", 8, 12, 150, "Go deep. Do not let the lower back lift off the pad."),
-  X("leg_extension", "Leg extension", "Quads", [], "machine", "i", 10, 15, 90, "Pause for a second at the top."),
-  X("split_squat", "Bulgarian split squat", "Quads", ["Glutes"], "db", "c", 8, 12, 120, "Back foot on a bench. Front knee tracks over the toes."),
-  X("leg_curl", "Leg curl", "Hamstrings", [], "machine", "i", 10, 15, 90, "Hips stay down. Slow on the way back."),
-  X("db_rdl", "Dumbbell Romanian deadlift", "Hamstrings", ["Glutes", "Lower back"], "db", "c", 8, 12, 150, "Push the hips back. Back flat. Stop when you feel the hamstrings stretch."),
-  X("hip_thrust", "Hip thrust", "Glutes", ["Hamstrings"], "machine", "c", 8, 12, 150, "Chin tucked. Pause at the top."),
-  X("hip_abductor", "Hip abductor", "Glutes", [], "machine", "i", 12, 20, 75, "Push the knees out. Slow on the way back."),
-  X("hip_adductor", "Hip adductor", "Adductors", [], "machine", "i", 12, 20, 75, "Squeeze the knees together. Slow on the way back."),
-  X("standing_calf_raise", "Standing calf raise", "Calves", [], "machine", "i", 10, 15, 75, "Full stretch at the bottom. Pause 1 second at the top."),
-  X("seated_calf_raise", "Seated calf raise", "Calves", [], "machine", "i", 12, 20, 75, "Full stretch at the bottom. Pause 1 second at the top."),
-  // core and posture
-  X("hanging_knee_raise", "Hanging knee raise", "Core", [], "bw", "core", 8, 15, 75, "No swinging. Curl the hips up at the top."),
-  X("cable_crunch", "Cable crunch", "Core", [], "cable", "core", 10, 15, 75, "Round the back. Ribs to hips. Hips do not move."),
-  X("plank", "Plank", "Core", [], "bw", "core", 30, 60, 60, "Squeeze the glutes. Body in one straight line.", { t: 1 }),
-  X("side_plank", "Side plank (each side)", "Core", [], "bw", "core", 20, 45, 45, "Hips high. Body in one straight line.", { t: 1 }),
-  X("curl_up", "Curl-up", "Core", [], "bw", "core", 8, 15, 45, "One knee bent, hands under the lower back. Lift the head and shoulders only. Hold 10 seconds each rep."),
-  X("bird_dog", "Bird dog (each side)", "Core", ["Lower back"], "bw", "core", 6, 10, 45, "Opposite arm and leg. Hold 10 seconds each rep. Hips stay level."),
-  X("dead_bug", "Dead bug (each side)", "Core", [], "bw", "core", 8, 12, 45, "Lower back pressed into the floor the whole time."),
-  X("neck_hold", "Neck hold (each direction)", "Neck", [], "bw", "core", 10, 20, 45, "Push the head into your hand and hold. No jerking. Never to failure.", { t: 1 }),
-];
-const EXMAP = {}; EXERCISES.forEach(e => { e.step = STEP_BY_EQ[e.eq]; EXMAP[e.id] = e; });
+// ---------------------------------------------------------------------------
+// Everything NitFit knows before Nit touches it.
+//
+// Only machines and weights that exist in his gym are in here. No T-bar row,
+// no bands, no mat, no V-shape machine. Smallest jump on anything is 2.5 kg.
+// Muscle names here must match the names the drawing understands.
+// ---------------------------------------------------------------------------
 
-const DAY_NAMES = { legsA: "Legs A", pushA: "Push A", pullA: "Pull A", legsB: "Legs B", pushB: "Push B", pullB: "Pull B", core: "Core and posture" };
-const DAY_ORDER = ["legsA", "pushA", "pullA", "legsB", "pushB", "pullB", "core"];
-// weekday (0 = Sunday) to day
-const DEFAULT_DAYMAP = ["legsA", "pushA", "pullA", "legsB", "pushB", "pullB", "core"];
-// starter plan. Each exercise shows up once a week so weeks compare fairly.
-const P = (ex, sets) => ({ ex, sets });
-const DEFAULT_PLAN = {
-  legsA: [P("smith_squat", 4), P("leg_curl", 4), P("leg_extension", 3), P("standing_calf_raise", 4), P("hip_adductor", 2), P("hanging_knee_raise", 3), P("plank", 2)],
-  pushA: [P("incline_db_press", 3), P("cable_lateral_raise", 4), P("flat_db_press", 2), P("db_shoulder_press", 2), P("triceps_pushdown", 3), P("curl_up", 2)],
-  pullA: [P("pull_up", 3), P("chest_supported_row", 3), P("reverse_pec_deck", 3), P("db_curl", 3), P("preacher_curl", 2), P("back_extension", 2), P("side_plank", 2)],
-  legsB: [P("leg_press", 4), P("db_rdl", 3), P("hip_thrust", 3), P("seated_calf_raise", 4), P("hip_abductor", 2), P("cable_crunch", 3)],
-  pushB: [P("smith_incline_press", 3), P("db_lateral_raise", 4), P("dips", 3), P("cable_fly_low_high", 2), P("overhead_cable_ext", 3), P("dead_bug", 2)],
-  pullB: [P("lat_pulldown", 3), P("one_arm_cable_row", 3), P("straight_arm_pulldown", 2), P("face_pull", 3), P("incline_db_curl", 3), P("cable_hammer_curl", 2), P("bird_dog", 2)],
-  core: [P("curl_up", 3), P("side_plank", 3), P("bird_dog", 3), P("back_extension", 2)],
+const MUSCLES = ["Chest", "Shoulders", "Lats", "Traps", "Biceps", "Triceps",
+  "Forearms", "Abs", "Lower back", "Quads", "Hamstrings", "Glutes", "Calves"];
+
+// How many hard sets a week each muscle wants. Low end keeps it, high end grows it.
+const SET_BAND = {
+  Chest: [10, 18], Shoulders: [12, 22], Lats: [12, 20], Traps: [6, 14],
+  Biceps: [8, 16], Triceps: [8, 16], Forearms: [4, 10], Abs: [6, 14],
+  "Lower back": [4, 10], Quads: [8, 16], Hamstrings: [8, 14],
+  Glutes: [6, 12], Calves: [8, 16],
 };
-const WARMUP = ["Easy walk or bike, 3 minutes", "Bodyweight squats x 10", "Arm circles x 10 each way", "Bird dog x 5 each side", "Light face pulls on the cable x 15"];
 
-const MUSCLES = ["Chest", "Shoulders", "Rear delts", "Back", "Biceps", "Triceps", "Quads", "Hamstrings", "Glutes", "Calves", "Core", "Lower back"];
-const PRIORITY = { Chest: 1, Shoulders: 1, Back: 1, Biceps: 1, Triceps: 1, Quads: 1, Hamstrings: 1 };
-const setBand = m => PRIORITY[m] ? [12, 16] : m === "Lower back" || m === "Glutes" ? [4, 10] : [8, 12];
+const STEP_BY_EQ = { db: 2.5, bb: 2.5, smith: 2.5, cable: 5, machine: 5, bw: 2.5 };
 
-// foods: kcal, protein, carbs, fat for one home portion. Portions are best guesses until weighed.
-const F = (id, n, unit, kcal, p, c, f) => ({ id, n, unit, kcal, p, c, f });
-const FOODS = [
-  F("dalbhat", "Dal bhat plate", "rice, dal, tarkari", 551, 15.4, 110.6, 5.2),
-  F("shake", "Shake", "milk, oats, banana, peanut butter", 550, 19.9, 67.7, 23.5),
-  F("egg", "Egg", "1 egg", 72, 6.3, 0.4, 4.8),
-  F("soya", "Soya chunks", "30 g dry", 104, 15.6, 10, 0.2),
-  F("peanuts", "Peanuts", "1 handful", 171, 7.9, 8, 11.9),
-  F("milk", "Milk", "1 glass", 168, 8, 11, 10.3),
-  F("coffee", "Coffee, your usual", "milk and sugar", 300, 4.8, 56.3, 6.2),
-  F("chicken_bone", "Chicken curry", "your 250 g, with bone", 294, 32.8, 0, 17),
-  F("chicken", "Chicken curry, boneless", "your 250 g", 392, 47.8, 0, 20.7),
-  F("waiwai", "Instant noodles", "1 pack", 346, 8, 44, 15),
-  F("roti", "Roti", "1 roti", 96, 3.2, 19.3, 0.5),
-  F("curd", "Curd", "1 katori", 90, 4.7, 4.5, 6),
-  F("banana", "Banana", "1 banana", 105, 1.2, 23.6, 0.3),
-  F("pb", "Peanut butter", "1 big spoon", 96, 3.6, 3.6, 8.2),
-  F("rice", "Extra rice", "small plate", 258, 5, 58.8, 0.3),
-  F("dal", "Extra dal", "1 katori", 72, 5, 11.1, 0.9),
-  F("oats", "Oats", "40 g", 148, 5.5, 27.3, 2.7),
-  F("ghee", "Oil or ghee", "1 big spoon", 122, 0, 0, 13.6),
+// id, n name, m main muscle, s helper muscles, eq kit, kind c compound i isolation,
+// r rep range, rest seconds, cue one line of form that matters.
+const EXERCISES = [
+
+  // ---------- chest ----------
+  { id: "inc_db_press", n: "Incline dumbbell press", m: "Chest", s: ["Shoulders", "Triceps"], eq: "db", kind: "c", r: [6, 10], rest: 150, cue: "Bench at 30 degrees. Elbows about 45 from your body, not flared wide." },
+  { id: "inc_smith_press", n: "Incline Smith press", m: "Chest", s: ["Shoulders", "Triceps"], eq: "smith", kind: "c", r: [6, 10], rest: 150, cue: "Touch the upper chest, just below the collarbone. Do not bounce it." },
+  { id: "flat_db_press", n: "Flat dumbbell press", m: "Chest", s: ["Shoulders", "Triceps"], eq: "db", kind: "c", r: [6, 12], rest: 150, cue: "Shoulder blades pulled back and down into the bench the whole set." },
+  { id: "flat_smith_press", n: "Flat Smith press", m: "Chest", s: ["Shoulders", "Triceps"], eq: "smith", kind: "c", r: [6, 12], rest: 150, cue: "Bar to the nipple line. Keep your shoulder blades squeezed back." },
+  { id: "dip", n: "Dips", m: "Chest", s: ["Triceps", "Shoulders"], eq: "bw", kind: "c", r: [6, 12], rest: 150, cue: "Lean forward for chest. Stop when the upper arm is level, no deeper." },
+  { id: "pec_deck", n: "Pec deck", m: "Chest", s: ["Shoulders"], eq: "machine", kind: "i", r: [10, 15], rest: 75, cue: "Squeeze for a full second in the middle. Do not slam the pads together." },
+  { id: "cable_fly_low", n: "Low to high cable fly", m: "Chest", s: ["Shoulders"], eq: "cable", kind: "i", r: [12, 15], rest: 75, cue: "Pulleys at the bottom, hands finish at chin height. This hits upper chest." },
+  { id: "cable_fly_high", n: "High to low cable fly", m: "Chest", s: [], eq: "cable", kind: "i", r: [12, 15], rest: 75, cue: "Soft bend in the elbow, hold it there. Hands meet in front of your hips." },
+  { id: "pushup", n: "Push-ups", m: "Chest", s: ["Triceps", "Abs"], eq: "bw", kind: "c", r: [12, 30], rest: 90, cue: "Body in one straight line. Hips do not sag." },
+
+  // ---------- shoulders ----------
+  { id: "db_ohp", n: "Seated dumbbell press", m: "Shoulders", s: ["Triceps"], eq: "db", kind: "c", r: [6, 10], rest: 150, cue: "Back flat on the bench. Do not lean back and turn it into a press." },
+  { id: "smith_ohp", n: "Smith overhead press", m: "Shoulders", s: ["Triceps"], eq: "smith", kind: "c", r: [6, 10], rest: 150, cue: "Bar to chin level. Ribs down, do not arch your lower back." },
+  { id: "lat_raise", n: "Dumbbell lateral raise", m: "Shoulders", s: ["Traps"], eq: "db", kind: "i", r: [12, 20], rest: 60, cue: "Lead with the elbow, stop at shoulder height. Light weight, no swinging." },
+  { id: "cable_lat_raise", n: "Cable lateral raise", m: "Shoulders", s: [], eq: "cable", kind: "i", r: [12, 20], rest: 60, cue: "Cable behind your back, one arm at a time. Slow all the way down." },
+  { id: "lean_lat_raise", n: "Leaning lateral raise", m: "Shoulders", s: [], eq: "db", kind: "i", r: [12, 18], rest: 60, cue: "Hold the rack and lean away. The stretch at the bottom is the point." },
+  { id: "rear_delt_fly", n: "Rear delt fly", m: "Shoulders", s: ["Traps"], eq: "machine", kind: "i", r: [12, 20], rest: 60, cue: "Pull with the back of the shoulder, not by squeezing the shoulder blades." },
+  { id: "face_pull", n: "Cable face pull", m: "Shoulders", s: ["Traps"], eq: "cable", kind: "i", r: [12, 20], rest: 60, cue: "Rope to your forehead, knuckles to the ceiling. This fixes posture." },
+  { id: "front_raise", n: "Dumbbell front raise", m: "Shoulders", s: [], eq: "db", kind: "i", r: [12, 15], rest: 60, cue: "Stop at eye level. No body swing." },
+
+  // ---------- triceps ----------
+  { id: "tri_pushdown", n: "Cable pushdown", m: "Triceps", s: [], eq: "cable", kind: "i", r: [10, 15], rest: 75, cue: "Elbows pinned to your sides. Only the forearm moves." },
+  { id: "tri_overhead", n: "Overhead cable extension", m: "Triceps", s: [], eq: "cable", kind: "i", r: [10, 15], rest: 75, cue: "Get a full stretch behind your head. That is where the growth is." },
+  { id: "skullcrusher", n: "Skullcrusher", m: "Triceps", s: [], eq: "db", kind: "i", r: [10, 14], rest: 90, cue: "Lower behind your head, not to your face. Elbows stay pointed up." },
+  { id: "close_smith", n: "Close grip Smith press", m: "Triceps", s: ["Chest", "Shoulders"], eq: "smith", kind: "c", r: [8, 12], rest: 120, cue: "Hands shoulder width, no narrower. Elbows tucked in close." },
+  { id: "bench_dip", n: "Bench dips", m: "Triceps", s: ["Shoulders"], eq: "bw", kind: "i", r: [10, 20], rest: 75, cue: "Stay upright and close to the bench. Do not drop below a right angle." },
+
+  // ---------- back and lats ----------
+  { id: "pulldown_wide", n: "Wide lat pulldown", m: "Lats", s: ["Biceps", "Traps"], eq: "cable", kind: "c", r: [8, 12], rest: 150, cue: "Bar to the top of your chest. Drive the elbows down, not back." },
+  { id: "pulldown_close", n: "Close grip pulldown", m: "Lats", s: ["Biceps"], eq: "cable", kind: "c", r: [8, 12], rest: 150, cue: "Neutral grip. Lean back a touch and pull to the bottom of your chest." },
+  { id: "pullup", n: "Pull-ups", m: "Lats", s: ["Biceps", "Forearms"], eq: "bw", kind: "c", r: [4, 12], rest: 180, cue: "Dead hang at the bottom, chin clearly over the bar. No kipping." },
+  { id: "chinup", n: "Chin-ups", m: "Lats", s: ["Biceps"], eq: "bw", kind: "c", r: [4, 12], rest: 180, cue: "Palms facing you. Easier than pull-ups and hits the biceps harder." },
+  { id: "cable_row", n: "Seated cable row", m: "Lats", s: ["Traps", "Biceps"], eq: "cable", kind: "c", r: [8, 12], rest: 150, cue: "Chest up, pull to your belly button. Do not rock back and forth." },
+  { id: "db_row", n: "One arm dumbbell row", m: "Lats", s: ["Traps", "Biceps"], eq: "db", kind: "c", r: [8, 12], rest: 120, cue: "Knee and hand on the bench. Flat back, pull the dumbbell to your hip." },
+  { id: "chest_sup_row", n: "Chest supported row", m: "Lats", s: ["Traps", "Biceps"], eq: "db", kind: "c", r: [10, 14], rest: 120, cue: "Face down on the incline bench. Zero strain on your lower back." },
+  { id: "smith_row", n: "Smith machine row", m: "Lats", s: ["Traps", "Lower back"], eq: "smith", kind: "c", r: [8, 12], rest: 150, cue: "Hinge to about 45 degrees and hold it. Back stays flat the whole set." },
+  { id: "straight_arm", n: "Straight arm pulldown", m: "Lats", s: [], eq: "cable", kind: "i", r: [12, 15], rest: 75, cue: "Arms almost locked. Sweep the bar to your thighs and feel the lat." },
+  { id: "shrug", n: "Dumbbell shrug", m: "Traps", s: ["Forearms"], eq: "db", kind: "i", r: [10, 15], rest: 75, cue: "Straight up and down. No rolling the shoulders." },
+
+  // ---------- biceps and forearms ----------
+  { id: "db_curl", n: "Dumbbell curl", m: "Biceps", s: ["Forearms"], eq: "db", kind: "i", r: [8, 12], rest: 75, cue: "Elbows still at your sides. Lower slowly, that half builds the arm." },
+  { id: "preacher_curl", n: "Preacher curl", m: "Biceps", s: [], eq: "db", kind: "i", r: [10, 14], rest: 75, cue: "Armpits into the top of the pad. Do not fully lock out at the bottom." },
+  { id: "incline_curl", n: "Incline dumbbell curl", m: "Biceps", s: [], eq: "db", kind: "i", r: [10, 14], rest: 75, cue: "Bench at 45, arms hanging behind you. Biggest stretch of any curl." },
+  { id: "hammer_curl", n: "Hammer curl", m: "Biceps", s: ["Forearms"], eq: "db", kind: "i", r: [10, 14], rest: 75, cue: "Thumbs up the whole way. This builds the thickness on the outside." },
+  { id: "cable_curl", n: "Cable curl", m: "Biceps", s: ["Forearms"], eq: "cable", kind: "i", r: [10, 15], rest: 75, cue: "Tension never drops. Stop just short of the top." },
+  { id: "wrist_curl", n: "Wrist curl", m: "Forearms", s: [], eq: "db", kind: "i", r: [15, 20], rest: 60, cue: "Forearms on your thighs. Small movement, let the weight roll to the fingers." },
+  { id: "rev_curl", n: "Reverse curl", m: "Forearms", s: ["Biceps"], eq: "db", kind: "i", r: [12, 15], rest: 60, cue: "Palms down. Go lighter than you think, the forearm is the weak link." },
+
+  // ---------- legs ----------
+  { id: "squat", n: "Back squat", m: "Quads", s: ["Glutes", "Lower back", "Hamstrings"], eq: "bb", kind: "c", r: [5, 8], rest: 180, cue: "Brace hard before you drop. Knees track over the toes, chest up." },
+  { id: "smith_squat", n: "Smith squat", m: "Quads", s: ["Glutes"], eq: "smith", kind: "c", r: [8, 12], rest: 180, cue: "Feet a step in front. Easier on the back than a free squat." },
+  { id: "leg_press", n: "Leg press", m: "Quads", s: ["Glutes", "Hamstrings"], eq: "machine", kind: "c", r: [10, 15], rest: 150, cue: "Never let your lower back round off the pad at the bottom." },
+  { id: "leg_ext", n: "Leg extension", m: "Quads", s: [], eq: "machine", kind: "i", r: [12, 18], rest: 75, cue: "Pause and squeeze at the top. Lower under control." },
+  { id: "bulgarian", n: "Bulgarian split squat", m: "Quads", s: ["Glutes", "Hamstrings"], eq: "db", kind: "c", r: [8, 12], rest: 120, cue: "Back foot on the bench. Lean forward slightly for more glute." },
+  { id: "rdl", n: "Romanian deadlift", m: "Hamstrings", s: ["Glutes", "Lower back"], eq: "db", kind: "c", r: [8, 12], rest: 150, cue: "Push the hips back, bar close to the legs. Stop when the back wants to round." },
+  { id: "leg_curl", n: "Leg curl", m: "Hamstrings", s: ["Calves"], eq: "machine", kind: "i", r: [10, 15], rest: 75, cue: "Hips stay down on the pad. Do not lift them to help." },
+  { id: "hip_thrust", n: "Hip thrust", m: "Glutes", s: ["Hamstrings"], eq: "machine", kind: "c", r: [10, 15], rest: 120, cue: "Chin tucked, ribs down. Squeeze hard at the top for a second." },
+  { id: "abductor", n: "Hip abductor", m: "Glutes", s: [], eq: "machine", kind: "i", r: [15, 20], rest: 60, cue: "Lean forward a little. Slow on the way back in." },
+  { id: "calf_standing", n: "Standing calf raise", m: "Calves", s: [], eq: "machine", kind: "i", r: [10, 15], rest: 75, cue: "Full stretch at the bottom, two second hold at the top. No bouncing." },
+  { id: "calf_seated", n: "Seated calf raise", m: "Calves", s: [], eq: "machine", kind: "i", r: [12, 20], rest: 60, cue: "This one hits the lower calf. Slow, and all the way down each rep." },
+
+  // ---------- core, lower back and neck ----------
+  { id: "hang_leg_raise", n: "Hanging leg raise", m: "Abs", s: ["Forearms"], eq: "bw", kind: "core", r: [8, 15], rest: 75, cue: "Curl the hips up, do not just swing the legs. Stop the swinging between reps." },
+  { id: "cable_crunch", n: "Cable crunch", m: "Abs", s: [], eq: "cable", kind: "core", r: [12, 18], rest: 75, cue: "Round your spine down toward the floor. Hips do not move." },
+  { id: "plank", n: "Plank", m: "Abs", s: ["Lower back"], eq: "bw", kind: "core", t: 1, r: [30, 60], rest: 60, cue: "Squeeze the glutes, tuck the ribs. Quality beats a long sloppy hold." },
+  { id: "side_plank", n: "Side plank", m: "Obliques", s: ["Abs"], eq: "bw", kind: "core", t: 1, r: [20, 45], rest: 45, cue: "Hips stacked and lifted. Each side." },
+  { id: "pallof", n: "Pallof press", m: "Obliques", s: ["Abs"], eq: "cable", kind: "core", r: [10, 15], rest: 60, cue: "Stand side on, press straight out. Fight the pull, do not twist." },
+  { id: "back_ext", n: "Back extension", m: "Lower back", s: ["Glutes", "Hamstrings"], eq: "bw", kind: "core", r: [12, 20], rest: 75, cue: "Rise to straight, not past it. Never hyperextend at the top." },
+  { id: "dead_bug", n: "Dead bug", m: "Abs", s: ["Lower back"], eq: "bw", kind: "core", r: [10, 16], rest: 45, cue: "Lower back pressed to the floor the whole time. Slow and boring is right." },
+  { id: "bird_dog", n: "Bird dog", m: "Lower back", s: ["Abs", "Glutes"], eq: "bw", kind: "core", r: [8, 12], rest: 45, cue: "Opposite arm and leg. Do not let the hips tip. Each side." },
+  { id: "neck_ext", n: "Neck extension", m: "Traps", s: [], eq: "bw", kind: "core", r: [12, 20], rest: 60, cue: "Plate on the back of the head, face down on the bench. Slow, small range." },
+  { id: "neck_flex", n: "Neck curl", m: "Traps", s: [], eq: "bw", kind: "core", r: [12, 20], rest: 60, cue: "Face up on the bench, plate on the forehead over a towel. Go very light." },
 ];
-const FOODMAP = {}; FOODS.forEach(f => FOODMAP[f.id] = f);
-const DEFAULT_USUAL = [["dalbhat", 2], ["shake", 1], ["egg", 4], ["coffee", 1]];
 
-const MEASURE_SITES = [["shoulders", "Shoulders", "around the widest part, arms down"], ["chest", "Chest", "across the nipples"], ["waist", "Waist", "at the belly button"], ["neck", "Neck", "just below the Adam's apple"], ["arm", "Arm, flexed", "biggest part"], ["thigh", "Thigh", "middle of the thigh"], ["calf", "Calf", "widest part"]];
-const POSES = [["front", "Front"], ["side", "Side"], ["back", "Back"], ["lat", "Lat spread"]];
-if (typeof module !== "undefined") module.exports = { EXERCISES, EXMAP, DEFAULT_PLAN, DEFAULT_DAYMAP, FOODS, FOODMAP, MUSCLES, setBand };
+const EXMAP = {};
+EXERCISES.forEach(e => (EXMAP[e.id] = e));
+
+// ---------------------------------------------------------------------------
+// The week. Six training days and one short reset day.
+// Each day is different from its pair, so nothing repeats twice in a week.
+// ---------------------------------------------------------------------------
+
+const DAY_NAMES = {
+  pushA: "Push A", pullA: "Pull A", legsA: "Legs A",
+  pushB: "Push B", pullB: "Pull B", legsB: "Legs B",
+  reset: "Core and posture",
+};
+const DAY_ORDER = ["pushA", "pullA", "legsA", "pushB", "pullB", "legsB", "reset"];
+
+// Sunday first, to match how the week is read. Sun legs, Mon push, Tue pull,
+// Wed legs, Thu push, Fri pull, Sat the short reset day.
+const DEFAULT_DAYMAP = ["legsA", "pushA", "pullA", "legsB", "pushB", "pullB", "reset"];
+
+const DEFAULT_PLAN = {
+  pushA: [
+    { ex: "inc_db_press", sets: 4 },
+    { ex: "smith_ohp", sets: 3 },
+    { ex: "cable_fly_low", sets: 3 },
+    { ex: "cable_lat_raise", sets: 4 },
+    { ex: "tri_pushdown", sets: 3 },
+    { ex: "hang_leg_raise", sets: 3 },
+  ],
+  pushB: [
+    { ex: "inc_smith_press", sets: 4 },
+    { ex: "db_ohp", sets: 3 },
+    { ex: "dip", sets: 3 },
+    { ex: "lean_lat_raise", sets: 4 },
+    { ex: "tri_overhead", sets: 3 },
+    { ex: "cable_crunch", sets: 3 },
+  ],
+  pullA: [
+    { ex: "pulldown_wide", sets: 4 },
+    { ex: "cable_row", sets: 3 },
+    { ex: "straight_arm", sets: 3 },
+    { ex: "face_pull", sets: 3 },
+    { ex: "incline_curl", sets: 3 },
+    { ex: "hammer_curl", sets: 3 },
+  ],
+  pullB: [
+    { ex: "pullup", sets: 4 },
+    { ex: "chest_sup_row", sets: 3 },
+    { ex: "pulldown_close", sets: 3 },
+    { ex: "rear_delt_fly", sets: 3 },
+    { ex: "preacher_curl", sets: 3 },
+    { ex: "shrug", sets: 3 },
+  ],
+  legsA: [
+    { ex: "smith_squat", sets: 4 },
+    { ex: "rdl", sets: 3 },
+    { ex: "leg_ext", sets: 3 },
+    { ex: "calf_standing", sets: 4 },
+    { ex: "back_ext", sets: 3 },
+  ],
+  legsB: [
+    { ex: "leg_press", sets: 4 },
+    { ex: "leg_curl", sets: 3 },
+    { ex: "hip_thrust", sets: 3 },
+    { ex: "calf_seated", sets: 4 },
+    { ex: "pallof", sets: 3 },
+  ],
+  reset: [
+    { ex: "dead_bug", sets: 3 },
+    { ex: "bird_dog", sets: 3 },
+    { ex: "side_plank", sets: 3 },
+    { ex: "back_ext", sets: 3 },
+    { ex: "neck_ext", sets: 2 },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+// Warm-up and cool-down. Eight minutes before, five after. Thirteen total,
+// under the fifteen minute ceiling.
+// ---------------------------------------------------------------------------
+
+const WARMUP = [
+  { n: "Easy cardio", d: "Treadmill or bike, enough to break a light sweat. Not a workout.", s: 180 },
+  { n: "Dead hang", d: "Hang off the pull-up bar, shoulders relaxed. Resets the spine after a night in bed.", s: 30 },
+  { n: "Chin tucks", d: "Pull the chin straight back, hold two seconds. Ten of them. Undoes the phone posture.", s: 45 },
+  { n: "Wall slides", d: "Back to the wall, arms up and down slowly. Ten slow ones. Opens the shoulders.", s: 60 },
+  { n: "Cat cow", d: "On the floor, arch and round the spine slowly. Ten rounds. Wakes the lower back gently.", s: 60 },
+  { n: "Hip hinge drill", d: "Hands on hips, push them back and come up. Fifteen. Grooves the pattern before you load it.", s: 45 },
+  { n: "Light face pulls", d: "One easy set of fifteen on the cable. Switches the rear shoulders on.", s: 60 },
+];
+
+const COOLDOWN = [
+  { n: "Dead hang", d: "Thirty seconds again. Decompresses everything you just loaded.", s: 30 },
+  { n: "Chest stretch", d: "Forearm on the rack upright, turn away. Thirty seconds each side.", s: 60 },
+  { n: "Hip flexor stretch", d: "Half kneeling, squeeze the back glute, push the hips forward. Thirty each side.", s: 60 },
+  { n: "Hamstring stretch", d: "Heel on a bench, hinge forward with a flat back. Thirty each side.", s: 60 },
+  { n: "Child's pose", d: "Sit back on your heels, arms long. Breathe out slowly. Sixty seconds.", s: 60 },
+];
+
+// Poses for progress photos, and the tape sites worth tracking.
+const POSES = [["front", "Front"], ["back", "Back"], ["side", "Side"]];
+const MEASURE_SITES = [
+  ["shoulders", "Shoulders", "the widest point, arms relaxed at your sides"],
+  ["chest", "Chest", "across the nipple line, breathing out normally"],
+  ["waist", "Waist", "right over the belly button, do not suck in"],
+  ["arm", "Arm", "the biggest part of the upper arm, flexed"],
+  ["forearm", "Forearm", "the biggest part, hand open"],
+  ["thigh", "Thigh", "the biggest part, standing relaxed"],
+  ["calf", "Calf", "the biggest part, standing"],
+  ["neck", "Neck", "just under the Adam's apple"],
+];
+
+if (typeof module !== "undefined") module.exports = { MUSCLES, SET_BAND, STEP_BY_EQ, EXERCISES, EXMAP, DAY_NAMES, DAY_ORDER, DEFAULT_DAYMAP, DEFAULT_PLAN, WARMUP, COOLDOWN, POSES, MEASURE_SITES };

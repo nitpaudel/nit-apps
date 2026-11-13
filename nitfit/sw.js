@@ -1,6 +1,6 @@
 // Makes NitFit open instantly from the copy saved on the phone, and checks for a newer
 // version in the background. A newer version shows the next time NitFit opens.
-const CACHE = "nitfit-v1";
+const CACHE = "nitfit-v2";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-180.png", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/launch-1170x2532.png"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: "reload" })))).then(() => self.skipWaiting()));

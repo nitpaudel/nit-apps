@@ -1,5 +1,5 @@
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "0.1";
+const APP_VERSION = "1.0";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -40,10 +40,10 @@ let storageBroken = "";
 function storageFail(e) { storageBroken = (e && e.name === "QuotaExceededError") ? "Your phone is out of space. Free some space now." : "Could not save to the phone. Close NitFit and open it again."; if (typeof render === "function") render(); }
 
 // ----- events and state -----
-const DEFAULT_SETTINGS = { kcal: 2650, protein: 120, proteinFloor: 100, tdee: 2400, goalRate: 0.22, heightCm: 177, bfGuess: 14, sleepBadH: 7, vol: 0.6, mix: true, restOn: true, usual: DEFAULT_USUAL, blockStart: null, easyOff: null, easyOn: null, exclude: null };
+const DEFAULT_SETTINGS = { heightCm: 177, bfGuess: 14, sleepBadH: 7, vol: 0.6, mix: true, restOn: true, theme: "dark", blockStart: null, easyOff: null, easyOn: null };
 let EV = []; const EVIDS = new Set(); let S = null;
 function freshState() {
-  return { sessions: {}, sets: {}, bySession: {}, byEx: {}, weights: {}, measures: [], photos: [], food: [], creatine: {}, checkins: [], settings: clone(DEFAULT_SETTINGS), plan: clone(DEFAULT_PLAN), dayMap: DEFAULT_DAYMAP.slice(), exo: {}, sleepManual: {}, energy: {}, customFoods: [] };
+  return { sessions: {}, sets: {}, bySession: {}, byEx: {}, weights: {}, measures: [], photos: [], settings: clone(DEFAULT_SETTINGS), plan: clone(DEFAULT_PLAN), dayMap: DEFAULT_DAYMAP.slice(), exo: {}, sleepManual: {}, energy: {} };
 }
 const evSort = (a, b) => a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 function rebuild() {
@@ -55,7 +55,7 @@ function removeRef(id) {
   const st = S.sets[id];
   if (st) { delete S.sets[id]; const a = S.bySession[st.sessionId], b = S.byEx[st.exId]; if (a) a.splice(a.indexOf(id), 1); if (b) b.splice(b.indexOf(id), 1); return; }
   if (S.sessions[id]) { delete S.sessions[id]; return; }
-  for (const k of ["food", "measures", "photos", "checkins"]) { const i = S[k].findIndex(x => x.id === id); if (i >= 0) { S[k].splice(i, 1); return; } }
+  for (const k of ["measures", "photos"]) { const i = S[k].findIndex(x => x.id === id); if (i >= 0) { S[k].splice(i, 1); return; } }
   for (const d in S.weights) if (S.weights[d].id === id) { delete S.weights[d]; return; }
 }
 function applyEvent(e) {
@@ -71,10 +71,6 @@ function applyEvent(e) {
     case "weight.logged": S.weights[e.d] = { id: e.id, d: e.d, kg: p.kg }; break;
     case "measure.logged": S.measures.push({ id: e.id, d: e.d, site: p.site, cm: p.cm }); break;
     case "photo.added": S.photos.push({ id: e.id, d: e.d, pose: p.pose, photoId: p.photoId }); break;
-    case "food.logged": S.food.push({ id: e.id, d: e.d, ts: e.ts, foodId: p.foodId, n: p.n, qty: p.qty || 1, kcal: p.kcal, p: p.p, c: p.c || 0, f: p.f || 0, batch: p.batch || null }); break;
-    case "food.custom": S.customFoods = S.customFoods.filter(x => x.id !== p.id).concat([p]); break;
-    case "creatine.logged": S.creatine[e.d] = p.on !== false; break;
-    case "checkin.done": S.checkins.push(Object.assign({ id: e.id, d: e.d }, p)); break;
     case "settings.upserted": Object.assign(S.settings, p); break;
     case "plan.upserted": if (p.plan) S.plan = p.plan; if (p.dayMap) S.dayMap = p.dayMap; break;
     case "exercise.upserted": S.exo[p.exId] = Object.assign(S.exo[p.exId] || {}, p); break;
@@ -93,8 +89,6 @@ const DIRTYSEQ = {};
 function markDirty(m) { DIRTYSEQ[m] = (DIRTYSEQ[m] || 0) + 1; const a = KV.dirty || []; if (!a.includes(m)) { a.push(m); kvSet("dirty", a); } }
 const getEx = id => { const b = EXMAP[id], o = S.exo[id]; return b || o ? Object.assign({ id, n: id, m: "Other", s: [], eq: "machine", kind: "i", r: [10, 15], rest: 90, step: 5, cue: "" }, b, o) : null; };
 const allExercises = () => EXERCISES.map(e => getEx(e.id)).concat(Object.values(S.exo).filter(o => o.custom && !EXMAP[o.exId]).map(o => getEx(o.exId)));
-const allFoods = () => FOODS.concat(S.customFoods);
-const getFood = id => FOODMAP[id] || S.customFoods.find(f => f.id === id);
 
 // history of one exercise: finished sets grouped by workout, oldest first
 function histFor(exId, skipSid) {
@@ -120,11 +114,6 @@ function weekInfo(d) {                      // which week of the 6 week block, a
   const ws = addDays(d, -dow(d)), idx = Math.floor(daysBetween(addDays(start, -dow(start)), ws) / 7);
   let easy = idx % 6 === 5; if (st.easyOff === ws) easy = false; if (st.easyOn === ws) easy = true;
   return { week: (idx % 6) + 1, easy, ws };
-}
-function foodDay(d) {
-  const items = S.food.filter(f => f.d === d), sum = k => items.reduce((a, f) => a + (f[k] || 0), 0);
-  const occ = new Set(items.map(f => f.batch ? f.batch + f.foodId : Math.floor(Date.parse(f.ts) / 5400e3))).size;
-  return { items, kcal: Math.round(sum("kcal")), p: Math.round(sum("p")), c: Math.round(sum("c")), f: Math.round(sum("f")), meals: items.some(f => f.batch) ? Math.max(2, occ) : occ };
 }
 
 // ----- GitHub sync -----
