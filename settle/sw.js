@@ -1,6 +1,6 @@
 // Makes Settle open instantly from the copy saved on the phone, and quietly checks for a newer
 // version in the background. A newer version is saved and shows the next time Settle opens.
-const CACHE = "settle-v21";
+const CACHE = "settle-v22";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./fonts/instrument-serif.woff2", "./fonts/sans-400.woff2", "./fonts/sans-500.woff2", "./fonts/sans-600.woff2", "./statement.js", "./vendor/html2canvas.min.js", "./vendor/jspdf.umd.min.js", "./icons/icon-180.png", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/launch-1170x2532.png",
   ...["mono", "green", "navy", "paper", "word"].map(k => `./icons/${k}-180.png`)];
 
@@ -34,12 +34,13 @@ self.addEventListener("fetch", e => {
   if (e.request.mode === "navigate"){
     e.respondWith((async () => {
       const cache = await caches.open(CACHE);
-      // 1. the saved copy, from any version we have: opens instantly, even offline
+      // 1. online: get the newest page first (waits at most 2.5s), so one reopen always shows the latest version
+      const had = await cache.match("./index.html");
+      try { await within(freshPage(cache), had ? 2500 : 8000); } catch(_){}
+      // 2. offline or slow: the saved copy, from any version we have
       const hit = (await cache.match("./index.html")) || (await caches.match("./index.html", { ignoreSearch: true }));
-      if (hit){ e.waitUntil(freshPage(cache).catch(() => {})); return hit; }
-      // 2. nothing saved yet (first ever open): use the internet
-      try { await within(freshPage(cache), 8000); } catch(_){}
-      return (await cache.match("./index.html")) || fetch(e.request);
+      if (hit) return hit;
+      return fetch(e.request);
     })());
     return;
   }
