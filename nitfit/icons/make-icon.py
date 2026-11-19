@@ -28,17 +28,15 @@ gw, gh = W, 2*H + gap
 ox, oy = (S-gw)/2, (S-gh)/2
 letters = f'<g transform="translate({ox:.1f},{oy:.1f})" fill="none" stroke="#fff" stroke-width="{s:.1f}" stroke-linecap="butt" stroke-linejoin="miter"><path d="{n}"/><path d="{f_top}"/><path d="{f_mid}"/></g>'
 # ---- scanner: near the edges, glassy tube like the Visual Look Up icon ----
-inset, arm, r, w = 156, 172, 105, 44
+inset, arm, r, w = 158, 170, 105, 48
 brk = []
 for sx, sy in [(1,1),(-1,1),(1,-1),(-1,-1)]:
     x0 = inset if sx == 1 else S-inset; y0 = inset if sy == 1 else S-inset
     brk.append(f"M{x0},{y0+sy*arm} L{x0},{y0+sy*r} A{r},{r} 0 0 {1 if sx*sy==1 else 0} {x0+sx*r},{y0} L{x0+sx*arm},{y0}")
 bp = " ".join(brk)
 scanner = f'''
-<g filter="url(#sh)"><path d="{bp}" fill="none" stroke="#000" stroke-opacity=".55" stroke-width="{w}" stroke-linecap="round"/></g>
-<path d="{bp}" fill="none" stroke="url(#tube)" stroke-width="{w}" stroke-linecap="round"/>
-<path d="{bp}" fill="none" stroke="url(#rim)" stroke-width="{w}" stroke-linecap="round" mask="url(#inner)"/>
-<g filter="url(#soft)"><path d="{bp}" fill="none" stroke="#fff" stroke-opacity=".30" stroke-width="{w*0.34:.1f}" stroke-linecap="round" transform="translate(-6,-7)" mask="url(#clip)"/></g>'''
+<path d="{bp}" fill="none" stroke="#b0b0b2" stroke-width="{w}" stroke-linecap="round"/>
+<g filter="url(#soft)"><path d="{bp}" fill="none" stroke="#7f7f81" stroke-width="{w-22}" stroke-linecap="round"/></g>'''
 defs = f'''<defs>
 <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#212121"/><stop offset="1" stop-color="#0e0e0e"/></linearGradient>
 <linearGradient id="tube" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a4a4a9"/><stop offset=".5" stop-color="#85858a"/><stop offset="1" stop-color="#6c6c71"/></linearGradient>
@@ -46,12 +44,12 @@ defs = f'''<defs>
 <mask id="inner"><rect width="{S}" height="{S}" fill="#fff"/></mask>
 <mask id="clip"><path d="{bp}" fill="none" stroke="#fff" stroke-width="{w}" stroke-linecap="round" transform="translate(6,7)"/></mask>
 <filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feOffset dy="6"/><feGaussianBlur stdDeviation="7"/></filter>
-<filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4"/></filter>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.5"/></filter>
 </defs>'''
 svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="{S}" height="{S}" viewBox="0 0 {S} {S}">{defs}<rect width="{S}" height="{S}" fill="url(#bg)"/>{scanner}{letters}</svg>'
-open("/home/claude/nitfit-icon/nitfit3.svg", "w").write(svg)
+open("/home/claude/nitfit-icon/nitfit4.svg", "w").write(svg)
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path="/usr/bin/google-chrome", args=["--no-sandbox"])
     pg = b.new_page(viewport={"width": S, "height": S}); pg.set_content(f'<html><body style="margin:0">{svg}</body></html>')
-    pg.screenshot(path="/home/claude/nitfit-icon/nitfit3-1024.png"); b.close()
+    pg.screenshot(path="/home/claude/nitfit-icon/nitfit4-1024.png"); b.close()
 print("ok")
