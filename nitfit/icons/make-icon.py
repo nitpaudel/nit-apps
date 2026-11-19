@@ -3,7 +3,7 @@ from playwright.sync_api import sync_playwright
 S = 1024
 # ---- proportions measured from the MF logo (in its own units) ----
 RW, RH, RS, RGAP = 236, 156, 40, 22          # letter width, letter height, stroke, gap between letters
-k = 396 / RW                                   # scale so the letters sit well inside the scanner
+k = 471 / (2*RH + RGAP)                        # NF fits the apple glyph's height in the Apple icon
 W, H, s, gap = RW*k, RH*k, RS*k, RGAP*k
 a = s / 2
 def arc_corner(p_prev, p, p_next, r):
@@ -28,11 +28,11 @@ gw, gh = W, 2*H + gap
 ox, oy = (S-gw)/2, (S-gh)/2
 letters = f'<g transform="translate({ox:.1f},{oy:.1f})" fill="none" stroke="#fff" stroke-width="{s:.1f}" stroke-linecap="butt" stroke-linejoin="miter"><path d="{n}"/><path d="{f_top}"/><path d="{f_mid}"/></g>'
 # ---- scanner: near the edges, glassy tube like the Visual Look Up icon ----
-inset, arm, r, w = 136, 171, 69, 38
+inset, arm, r, w = 156, 172, 105, 44
 brk = []
 for sx, sy in [(1,1),(-1,1),(1,-1),(-1,-1)]:
     x0 = inset if sx == 1 else S-inset; y0 = inset if sy == 1 else S-inset
-    brk.append(f"M{x0},{y0+sy*arm} L{x0},{y0+sy*r} Q{x0},{y0} {x0+sx*r},{y0} L{x0+sx*arm},{y0}")
+    brk.append(f"M{x0},{y0+sy*arm} L{x0},{y0+sy*r} A{r},{r} 0 0 {1 if sx*sy==1 else 0} {x0+sx*r},{y0} L{x0+sx*arm},{y0}")
 bp = " ".join(brk)
 scanner = f'''
 <g filter="url(#sh)"><path d="{bp}" fill="none" stroke="#000" stroke-opacity=".55" stroke-width="{w}" stroke-linecap="round"/></g>
@@ -49,9 +49,9 @@ defs = f'''<defs>
 <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4"/></filter>
 </defs>'''
 svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="{S}" height="{S}" viewBox="0 0 {S} {S}">{defs}<rect width="{S}" height="{S}" fill="url(#bg)"/>{scanner}{letters}</svg>'
-open("/home/claude/nitfit-icon/nitfit2.svg", "w").write(svg)
+open("/home/claude/nitfit-icon/nitfit3.svg", "w").write(svg)
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path="/usr/bin/google-chrome", args=["--no-sandbox"])
     pg = b.new_page(viewport={"width": S, "height": S}); pg.set_content(f'<html><body style="margin:0">{svg}</body></html>')
-    pg.screenshot(path="/home/claude/nitfit-icon/nitfit2-1024.png"); b.close()
+    pg.screenshot(path="/home/claude/nitfit-icon/nitfit3-1024.png"); b.close()
 print("ok")
