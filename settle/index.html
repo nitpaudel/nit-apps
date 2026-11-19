@@ -322,6 +322,7 @@ html[data-card="default"] .sheet.float .key.clear{background:none}
 .dirsw{display:grid;grid-template-columns:1fr 1fr;width:240px;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
 .dirsw button{padding:0;width:100%}
 .av.in{font:400 20px -apple-system,sans-serif;color:var(--green)}
+.av.in svg{width:16px;height:16px;display:block}
 .inamt{color:var(--green)}
 .dates{margin-top:10px}
 .dates .kv{padding:8px 4px;min-height:44px}
@@ -408,6 +409,7 @@ function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add
 
 const I = {
   gear:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>`,
+  plus:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`,
   check:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`,
   del:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H8.5L3 12l5.5 7H21a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1zM12 9.5l5 5M17 9.5l-5 5"/></svg>`,
   out:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>`,
@@ -496,7 +498,7 @@ function render(){
   drawSpend(); drawBalance();
 }
 function rowHTML(e){
-  if (isIn(e)) return `<button class="row" data-entry="${e.id}"><div class="av in">+</div>
+  if (isIn(e)) return `<button class="row" data-entry="${e.id}"><div class="av in">${I.plus}</div>
     <div class="m"><b>From ${esc(e.payee)}</b><span>${timeLabel(e.at)} · Money in${e.note ? " · " + esc(e.note) : ""}</span></div>
     <div class="r"><b class="num inamt">+${rs(e.amount)}</b><span class="tag">Into Mom's account</span></div></button>`;
   const meta = `${timeLabel(e.at)} · ${BACK[e.back]}`;
@@ -778,7 +780,7 @@ function openStatement(){
           <div class="m"><b>${esc(ev.e.payee)}</b><span>${shortDate(ev.at)}, ${timeLabel(ev.at)} · ${BACK[ev.e.back]}</span></div>
           <div class="r"><b class="num">&minus; ${rs(ev.amount)}</b><span class="balr num">${rs(ev.bal)}</span></div></button>`
       : ev.type === "in"
-      ? `<button class="row" data-entry="${ev.e.id}"><div class="av in">+</div>
+      ? `<button class="row" data-entry="${ev.e.id}"><div class="av in">${I.plus}</div>
           <div class="m"><b>From ${esc(ev.e.payee)}</b><span>${shortDate(ev.at)}, ${timeLabel(ev.at)} · Money in</span></div>
           <div class="r"><b class="num inamt">+${rs(ev.amount)}</b><span class="balr num">${rs(ev.bal)}</span></div></button>`
       : `<div class="row ck" data-ck="${esc(ev.key)}"><div class="av">${I.check}</div>
