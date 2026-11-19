@@ -793,23 +793,58 @@ function openStatement(){
   sbody.querySelectorAll("[data-ck]").forEach(r => r.onclick = () => openCheckinRow(r.dataset.ck));
   const label = () => { const [a, b] = rangeDates(pdfRange); const f = d => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
     q("[data-prtext]").textContent = `${f(a)} to ${f(b)}`; };
-  sbody.querySelectorAll("[data-pr]").forEach(b => b.onclick = () => { pdfRange = b.dataset.pr; haptic();
+  sbody.querySelectorAll("[data-pr]").forEach(b => b.onclick = () => { pdfRange = b.dataset.pr; haptic(); resetPdf();
     sbody.querySelectorAll("[data-pr]").forEach(x => x.classList.toggle("on", x === b));
     q("[data-prmore]").classList.toggle("on", more.includes(pdfRange));
     q("[data-custom]").hidden = pdfRange !== "Custom"; if (!more.includes(pdfRange)){ pdfMore = false; q("[data-morebox]").hidden = true; } label(); });
   q("[data-prmore]").onclick = () => { pdfMore = !pdfMore || more.includes(pdfRange); q("[data-morebox]").hidden = !pdfMore; haptic(); };
-  ["[data-from]", "[data-to]"].forEach(k => q(k).onchange = label);
-  q("[data-pdf]").onclick = () => { const [a, b] = rangeDates(pdfRange); if (a > b) return toast("The From date is after the To date"); makePDF(a, b); };
+  ["[data-from]", "[data-to]"].forEach(k => q(k).onchange = () => { label(); resetPdf(); });
+  const startPdf = () => { const [a, b] = rangeDates(pdfRange); if (a > b) return toast("The From date is after the To date"); makePDF(a, b); };
+  const resetPdf = () => { const pb = q("[data-pdf]"); pb.textContent = "Download statement"; pb.onclick = startPdf; };
+  q("[data-pdf]").onclick = startPdf;
   label();
 }
+/* iPhone home-screen apps can't print, so the PDF is built right here: each A4 page is drawn
+   to an image (html2canvas) and put into a PDF (jsPDF), then handed to the share sheet. */
+const loadScript = src => new Promise((ok, bad) => { if (document.querySelector(`script[src="${src}"]`)) return ok();
+  const t = document.createElement("script"); t.src = src; t.onload = ok; t.onerror = bad; document.head.appendChild(t); });
 async function makePDF(start, end){
   if (typeof renderStatement !== "function") return toast("Statement isn't ready. Open Settle once with internet.");
-  const box = $("#stmt"); box.innerHTML = renderStatement(db, start, end, { base: "" });
-  try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch(e){}
-  document.title = `Settle statement ${dayKey(start)} to ${dayKey(end)}`;
-  haptic(); setTimeout(() => { window.print(); }, 60);
+  const btn = sbody.querySelector("[data-pdf]"); if (btn){ btn.disabled = true; btn.textContent = "Making your PDF…"; }
+  const name = `Settle statement ${dayKey(start)} to ${dayKey(end)}.pdf`;
+  const box = $("#stmt");
+  try {
+    await Promise.all([loadScript("vendor/html2canvas.min.js"), loadScript("vendor/jspdf.umd.min.js")]);
+    box.innerHTML = renderStatement(db, start, end, { base: "" });
+    box.style.cssText = "display:block;position:fixed;left:-10000px;top:0;width:210mm;background:#fff;z-index:-1";
+    try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch(e){}
+    const pages = [...box.querySelectorAll(".s-page")];
+    const pdf = new window.jspdf.jsPDF({ unit: "mm", format: "a4", compress: true });
+    for (let i = 0; i < pages.length; i++){
+      if (btn) btn.textContent = `Making your PDF… ${i + 1} of ${pages.length}`;
+      const c = await html2canvas(pages[i], { scale: 2, backgroundColor: "#ffffff", logging: false, useCORS: true });
+      if (i) pdf.addPage("a4", "portrait");
+      pdf.addImage(c.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, 210, 297);
+    }
+    const file = new File([pdf.output("blob")], name, { type: "application/pdf" });
+    box.innerHTML = ""; box.style.cssText = "";
+    haptic(); pdfReady(file);
+  } catch(e){
+    box.innerHTML = ""; box.style.cssText = "";
+    if (btn){ btn.disabled = false; btn.textContent = "Download statement"; }
+    toast(navigator.onLine ? "Couldn't make the PDF. Try again." : "Connect to the internet once, then try again.");
+  }
 }
-addEventListener("afterprint", () => { $("#stmt").innerHTML = ""; document.title = "Settle"; });
+function pdfReady(file){
+  const btn = sbody.querySelector("[data-pdf]"); if (!btn) return;
+  btn.disabled = false; btn.textContent = "Save or share PDF";
+  btn.onclick = async () => {   // a fresh tap, so the iPhone allows the share sheet
+    try { if (navigator.canShare && navigator.canShare({ files: [file] })){ await navigator.share({ files: [file], title: file.name }); return; } }
+    catch(e){ if (e && e.name === "AbortError") return; }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+  };
+}
 
 /* ================= one payment ================= */
 function openEntry(id){
