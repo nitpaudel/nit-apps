@@ -286,7 +286,10 @@ html[data-card="default"] .sheet.float{background:#1c1c1f;-webkit-backdrop-filte
 html[data-card="default"] .sheet.float :where(.key,.chip,.group,.pill.soft,.sheet.add .seg2 .tg button,.sheet.add .next:not(.ready)){background:#2c2c30;box-shadow:none}
 html[data-card="default"] .sheet.float :where(.tg:not(.seg2 .tg),.seg){background:#2c2c30;box-shadow:none}
 html[data-card="default"] .sheet.float .key:active{background:#3a3a3f}
-html[data-card="default"] .sheet.float :is(.chip.on,.tg button.on,.seg button.on){color:#000;background:#f5f5f7;box-shadow:none}
+html[data-card="default"] .sheet.float :is(.chip.on,.tg button.on,.seg button.on){color:#fff;background:#55555b;box-shadow:none}
+/* Default: every label and option stays white, nothing goes dark */
+html[data-card="default"] .sheet.float{--text2:#f5f5f7}
+html[data-card="default"] .sheet.float :is(.tg button,.seg button,.chip,.seg2>span,.slbl,.hint){color:#f5f5f7}
 html[data-card="default"] .sheet.float .key.clear{background:none}
 .sheet.float .key.clear{background:none!important;box-shadow:none!important}
 .sheet.float .chip.dashed{background:none!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)!important}
