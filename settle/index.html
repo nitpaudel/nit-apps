@@ -41,98 +41,99 @@ svg{display:block}
 [hidden]{display:none!important}
 .num{font-variant-numeric:tabular-nums}
 
-/* ===== surfaces: flat graphite steps with hairlines, no glass ===== */
-.card{position:relative;border-radius:16px;background:#121214;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
-.panel{background:#161618;box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 -24px 64px rgba(0,0,0,.55)}
-.gbtn{color:var(--text2);background:transparent;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
-.gbtn:active{background:rgba(255,255,255,.06)}
-/* the accountant's double rule under a final figure: Settle's signature */
-.ledger{display:inline-block;padding-bottom:4px;border-bottom:3px double rgba(245,245,247,.55)}
+/* ===== glass ===== */
+.gbtn{color:var(--text);background:rgba(255,255,255,.04);
+  -webkit-backdrop-filter:blur(6px) saturate(170%) brightness(1.18);backdrop-filter:blur(6px) saturate(170%) brightness(1.18);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 2px 2.5px 1px -1px rgba(255,255,255,.5),inset -2px -2px 1px -1px rgba(255,255,255,.22),
+    inset 0 0 10px rgba(0,0,0,.35),0 8px 22px rgba(0,0,0,.5)}
+.card{position:relative;border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.03));
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12),inset 0 1px 0 rgba(255,255,255,.16)}
+.panel{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.015)),rgba(22,22,26,.84);
+  -webkit-backdrop-filter:blur(34px) saturate(190%);backdrop-filter:blur(34px) saturate(190%);
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.14),inset 0 1.5px 0 rgba(255,255,255,.22),0 30px 80px rgba(0,0,0,.6)}
 
 /* ===== layout ===== */
 #main{position:fixed;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;
   padding:calc(var(--sat) + 8px) 16px calc(var(--sab) + 120px)}
+#glow{position:fixed;left:50%;top:-120px;width:520px;height:420px;margin-left:-260px;pointer-events:none;z-index:-1;
+  background:radial-gradient(closest-side,rgba(255,255,255,.07),rgba(255,255,255,0))}
 .bar{position:fixed;left:0;right:0;top:0;z-index:20;height:calc(var(--sat) + 44px);padding-top:var(--sat);display:flex;align-items:center;justify-content:center;
   opacity:0;pointer-events:none;transition:opacity .25s;background:rgba(0,0,0,.62);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:0 .5px 0 var(--sep)}
 .bar.on{opacity:1}
 .bar b{font:400 22px var(--serif);letter-spacing:.2px}
-.top{display:flex;align-items:center;justify-content:space-between;height:64px;margin:4px 0 8px}
+.top{display:flex;align-items:center;justify-content:space-between;height:64px;margin:4px 2px 6px}
 .title{font:400 44px/1 var(--serif);letter-spacing:.2px}
 .round{width:40px;height:40px;border-radius:50%;display:grid;place-items:center}
 .round svg{width:20px;height:20px}
 .ico{width:22px;height:22px}
 
 /* hero */
-.hero{padding:20px 4px 28px;margin-bottom:8px}
+.hero{padding:22px 22px 18px;margin-bottom:12px}
 .lbl{font-size:13px;color:var(--text2);letter-spacing:.1px}
-.big{font:400 72px/1 var(--serif);letter-spacing:-.4px;margin:8px 0 0}
-.big small{font:400 28px var(--serif);color:var(--text2);margin-right:8px;letter-spacing:0}
-.hero-row{display:grid;grid-template-columns:1fr 1fr;margin-top:24px;border-top:1px solid var(--sep)}
-.stat{padding:16px 0 0}
-.stat + .stat{padding-left:16px;border-left:1px solid var(--sep)}
-.stat .v{font-size:20px;font-weight:500;margin-top:4px}
-.pill{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:14px;font-size:16px;font-weight:500}
-.pill.white{background:#f2f2f4;color:#0b0b0c}
-.pill.soft{background:#1f1f22;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+.big{font:400 54px/1.05 var(--serif);letter-spacing:-.3px;margin:6px 0 2px}
+.big small{font:400 24px var(--serif);color:var(--text2);margin-right:6px;letter-spacing:0}
+.hero-row{display:flex;gap:10px;margin-top:16px}
+.stat{flex:1;border-radius:16px;padding:11px 13px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.08)}
+.stat .v{font-size:17px;font-weight:600;margin-top:2px;letter-spacing:-.2px}
+.pill{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:44px;padding:0 20px;border-radius:22px;font-size:16px;font-weight:600}
+.pill.white{background:#f5f5f7;color:#000}
+.pill.soft{background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12)}
 .pill.red{color:var(--red);background:rgba(255,69,58,.12)}
 .pill:active,.opt:active,.chip:active,.row:active,.key:active,.mrow:active{transform:scale(.97);transition:transform .08s}
 .pill,.opt,.chip,.row,.key,.mrow{transition:transform .25s var(--ease),background .2s}
-.settle-btn{width:100%;margin-top:24px}
+.settle-btn{width:100%;margin-top:14px}
 
 /* check-in banner */
-.due{display:flex;align-items:center;gap:12px;padding:12px 12px 12px 16px;margin-bottom:12px}
+.due{display:flex;align-items:center;gap:12px;padding:14px 14px 14px 16px;margin-bottom:12px}
 .due .t{flex:1;min-width:0}
-.due .t b{display:block;font-size:16px;font-weight:500}
+.due .t b{display:block;font-size:16px;font-weight:600}
 .due .t span{font-size:13px;color:var(--text2)}
-.due .pill{height:36px;padding:0 16px;font-size:15px;border-radius:10px}
+.due .pill{height:36px;padding:0 14px;font-size:15px}
 .due .skip{font-size:15px;color:var(--text2);padding:8px 4px}
 
 /* charts */
-.chart-card{padding:20px 20px 16px;margin-bottom:12px}
+.chart-card{padding:18px 18px 12px;margin-bottom:12px}
 .ch-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .ch-val{font:400 32px/1.1 var(--serif);margin-top:4px}
 .ch-sub{font-size:13px;color:var(--text2);margin-top:2px;min-height:17px}
-.seg{display:flex;background:#1a1a1d;border-radius:10px;padding:2px;margin-top:12px}
-.seg button{flex:1;height:32px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text2);transition:background .2s,color .2s}
-.seg button.on{background:#2a2a2e;color:var(--text)}
-.chart{position:relative;height:184px;margin:12px -4px 0;touch-action:pan-y}
-.balrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:16px 20px;margin-bottom:12px}
-.balrow .m{flex:1;min-width:0}
-.balrow .ch-val{font-size:28px}
+.seg{display:flex;background:var(--fill2);border-radius:10px;padding:2px;margin-top:12px}
+.seg button{flex:1;height:30px;border-radius:8px;font-size:13px;font-weight:600;color:var(--text2)}
+.seg button.on{background:rgba(255,255,255,.14);color:var(--text);box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.chart{position:relative;height:170px;margin:10px -4px 0;touch-action:pan-y}
 .chart svg{width:100%;height:100%;overflow:visible}
 .chart text{fill:var(--text3);font-size:11px;font-weight:500}
 .empty-chart{position:absolute;inset:0;display:grid;place-items:center;font-size:14px;color:var(--text2);text-align:center;padding:0 30px}
 .mini-btn{font-size:15px;color:var(--text2);padding:6px 2px;font-weight:500}
 
 /* sections */
-.sec{display:flex;align-items:baseline;justify-content:space-between;margin:32px 4px 12px}
+.sec{display:flex;align-items:baseline;justify-content:space-between;margin:26px 4px 10px}
 .sec h2{font:400 26px var(--serif);letter-spacing:.2px}
-.day{font-size:13px;color:var(--text2);margin:16px 4px 8px;font-weight:500}
+.day{font-size:13px;color:var(--text2);margin:16px 6px 8px;font-weight:500}
 .list{padding:4px 0;overflow:hidden}
-.row{display:flex;align-items:center;gap:12px;padding:12px 16px;width:100%;text-align:left;position:relative}
+.row{display:flex;align-items:center;gap:12px;padding:11px 16px;width:100%;text-align:left;position:relative}
 .row + .row::before{content:"";position:absolute;left:64px;right:0;top:0;height:.5px;background:var(--sep)}
-.av{width:36px;height:36px;border-radius:50%;flex:none;display:grid;place-items:center;font:400 20px var(--serif);color:var(--text2);background:#1c1c1f}
+.av{width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center;font:400 19px var(--serif);background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12)}
 .row .m{flex:1;min-width:0}
-.row .m b{display:block;font-weight:500;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .m b{display:block;font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .m span{display:block;font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .r{text-align:right;flex:none}
-.row .r b{display:block;font-weight:500;font-size:16px}
+.row .r b{display:block;font-weight:600;font-size:16px;letter-spacing:-.2px}
 .tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--text2)}
 .tag.paid{color:var(--green)}
 .tag svg{width:12px;height:12px}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--text2)}
 .empty{padding:34px 24px;text-align:center;color:var(--text2);font-size:15px}
 .empty b{display:block;color:var(--text);font:400 22px var(--serif);margin-bottom:6px}
-.mrow{display:flex;align-items:center;gap:12px;padding:16px;width:100%;text-align:left;position:relative}
+.mrow{display:flex;align-items:center;gap:12px;padding:14px 16px;width:100%;text-align:left;position:relative}
 .mrow + .mrow::before{content:"";position:absolute;left:16px;right:0;top:0;height:.5px;background:var(--sep)}
 .mrow .m{flex:1}
-.mrow .m b{font-weight:500}
+.mrow .m b{font-weight:600}
 .mrow .m span{display:block;font-size:13px;color:var(--text2)}
 .chev{width:8px;height:14px;color:var(--text3)}
 .more{display:block;margin:10px auto 0;font-size:15px;color:var(--text2);padding:8px 16px}
 
 /* + button */
-.fab{position:fixed;right:20px;bottom:calc(var(--sab) + 24px);z-index:30;width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:#f2f2f4;color:#0b0b0c;box-shadow:0 8px 24px rgba(0,0,0,.55);transition:transform .3s var(--ease)}
+.fab{position:fixed;right:20px;bottom:calc(var(--sab) + 22px);z-index:30;width:62px;height:62px;border-radius:50%;display:grid;place-items:center;transition:transform .3s var(--ease)}
 .fab svg{width:26px;height:26px}
 .fab:active{transform:scale(.9)}
 
@@ -155,34 +156,34 @@ svg{display:block}
 .steps{display:flex;gap:6px;justify-content:center}
 .steps i{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.2);transition:width .35s var(--ease),background .3s}
 .steps i.on{width:18px;background:#fff}
-.q{font:400 30px/1.15 var(--serif);text-align:center;margin:16px 8px 4px}
+.q{font:400 30px/1.15 var(--serif);text-align:center;margin:14px 10px 4px}
 .qs{text-align:center;font-size:14px;color:var(--text2);margin-bottom:16px}
 .amt{font:400 60px/1.1 var(--serif);text-align:center;margin:18px 0 4px;letter-spacing:-.3px;min-height:70px}
 .amt small{font-size:28px;color:var(--text2);margin-right:6px}
 .amt.zero{color:var(--text3)}
 .keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 14px}
-.key{height:56px;border-radius:12px;font-size:26px;font-weight:400;background:#1c1c1f;display:grid;place-items:center}
+.key{height:58px;border-radius:18px;font-size:26px;font-weight:400;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.08);display:grid;place-items:center}
 .key svg{width:26px;height:26px}
 .key.clear{background:none;box-shadow:none}
 .again{display:flex;gap:8px;overflow-x:auto;margin:0 -18px;padding:2px 18px 4px;scrollbar-width:none}
 .again::-webkit-scrollbar{display:none}
 .again .chip{flex:none}
 .chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:8px 0 14px}
-.chip{height:44px;padding:0 16px;border-radius:12px;font-size:16px;font-weight:500;background:#1c1c1f;display:inline-flex;align-items:center;gap:8px}
-.chip.on{background:#f2f2f4;color:#0b0b0c}
+.chip{height:44px;padding:0 18px;border-radius:22px;font-size:16px;font-weight:500;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1);display:inline-flex;align-items:center;gap:8px}
+.chip.on{background:#f5f5f7;color:#000}
 .chip.dashed{background:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22);color:var(--text2)}
 .chip small{color:var(--text2);font-size:14px}
-.field{width:100%;height:52px;border-radius:12px;border:0;outline:0;padding:0 16px;font-size:17px;background:#1c1c1f}
+.field{width:100%;height:52px;border-radius:16px;border:0;outline:0;padding:0 16px;font-size:17px;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1)}
 .field::placeholder{color:var(--text3)}
 .newp{display:flex;gap:8px;margin-bottom:10px}
 .newp .pill{flex:none;height:52px;border-radius:16px}
 .opts{display:flex;flex-direction:column;gap:10px;margin-top:10px}
-.opt{display:flex;align-items:center;gap:16px;padding:16px;border-radius:16px;text-align:left;background:#1c1c1f}
+.opt{display:flex;align-items:center;gap:14px;padding:16px;border-radius:20px;text-align:left;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1)}
 .opt .oi{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:rgba(255,255,255,.08);flex:none}
 .opt .oi svg{width:22px;height:22px}
 .opt b{display:block;font-size:17px;font-weight:600}
 .opt span{display:block;font-size:13px;color:var(--text2);margin-top:1px}
-.opt.on{background:#26262a;box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
+.opt.on{background:rgba(255,255,255,.14);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.7)}
 .notes{display:flex;flex-direction:column;gap:10px;margin-top:6px}
 .note{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 16px;border-radius:20px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1)}
 .note .nv{flex:1;font:400 26px var(--serif)}
@@ -197,7 +198,7 @@ svg{display:block}
 .next[aria-disabled="true"]{opacity:.35}
 
 /* review + details */
-.group{border-radius:16px;background:#1c1c1f;margin:12px 0;overflow:hidden}
+.group{border-radius:20px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1);margin:12px 0;overflow:hidden}
 .kv{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:50px;padding:12px 16px;position:relative}
 .kv + .kv::before{content:"";position:absolute;left:16px;right:0;top:0;height:.5px;background:var(--sep)}
 .kv span{color:var(--text2);font-size:15px}
@@ -206,7 +207,7 @@ svg{display:block}
 .kv input[type="datetime-local"]{color-scheme:dark;-webkit-appearance:none;appearance:none;max-width:60%}
 .kv input::placeholder{color:var(--text3)}
 .kv.tap{width:100%;text-align:left}
-.detail-amt{font:400 56px/1.1 var(--serif);text-align:center;margin-top:12px}
+.detail-amt{font:400 56px/1.1 var(--serif);text-align:center;margin-top:10px}
 .detail-sub{text-align:center;color:var(--text2);font-size:15px;margin-top:4px}
 .btns{display:flex;flex-direction:column;gap:10px;margin-top:16px}
 .btns .pill{width:100%;height:52px;border-radius:26px}
@@ -237,14 +238,14 @@ svg{display:block}
 .prow .chip{flex:none;height:40px;padding:0 16px;font-size:15px}
 .seg2{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:0 2px}
 .seg2>span{font-size:14px;color:var(--text2)}
-.tg{display:flex;background:#1a1a1d;border-radius:10px;padding:2px}
-.tg button{height:32px;padding:0 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--text2);transition:background .2s,color .2s}
-.tg button.on{background:#2e2e33;color:var(--text)}
+.tg{display:flex;background:var(--fill2);border-radius:12px;padding:2px}
+.tg button{height:34px;padding:0 13px;border-radius:10px;font-size:14px;font-weight:600;color:var(--text2);transition:background .2s,color .2s}
+.tg button.on{background:rgba(255,255,255,.16);color:var(--text);box-shadow:0 2px 6px rgba(0,0,0,.3)}
 .cashrow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
-.nb{height:52px;border-radius:12px;background:#1c1c1f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.nb{height:50px;border-radius:14px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
 .nb b{font-size:15px;font-weight:600}
 .nb i{font-style:normal;font-size:12px;color:var(--text3)}
-.nb.has{background:#2e2e33;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+.nb.has{background:rgba(255,255,255,.15)}
 .nb.has i{color:var(--text)}
 .nb:active{transform:scale(.95)}
 .cashsum{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--text2);margin:8px 4px 0}
@@ -263,7 +264,7 @@ svg{display:block}
 .how{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.35}
 .sheet .keys{margin:14px 0 4px}
 .sheet .key{height:52px}
-.stmt{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:12px;padding:12px 0 0;border-top:1px solid var(--sep);font-size:15px;font-weight:500;color:var(--text)}
+.stmt{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:12px;padding:12px 2px 2px;border-top:.5px solid var(--sep);font-size:15px;font-weight:500;color:var(--text)}
 .balr{display:block;font-size:12px;color:var(--text2);margin-top:2px}
 .row.ck .av svg{width:16px;height:16px;color:var(--green)}
 .row.ck{cursor:pointer}
@@ -274,7 +275,7 @@ svg{display:block}
 @keyframes inBack{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
 
 /* toast */
-.toast{position:fixed;left:50%;top:calc(var(--sat) + 10px);z-index:60;transform:translate(-50%,-140%);padding:12px 16px;border-radius:12px;font-size:15px;font-weight:500;
+.toast{position:fixed;left:50%;top:calc(var(--sat) + 10px);z-index:60;transform:translate(-50%,-140%);padding:12px 18px;border-radius:22px;font-size:15px;font-weight:500;
   white-space:nowrap;transition:transform .5s var(--ease)}
 .toast.on{transform:translate(-50%,0)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
@@ -296,6 +297,7 @@ svg{display:block}
 </style>
 </head>
 <body>
+<div id="glow"></div>
 <div class="bar" id="bar"><b>Settle.</b></div>
 <main id="main"></main>
 <button class="fab gbtn" id="fab" aria-label="New payment"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -431,23 +433,25 @@ function render(){
     <div class="top"><h1 class="title">Settle.</h1><button class="round gbtn" data-settings aria-label="Settings">${I.gear}</button></div>
     ${checkinDue() ? `<div class="due card"><div class="t"><b>Time to log Mom's balance</b><span>${MONTHS[new Date().getMonth()]} check-in</span></div>
       <button class="skip" data-skip>Skip</button><button class="pill white" data-checkin>Log</button></div>` : ""}
-    <section class="hero">
+    <div class="hero card">
       <div class="lbl">You owe Mom</div>
-      <div class="big num"><span class="ledger"><small>Rs</small>${fmt(o)}</span></div>
+      <div class="big num"><small>Rs</small>${fmt(o)}</div>
       <div class="hero-row">
-        <div class="stat"><div class="lbl">Paid back to Mom</div><div class="v num">${rs(paidTotal())}</div>${paidTotal() ? `<div class="how num">Nabil ${rs(paidBy("transfer"))}<br>Cash ${rs(paidBy("cash"))}</div>` : ""}</div>
-        <div class="stat"><div class="lbl">Spent this month</div><div class="v num">${rs(spentIn(mk))}</div><div class="how">from Mom's account</div></div>
+        <div class="stat"><div class="lbl">Paid back</div><div class="v num">${rs(paidTotal())}</div>${paidTotal() ? `<div class="how num">Nabil ${rs(paidBy("transfer"))}<br>Cash ${rs(paidBy("cash"))}</div>` : ""}</div>
+        <div class="stat"><div class="lbl">This month</div><div class="v num">${rs(spentIn(mk))}</div></div>
       </div>
       ${o > 0 ? `<button class="pill white settle-btn" data-settleall>Settle all</button>` : ""}
-    </section>
+    </div>
     <div class="chart-card card">
       <div class="ch-head"><div><div class="lbl">Spending</div><div class="ch-val num" id="spV"></div><div class="ch-sub" id="spS"></div></div></div>
       <div class="chart" id="spC"></div>
       <div class="seg">${["1M","6M","1Y","All"].map(r => `<button data-range="${r}" class="${r === range ? "on" : ""}">${r}</button>`).join("")}</div>
     </div>
-    <button class="card balrow" data-statement>
-      <div class="m"><div class="lbl">Mom's balance now</div><div class="ch-val num" id="blV"></div><div class="ch-sub" id="blS"></div></div>${I.chev}
-    </button>
+    <div class="chart-card card">
+      <div class="ch-head"><div><div class="lbl">Mom's balance now</div><div class="ch-val num" id="blV"></div><div class="ch-sub" id="blS"></div></div></div>
+      <div class="chart" id="blC"></div>
+      <button class="stmt" data-statement>Statement, PDF and check-in ${I.chev}</button>
+    </div>
     ${months.length ? `<div class="sec"><h2>Months</h2></div>
       <div class="card list">${months.slice(0, 12).map(m => `<button class="mrow" data-month="${m}"><div class="m"><b>${monthName(m)}</b><span class="num">${inMonth(m).length} payment${inMonth(m).length === 1 ? "" : "s"}</span></div><b class="num">${rs(spentIn(m))}</b>${I.chev}</button>`).join("")}</div>` : ""}
     <div class="sec"><h2>Journal</h2></div>
@@ -555,9 +559,7 @@ function drawBalance(){
     S.textContent = since > 0 ? `${rs(since)} down since the ${shortDate(ck.at)} check-in` : since < 0 ? `${rs(-since)} up since the ${shortDate(ck.at)} check-in` : `Checked ${shortDate(ck.at)}`;
   };
   rest();
-  const host = sheet.classList.contains("on") && sbody.querySelector("#stC");
-  if (host) lineChart(host, data, { fromZero: false, emptyText: "", onScrub: i => { const a = sbody.querySelector("[data-stamt]"), b = sbody.querySelector("[data-stsub]");
-    if (i === null){ a.textContent = rs(tl[tl.length - 1].bal); b.textContent = "left in Mom's account now"; return; } a.textContent = rs(data[i].v); b.textContent = data[i].sub; } });
+  lineChart($("#blC"), data, { fromZero: false, emptyText: "Log Mom's balance and every payment after it gets taken off, like a bank statement.", onScrub: i => { if (i === null) return rest(); V.style.fontSize = ""; V.textContent = rs(data[i].v); S.textContent = data[i].sub; } });
 }
 
 /* ================= sheet ================= */
@@ -744,7 +746,7 @@ function openStatement(){
   const t = new Date(), monthAgo = new Date(t); monthAgo.setMonth(t.getMonth() - 1);
   const ranges = ["1M", "3M", "6M", "1Y"], more = ["All", "Custom"];
   openSheet(head("", "Statement", closeBtn), `
-    ${tl.length ? `<div class="detail-amt num"><span class="ledger" data-stamt>${rs(now)}</span></div><div class="detail-sub" data-stsub>left in Mom's account now</div>${tl.length > 1 ? `<div class="chart" id="stC"></div>` : ""}`
+    ${tl.length ? `<div class="detail-amt num">${rs(now)}</div><div class="detail-sub">left in Mom's account now</div>`
                 : `<div class="empty" style="padding:18px 10px 6px"><b>No check-in yet</b>Log Mom's balance once. After that every payment and deposit is added or taken off.</div>`}
     <div class="btns"><button class="pill soft" data-log>Log Mom's balance</button></div>
     <div class="slbl">Statement PDF</div>
@@ -777,7 +779,6 @@ function openStatement(){
   sbody.querySelectorAll("[data-entry]").forEach(r => r.onclick = () => openEntry(r.dataset.entry));
   q("[data-log]").onclick = openCheckin;
   sbody.querySelectorAll("[data-ck]").forEach(r => r.onclick = () => openCheckinRow(r.dataset.ck));
-  if (tl.length > 1) requestAnimationFrame(drawBalance);
   const label = () => { const [a, b] = rangeDates(pdfRange); const f = d => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
     q("[data-prtext]").textContent = `${f(a)} to ${f(b)}`; };
   sbody.querySelectorAll("[data-pr]").forEach(b => b.onclick = () => { pdfRange = b.dataset.pr; haptic();
