@@ -16,14 +16,11 @@
 <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="icons/launch-1170x2532.png">
 <script>
 /* pick the saved icon before Safari reads it, so "Add to Home Screen" uses your choice */
-try { var ui0 = JSON.parse(localStorage.getItem("settle.v1") || "{}").ui || {}; if (ui0.font === "system") document.documentElement.dataset.font = "system"; var ic = ui0.icon;
+try { var ui0 = JSON.parse(localStorage.getItem("settle.v1") || "{}").ui || {}; var ic = ui0.icon;
   if (ic && ic !== "mono"){ document.getElementById("touchIcon").href = "icons/" + ic + "-180.png"; document.getElementById("favIcon").href = "icons/" + ic + "-192.png"; } } catch(e){}
 </script>
 <style>
 @font-face{font-family:"Settle Serif";src:url(fonts/instrument-serif.woff2) format("woff2");font-display:swap}
-@font-face{font-family:"Settle Sans";font-weight:400;src:url(fonts/sans-400.woff2) format("woff2");font-display:swap}
-@font-face{font-family:"Settle Sans";font-weight:500;src:url(fonts/sans-500.woff2) format("woff2");font-display:swap}
-@font-face{font-family:"Settle Sans";font-weight:500 700;src:url(fonts/sans-600.woff2) format("woff2");font-display:swap}
 :root{
   --base:#000; --text:#f5f5f7; --text2:#8e8e93; --text3:#545458;
   --sep:rgba(255,255,255,.09); --fill:rgba(118,118,128,.24); --fill2:rgba(118,118,128,.14);
@@ -34,14 +31,12 @@ try { var ui0 = JSON.parse(localStorage.getItem("settle.v1") || "{}").ui || {}; 
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{height:100%;background:var(--base);color:var(--text);overflow:hidden;overscroll-behavior:none}
-body{font:17px/1.35 "Settle Sans",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;letter-spacing:-.01em;-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body{font:17px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;letter-spacing:-.01em;-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation}
 input,textarea{font:inherit;color:inherit;-webkit-user-select:text;user-select:text}
 svg{display:block}
 [hidden]{display:none!important}
 .num{font-variant-numeric:tabular-nums}
-html[data-font="system"] body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
-html[data-font="system"] .num,html[data-font="system"] .r b,html[data-font="system"] .stat .v{font-variant-numeric:tabular-nums}
 
 /* ===== glass ===== */
 .gbtn{color:var(--text);background:rgba(255,255,255,.04);
@@ -189,7 +184,7 @@ html[data-font="system"] .num,html[data-font="system"] .r b,html[data-font="syst
 .notes{display:flex;flex-direction:column;gap:10px;margin-top:6px}
 .note{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 16px;border-radius:20px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1)}
 .note .nv{flex:1;font:400 26px var(--serif)}
-.note .nv small{font-size:15px;letter-spacing:-.005em;color:var(--text2);margin-right:4px;font-family:"Settle Sans",-apple-system,system-ui,sans-serif}
+.note .nv small{font-size:15px;letter-spacing:-.005em;color:var(--text2);margin-right:4px;font-family:-apple-system,system-ui,sans-serif}
 .step-n{display:flex;align-items:center;gap:6px}
 .step-n button{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.08);font-size:24px;font-weight:400}
 .step-n .c{min-width:34px;text-align:center;font-size:20px;font-weight:500}
@@ -239,9 +234,9 @@ html[data-font="system"] .num,html[data-font="system"] .r b,html[data-font="syst
 .prow::-webkit-scrollbar{display:none}
 .prow .chip{flex:none;height:40px;padding:0 16px;font-size:15px;letter-spacing:-.005em}
 .seg2{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:0 2px}
-.seg2>span{font-size:15px;letter-spacing:-.005em;color:var(--text2)}
-.tg{display:flex;background:var(--fill2);border-radius:12px;padding:2px}
-.tg button{height:34px;padding:0 13px;border-radius:10px;font-size:15px;letter-spacing:-.005em;font-weight:500;color:var(--text2);transition:background .2s,color .2s}
+.seg2>span{font-size:15px;letter-spacing:-.005em;color:var(--text2);white-space:nowrap;flex:none}
+.tg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--fill2);border-radius:12px;padding:2px}
+.tg button{height:34px;padding:0 10px;border-radius:10px;font-size:15px;letter-spacing:-.005em;font-weight:500;color:var(--text2);transition:background .2s,color .2s;white-space:nowrap}
 .tg button.on{background:rgba(255,255,255,.16);color:var(--text);box-shadow:0 2px 6px rgba(0,0,0,.3)}
 .cashrow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
 .nb{height:50px;border-radius:14px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
@@ -287,9 +282,10 @@ html[data-font="system"] .num,html[data-font="system"] .r b,html[data-font="syst
   body>*:not(#stmt){display:none!important}
   #stmt{display:block!important}
 }
-.dirsw{display:grid;grid-template-columns:1fr 1fr;width:232px;margin:0 auto}
+.shead{position:relative}
+.dirsw{display:grid;grid-template-columns:1fr 1fr;width:240px;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
 .dirsw button{padding:0;width:100%}
-.av.in{font:400 20px "Settle Sans",-apple-system,sans-serif;color:var(--green)}
+.av.in{font:400 20px -apple-system,sans-serif;color:var(--green)}
 .inamt{color:var(--green)}
 .dates{margin-top:10px}
 .dates .kv{padding:8px 4px;min-height:44px}
@@ -412,7 +408,7 @@ function sourceOrder(){
   return sources().slice().sort((a, b) => (n[b.name] || 0) - (n[a.name] || 0) || a.u - b.u);
 }
 const BACK = { none: "Nothing back", cash: "Cash back", online: "Online back" };
-const PAYBACK = { transfer: "To Mom's Nabil Bank", cash: "Cash to Mom" };
+const PAYBACK = { transfer: "Nabil", cash: "Cash", later: "Not decided yet" };
 const sortedEntries = () => live().sort((a, b) => b.at < a.at ? -1 : b.at > a.at ? 1 : b.c - a.c);
 const ckAt = ([k, b]) => /^\d{4}-\d\d-\d\dT\d\d:\d\d/.test(b.at || "") ? b.at : k + "-13T09:00";
 const ckInMonth = mk => { const l = balanceList().filter(x => ckAt(x).slice(0, 7) === mk); return l.length ? l[l.length - 1][1] : null; };
@@ -624,7 +620,7 @@ function drawAdd(){
   const IN = f.dir === "in", list = IN ? sourceOrder() : payeeOrder(), names = (IN ? sources() : payees()).map(p => p.name);
   const title = f.editId ? (IN ? "Edit money in" : "Edit payment")
     : `<div class="tg dirsw"><button data-dir="out" class="${IN ? "" : "on"}">Money out</button><button data-dir="in" class="${IN ? "on" : ""}">Money in</button></div>`;
-  setSheet(head(cancelBtn, title), `
+  setSheet(head("", title), `
     <div class="amt num" data-amt></div>
     ${IN ? `<p class="qs" style="margin:-2px 0 8px">Into Mom's account. Where did it come from?</p>` : ""}
     <div class="prow">${list.map(p => `<button class="chip" data-payee="${esc(p.name)}">${esc(p.name)}</button>`).join("")}
@@ -634,21 +630,11 @@ function drawAdd(){
     <div ${IN ? "hidden" : ""}>
     <div class="seg2"><span>Came back</span><div class="tg">
       <button data-tg="back:none">Nothing</button><button data-tg="back:cash">Cash</button><button data-tg="back:online">Online</button></div></div>
-    <div data-cashbox>
-      <div class="cashrow">${NOTES.map(n => `<button class="nb" data-nb="${n}"><b class="num">${fmt(n)}</b><i class="num" data-nc="${n}"></i></button>`).join("")}</div>
-      <div class="cashsum"><span data-csum></span><button data-nclear>Clear</button></div>
-    </div>
     <div class="seg2"><span>Pay Mom by</span><div class="tg">
-      <button data-tg="payback:transfer">Nabil Bank</button><button data-tg="payback:cash">Cash</button></div></div>
-    </div>
-    <button class="morebtn" data-more></button>
-    <div class="group" data-morebox hidden>
-      <label class="kv"><span>When</span><input type="datetime-local" data-at value="${esc(f.at)}"></label>
-      <label class="kv"><span>Note</span><input data-note placeholder="Optional" value="${esc(f.note || "")}" maxlength="120"></label>
+      <button data-tg="payback:transfer">Nabil</button><button data-tg="payback:cash">Cash</button><button data-tg="payback:later">Not now</button></div></div>
     </div>
     ${keypadHTML()}
     <button class="pill white next" data-save>${f.editId ? "Save changes" : "Save"}</button>`);
-  shead.querySelector("[data-x]").onclick = closeSheet;
   bindAdd(); refreshAdd();
 }
 function refreshAdd(){
@@ -656,24 +642,17 @@ function refreshAdd(){
   const a = q("[data-amt]"); a.innerHTML = amtHTML(f.amount); a.classList.toggle("zero", !f.amount);
   qa("[data-payee]").forEach(b => b.classList.toggle("on", b.dataset.payee === f.payee));
   qa("[data-tg]").forEach(b => { const [k, v] = b.dataset.tg.split(":"); b.classList.toggle("on", f[k] === v); });
-  q("[data-cashbox]").hidden = f.back !== "cash";
-  NOTES.forEach(n => { const c = f.notes[n] || 0; q(`[data-nc="${n}"]`).textContent = c ? "×" + c : "tap"; q(`[data-nb="${n}"]`).classList.toggle("has", !!c); });
-  const t = cashTotal(), ok = t === f.amount && t > 0;
-  q("[data-csum]").innerHTML = t ? `Cash you got <b class="num ${ok ? "ok" : ""}">${rs(t)}${ok ? " ✓" : ""}</b>` : "Tap the notes you got";
-  const d = new Date(f.at), today = dayKey(d) === dayKey(new Date());
-  q("[data-more]").textContent = `${today ? "Now" : dayLabel(dayKey(d)) + ", " + timeLabel(f.at)}${f.note ? " · " + f.note : ""} · ${f.more ? "Hide" : "Change date or add a note"}`;
-  q("[data-more]").hidden = f.more; q("[data-morebox]").hidden = !f.more;
   q("[data-save]").setAttribute("aria-disabled", f.amount && f.payee ? "false" : "true");
 }
 function bindAdd(){
   const q = s => sbody.querySelector(s), qa = s => sbody.querySelectorAll(s);
-  bindKeypad(() => f.amount, v => { f.amount = v; if (f.back === "cash" && f.autoN) f.notes = guessNotes(v); }, refreshAdd);
+  bindKeypad(() => f.amount, v => f.amount = v, refreshAdd);
   const pick = name => {
     f.payee = name; haptic();
     const last = lastFor(name);
     if (last && !f.editId){
       if (!f.amount) f.amount = last.amount;                         // tap Gym on an empty amount: last gym amount comes back
-      if (!f.touched && f.dir !== "in"){ f.back = last.back || "none"; f.payback = last.payback || "transfer"; if (last.back === "cash" && last.amount === f.amount) f.notes = { ...(last.notes || {}) }; }
+      if (!f.touched && f.dir !== "in"){ f.back = last.back || "none"; f.payback = last.payback || "transfer"; }
     }
     refreshAdd();
   };
@@ -688,14 +667,9 @@ function bindAdd(){
   q("[data-addp]").onclick = add; inp.onkeydown = e => { if (e.key === "Enter") add(); };
   qa("[data-tg]").forEach(b => b.onclick = () => {
     const [k, v] = b.dataset.tg.split(":"); f[k] = v; f.touched = true; haptic();
-    if (k === "back"){ if (v === "cash"){ f.payback = "cash"; if (!cashTotal()){ f.notes = guessNotes(f.amount); f.autoN = true; } } else { f.notes = {}; f.autoN = false; } }
+    if (k === "back" && v === "cash") f.payback = "cash";
     refreshAdd();
   });
-  qa("[data-nb]").forEach(b => b.onclick = () => { const n = b.dataset.nb; if (f.autoN){ f.notes = {}; f.autoN = false; } f.notes[n] = (f.notes[n] || 0) + 1; haptic(); refreshAdd(); });
-  q("[data-nclear]").onclick = () => { f.notes = {}; f.autoN = false; haptic(); refreshAdd(); };
-  q("[data-more]").onclick = () => { f.more = true; refreshAdd(); };
-  q("[data-at]").onchange = e => { f.at = e.target.value || f.at; refreshAdd(); };
-  q("[data-note]").oninput = e => f.note = e.target.value;
   q("[data-save]").onclick = saveFlow;
 }
 function saveFlow(){
@@ -709,7 +683,6 @@ function saveFlow(){
   }
   if (!f.amount) return toast("Type how much you paid");
   if (!f.payee) return toast("Tap who you paid");
-  if (f.back === "cash" && !cashTotal()) return toast("Tap the notes you got back");
   const data = { dir: "out", amount: f.amount, payee: f.payee, back: f.back, notes: f.back === "cash" ? f.notes : {}, payback: f.payback, at: f.at, note: (f.note || "").trim() };
   if (f.editId){ const e = db.entries.find(x => x.id === f.editId); Object.assign(e, data); }
   else db.entries.push({ id: uid(), c: Date.now(), paid: false, paidAt: null, ...data });
@@ -776,7 +749,7 @@ function openStatement(){
           <div class="m"><b>Balance check-in</b><span>${shortDate(ev.at)}, ${timeLabel(ev.at)}${ev.diff ? " · Mom's own money " + (ev.diff > 0 ? "+" : "&minus; ") + rs(Math.abs(ev.diff)) : ""}</span></div>
           <div class="r"><b class="num">${rs(ev.bal)}</b><span class="balr">checked</span></div></div>`).join("")}</div>
     <p class="hint">Payments made before a check-in are already inside that figure. Anything Mom spends or gets that isn't logged here shows up at the next check-in as "Mom's own money".</p>` : ""}`);
-  shead.querySelector("[data-x]").onclick = closeSheet;
+  (shead.querySelector("[data-x]") || {}).onclick = closeSheet;
   const q = k => sbody.querySelector(k);
   sbody.querySelectorAll("[data-entry]").forEach(r => r.onclick = () => openEntry(r.dataset.entry));
   q("[data-log]").onclick = openCheckin;
@@ -817,7 +790,7 @@ function openEntry(id){
         ${e.note ? `<div class="kv"><span>Note</span><b>${esc(e.note)}</b></div>` : ""}
       </div>
       <div class="btns"><button class="pill soft" data-edit>Edit</button><button class="pill red" data-del>Delete</button></div>`);
-    shead.querySelector("[data-x]").onclick = closeSheet;
+    (shead.querySelector("[data-x]") || {}).onclick = closeSheet;
     sbody.querySelector("[data-edit]").onclick = () => { haptic(); newFlow(e); };
     sbody.querySelector("[data-del]").onclick = evt => { const b = evt.currentTarget;
       if (!armed){ armed = true; b.textContent = "Tap again to delete"; haptic(); setTimeout(() => { armed = false; if (b.isConnected) b.textContent = "Delete"; }, 3000); return; }
@@ -844,9 +817,10 @@ function openEntry(id){
       <button class="pill soft" data-edit>Edit</button>
       <button class="pill red" data-del>Delete</button>
     </div>`);
-  shead.querySelector("[data-x]").onclick = closeSheet;
+  (shead.querySelector("[data-x]") || {}).onclick = closeSheet;
   const q = s => sbody.querySelector(s);
-  if (q("[data-pay]")) q("[data-pay]").onclick = () => { e.paid = true; e.paidAt = toLocalInput(new Date()); save(); haptic(); closeSheet(); render(); toast("Paid back. You owe Mom " + rs(owed())); };
+  if (q("[data-pay]") && e.payback === "later") q("[data-pay]").onclick = () => askHow([e], "Paid back. You owe Mom ");
+  else if (q("[data-pay]")) q("[data-pay]").onclick = () => { e.paid = true; e.paidAt = toLocalInput(new Date()); save(); haptic(); closeSheet(); render(); toast("Paid back. You owe Mom " + rs(owed())); };
   if (q("[data-unpay]")) q("[data-unpay]").onclick = () => { e.paid = false; e.paidAt = null; save(); haptic(); closeSheet(); render(); };
   q("[data-edit]").onclick = () => { haptic(); newFlow(e); };
   q("[data-del]").onclick = ev => { const b = ev.currentTarget;
@@ -854,32 +828,50 @@ function openEntry(id){
     e.del = true; save(); haptic(); closeSheet(); render(); toast("Deleted"); };
 }
 
+/* "Not now" payments: ask how Mom got the money at the moment they're paid back */
+function askHow(list, msg){
+  const total = list.reduce((s, e) => s + e.amount, 0);
+  openSheet(head("", "How did Mom get it?"), `
+    <div class="detail-amt num">${rs(total)}</div>
+    <div class="detail-sub">${list.length === 1 ? "to " + esc(list[0].payee) : list.length + " payments"} · not decided yet</div>
+    <div class="btns"><button class="pill white" data-how="transfer">Nabil</button><button class="pill soft" data-how="cash">Cash</button></div>`);
+  sbody.querySelectorAll("[data-how]").forEach(b => b.onclick = () => {
+    const t = toLocalInput(new Date());
+    list.forEach(e => { e.payback = b.dataset.how; e.paid = true; e.paidAt = t; });
+    save(); haptic(); closeSheet(); render(); toast(msg === "all" ? "All settled with Mom" : msg + rs(owed()));
+  });
+}
+
 /* ================= settle all ================= */
 function openSettleAll(){
-  const un = outs().filter(e => !e.paid), tr = un.filter(e => e.payback === "transfer").reduce((s, e) => s + e.amount, 0), ca = un.filter(e => e.payback === "cash").reduce((s, e) => s + e.amount, 0);
-  openSheet(head(cancelBtn, "Settle all"), `
-    <div class="detail-amt num">${rs(tr + ca)}</div>
+  const un = outs().filter(e => !e.paid), sum = how => un.filter(e => e.payback === how).reduce((s, e) => s + e.amount, 0);
+  const tr = sum("transfer"), ca = sum("cash"), la = sum("later");
+  openSheet(head("", "Settle all"), `
+    <div class="detail-amt num">${rs(tr + ca + la)}</div>
     <div class="detail-sub">${un.length} payment${un.length === 1 ? "" : "s"} still owed to Mom</div>
     <div class="group">
-      <div class="kv"><span>To Mom's Nabil Bank</span><b class="num">${rs(tr)}</b></div>
-      <div class="kv"><span>Cash to Mom</span><b class="num">${rs(ca)}</b></div>
+      <div class="kv"><span>Nabil</span><b class="num">${rs(tr)}</b></div>
+      <div class="kv"><span>Cash</span><b class="num">${rs(ca)}</b></div>
+      ${la ? `<div class="kv"><span>Not decided yet</span><b class="num">${rs(la)}</b></div>` : ""}
     </div>
     <p class="hint">Only tap this once you've actually given Mom the money.</p>
     <div class="btns"><button class="pill white" data-go>Mark all as paid back</button></div>`);
-  shead.querySelector("[data-x]").onclick = closeSheet;
-  sbody.querySelector("[data-go]").onclick = () => { const t = toLocalInput(new Date()); un.forEach(e => { e.paid = true; e.paidAt = t; }); save(); haptic(); closeSheet(); render(); toast("All settled with Mom"); };
+  (shead.querySelector("[data-x]") || {}).onclick = closeSheet;
+  sbody.querySelector("[data-go]").onclick = () => { const t = toLocalInput(new Date()); un.filter(e => e.payback !== "later").forEach(e => { e.paid = true; e.paidAt = t; });
+    const later = un.filter(e => e.payback === "later"); if (later.length) return askHow(later, "all");
+    save(); haptic(); closeSheet(); render(); toast("All settled with Mom"); };
 }
 
 /* ================= 13th check-in ================= */
 function openCheckin(){
   const now = new Date(), bl = balanceList(), ex = bl.length ? bl[bl.length - 1][1] : null;
   let v = 0;
-  openSheet(head(cancelBtn, "Check-in"), `
+  openSheet(head("", "Check-in"), `
     <h2 class="q">How much is in Mom's account?</h2><p class="qs">Right now, the exact figure</p>
     <div class="amt num ${v ? "" : "zero"}" data-amt>${amtHTML(v)}</div>
     ${keypadHTML()}<button class="pill white next" data-save ${v ? "" : 'aria-disabled="true"'}>Save</button>
     ${ex ? `<p class="hint" style="text-align:center">Last check-in: ${rs(ex.amount)} on ${shortDate(ex.at)}. Earlier check-ins and payments stay as they are.</p>` : ""}`);
-  shead.querySelector("[data-x]").onclick = closeSheet;
+  (shead.querySelector("[data-x]") || {}).onclick = closeSheet;
   const sv = sbody.querySelector("[data-save]");
   bindKeypad(() => v, x => v = x, () => { const a = sbody.querySelector("[data-amt]"); a.innerHTML = amtHTML(v); a.classList.toggle("zero", !v); v ? sv.removeAttribute("aria-disabled") : sv.setAttribute("aria-disabled", "true"); });
   sv.onclick = () => { if (!v) return; const at = toLocalInput(new Date()); db.balances[at] = { amount: v, at, u: Date.now() }; save(); haptic(); closeSheet(); render(); toast("Mom's balance saved"); };
@@ -925,7 +917,7 @@ function openMonth(mk){
     </div>
     <div class="group list" style="padding:0">${[...es, ...ins].sort((x, y) => x.at < y.at ? 1 : -1).map(rowHTML).join("")}</div>
     <div class="btns"><button class="pill white" data-share>Share summary</button></div>`);
-  shead.querySelector("[data-x]").onclick = closeSheet;
+  (shead.querySelector("[data-x]") || {}).onclick = closeSheet;
   sbody.querySelectorAll("[data-entry]").forEach(r => r.onclick = () => openEntry(r.dataset.entry));
   sbody.querySelector("[data-share]").onclick = async () => {
     const text = summaryText(mk);
@@ -944,11 +936,6 @@ function openSettings(){
       <div class="icons">${ICONS.map(([k, n]) => `<button data-icon="${k}" class="${db.ui.icon === k ? "on" : ""}"><img src="icons/${k}-180.png" alt="">${n}</button>`).join("")}</div>
       <p class="hint" style="margin:8px 2px 0">To see a new icon, remove Settle from your Home Screen, open this page in Safari, and add it again. Your payments stay safe.</p>
     </div>
-    <div class="slbl">Text font</div>
-    <div class="group" style="padding:12px">
-      <div class="seg" style="margin-top:0"><button data-font="sans" class="${db.ui.font !== "system" ? "on" : ""}">Instrument Sans</button><button data-font="system" class="${db.ui.font === "system" ? "on" : ""}">iPhone font</button></div>
-    </div>
-    <p class="hint">Try both and keep the one that looks better next to the Settle numbers.</p>
     <div class="slbl">13th reminder</div>
     <div class="group">
       <a class="set-row" href="reminder.ics" style="color:inherit;text-decoration:none">${I.cal}<span>Add reminder to Calendar</span></a>
@@ -967,12 +954,8 @@ function openSettings(){
     <div class="group"><div class="pchips">${[...payees(), ...sources()].map(p => `<span class="chip">${esc(p.name)}<button class="x" data-rmp="${esc(p.id)}" aria-label="Remove ${esc(p.name)}">✕</button></span>`).join("")}</div></div>
     <p class="hint">Removing a name only hides it from the list. Old payments keep it.</p>
     <p class="hint" style="text-align:center;margin-top:26px;color:var(--text3)">Settle. Just for Nit.</p>`);
-  shead.querySelector("[data-x]").onclick = closeSheet;
+  (shead.querySelector("[data-x]") || {}).onclick = closeSheet;
   const q = s => sbody.querySelector(s);
-  sbody.querySelectorAll("[data-font]").forEach(b => b.onclick = () => {
-    db.ui.font = b.dataset.font; try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){}
-    if (db.ui.font === "system") document.documentElement.dataset.font = "system"; else delete document.documentElement.dataset.font;
-    haptic(); sbody.querySelectorAll("[data-font]").forEach(x => x.classList.toggle("on", x === b)); requestAnimationFrame(() => { drawSpend(); drawBalance(); }); });
   sbody.querySelectorAll("[data-icon]").forEach(b => b.onclick = () => {
     db.ui.icon = b.dataset.icon; try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){}
     applyIcon(); haptic(); sbody.querySelectorAll("[data-icon]").forEach(x => x.classList.toggle("on", x === b)); toast("Icon picked. Re-add Settle to see it"); });

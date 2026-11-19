@@ -88,7 +88,7 @@ function renderStatement(db, start, end, opts = {}){
     if (r.type === "in") return `<tr><td class="s-w">${when(x)}</td><td><b>From ${esc(e.payee)}</b>${note || "<span>Money in</span>"}</td><td class="s-st"><em class="s-tag s-in">Money in</em></td><td class="s-n"></td><td class="s-n">${rs(e.amount, "+")}</td><td class="s-n s-b">${bal}</td></tr>`;
     const back = e.back === "cash" ? "Cash back" + (noteText(e.notes) ? " · " + noteText(e.notes) : "") : e.back === "online" ? "Sent back online" : "Nothing came back";
     const st = e.paid && e.paidAt ? `<em class="s-tag s-ok">Paid back</em><span>${dshort(D(e.paidAt))}, ${e.payback === "transfer" ? "Nabil Bank" : "cash"}</span>`
-                                  : `<em class="s-tag">Owed</em><span>${e.payback === "transfer" ? "to Nabil Bank" : "in cash"}</span>`;
+                                  : `<em class="s-tag">Owed</em><span>${e.payback === "transfer" ? "to Nabil Bank" : e.payback === "later" ? "how: not decided" : "in cash"}</span>`;
     return `<tr><td class="s-w">${when(x)}</td><td><b>To ${esc(e.payee)}</b><span>${back}</span>${note}</td><td class="s-st">${st}</td><td class="s-n">${rs(-e.amount)}</td><td class="s-n"></td><td class="s-n s-b">${bal}</td></tr>`;
   };
   const all = [];
@@ -103,7 +103,7 @@ function renderStatement(db, start, end, opts = {}){
   const paidRow = e => { const x = D(e.paidAt), o = D(e.at);
     return `<tr><td class="s-w">${when(x)}</td><td><b>For ${esc(e.payee)}</b><span>Paid on ${dshort(o)}, ${dtime(o)}</span>${noteSpan(e)}</td><td>${e.payback === "transfer" ? "To her Nabil Bank account" : "Cash, handed to her"}</td><td class="s-n s-b">${rs(e.amount)}</td></tr>`; };
   const owedRow = e => { const o = D(e.at), days = Math.max(0, Math.round((new Date(e0.getFullYear(), e0.getMonth(), e0.getDate()) - new Date(o.getFullYear(), o.getMonth(), o.getDate())) / 864e5));
-    return `<tr><td class="s-w">${when(o)}</td><td><b>${esc(e.payee)}</b>${noteSpan(e)}<span>Owed for ${plural(days, "day")}</span></td><td>${e.payback === "transfer" ? "Nabil Bank" : "Cash"}</td><td class="s-n s-b">${rs(e.amount)}</td></tr>`; };
+    return `<tr><td class="s-w">${when(o)}</td><td><b>${esc(e.payee)}</b>${noteSpan(e)}<span>Owed for ${plural(days, "day")}</span></td><td>${e.payback === "transfer" ? "Nabil Bank" : e.payback === "later" ? "Not decided yet" : "Cash"}</td><td class="s-n s-b">${rs(e.amount)}</td></tr>`; };
   const byTr = paidIn.filter(e => e.payback === "transfer").reduce((s, e) => s + e.amount, 0), byCa = paidTotal - byTr;
   const pHead = `<thead><tr><th>Paid back on</th><th>What it was for</th><th>How</th><th class="s-n">Amount</th></tr></thead>`;
   const oHead = `<thead><tr><th>Paid on</th><th>Paid to</th><th>How Mom gets it</th><th class="s-n">Amount</th></tr></thead>`;
