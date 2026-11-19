@@ -16,7 +16,7 @@
 <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="icons/launch-1170x2532.png">
 <script>
 /* pick the saved icon before Safari reads it, so "Add to Home Screen" uses your choice */
-try { var ui0 = JSON.parse(localStorage.getItem("settle.v1") || "{}").ui || {}; var ic = ui0.icon;
+try { var ui0 = JSON.parse(localStorage.getItem("settle.v1") || "{}").ui || {}; document.documentElement.dataset.card = ui0.card || "glass"; var ic = ui0.icon;
   if (ic && ic !== "mono"){ document.getElementById("touchIcon").href = "icons/" + ic + "-180.png"; document.getElementById("favIcon").href = "icons/" + ic + "-192.png"; } } catch(e){}
 </script>
 <style>
@@ -252,39 +252,45 @@ svg{display:block}
 .morebtn{display:block;width:100%;text-align:center;margin:14px 0 0;font-size:13px;letter-spacing:.005em;color:var(--text2)}
 [data-morebox]{margin-top:10px}
 .sheet .amt{margin:4px 0 6px;font-size:54px;min-height:62px}
-.sheet.add{left:6px;right:6px;bottom:6px;top:calc(var(--sat) + 84px);height:auto;max-height:none;border-radius:40px;overflow:hidden;
+/* ===== floating card sheets: the + sheet, Settings and Statement. "Settle." and the gear stay visible above ===== */
+.sheet.float{left:6px;right:6px;bottom:6px;top:calc(var(--sat) + 84px);height:auto;max-height:none;border-radius:40px;overflow:hidden}
+.sheet.float .sbody{padding-bottom:max(16px, calc(var(--sab) - 10px))}
+.sheet.add .sbody{padding-bottom:max(10px, calc(var(--sab) - 16px));display:flex;flex-direction:column}
+.sheet.add .sbody>*{flex:none}
+.sheet.add .amt{margin-top:16px}
+.sheet.add .keys{flex:1 1 auto;min-height:192px;max-height:306px;grid-auto-rows:1fr;margin-top:auto;padding-top:16px}
+.sheet.add .key{height:auto}
+.sheet.add .next{margin-top:12px;opacity:1}
+/* Came back and Pay Mom by: separate boxes in straight columns */
+.sheet.add .seg2{display:grid;grid-template-columns:104px 1fr;gap:0}
+.sheet.add .seg2 .tg{width:100%;grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr));background:none;box-shadow:none;padding:0;gap:6px}
+.sheet.add .seg2 .tg button{height:36px;color:var(--text)}
+.sheet.add .next.ready{color:#000;background:#f5f5f7;box-shadow:none}
+
+/* ----- Card style: Glass ----- */
+html:not([data-card="default"]) .sheet.float{
   background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02)),rgba(18,18,22,.52);
   -webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);
   box-shadow:inset 0 0 0 .5px rgba(255,255,255,.16),inset 0 1.5px 0 rgba(255,255,255,.32),inset 1px 0 0 rgba(255,255,255,.08),inset -1px 0 0 rgba(255,255,255,.08),0 30px 80px rgba(0,0,0,.55)}
-/* liquid glass pieces inside the + sheet: keys, names and switches */
-.sheet.add .key,.sheet.add .chip,.sheet.add .tg{background:linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.04));
+html:not([data-card="default"]) .sheet.float :where(.key,.chip,.tg,.group,.pill.soft,.seg,.sheet.add .seg2 .tg button,.sheet.add .next:not(.ready)){
+  background:linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.04));
   box-shadow:inset 0 0 0 .5px rgba(255,255,255,.18),inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(255,255,255,.05),0 4px 14px rgba(0,0,0,.18)}
-.sheet.add .key:active{background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.1))}
-.sheet.add .key.clear{background:none;box-shadow:none}
-/* Came back and Pay Mom by: separate glass pieces, white text, same as the names above */
-.sheet.add .seg2 .tg{background:none;box-shadow:none;padding:0;gap:6px}
-.sheet.add .seg2 .tg button{height:36px;color:var(--text);background:linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.04));
-  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.18),inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(255,255,255,.05),0 4px 14px rgba(0,0,0,.18)}
-.sheet.add .seg2 .tg button.on{background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,.16));
+html:not([data-card="default"]) .sheet.float .seg2 .tg{background:none;box-shadow:none}
+html:not([data-card="default"]) .sheet.float .key:active{background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.1))}
+html:not([data-card="default"]) .sheet.float :is(.chip.on,.tg button.on,.seg button.on){color:#fff;background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,.16));
   box-shadow:inset 0 0 0 .5px rgba(255,255,255,.4),inset 0 1px 0 rgba(255,255,255,.55),0 4px 14px rgba(0,0,0,.22)}
-.sheet.add .chip.dashed{background:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
-.sheet.add .chip.on,.sheet.add .tg button.on{color:#fff;background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,.16));
-  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.4),inset 0 1px 0 rgba(255,255,255,.55),0 4px 14px rgba(0,0,0,.22)}
-.sheet.add .next{opacity:1}
-.sheet.add .next:not(.ready){color:rgba(255,255,255,.45);background:linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.04));
-  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.18),inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(255,255,255,.05)}
-.sheet.add .next.ready{color:#000;background:#f5f5f7;box-shadow:none}
-/* Came back and Pay Mom by: the labels take the same width, so both rows of boxes line up in straight columns */
-.sheet.add .seg2{display:grid;grid-template-columns:104px 1fr;gap:0}
-.sheet.add .seg2 .tg{width:100%;grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr))}
-.sheet.add .sbody{padding-bottom:max(10px, calc(var(--sab) - 16px))}
-.sheet.add .amt{margin-top:16px}
-.sheet.full{top:0;max-height:none;border-radius:0}
-.sheet.add .sbody{display:flex;flex-direction:column}
-.sheet.add .sbody>*{flex:none}
-.sheet.add .keys{flex:1 1 auto;min-height:192px;max-height:306px;grid-auto-rows:1fr;margin-top:auto;padding-top:16px}
-.sheet.add .key{height:auto}
-.sheet.add .next{margin-top:12px}
+
+/* ----- Card style: Default (solid, no glass, like Daily's Default) ----- */
+html[data-card="default"] .sheet.float{background:#1c1c1f;-webkit-backdrop-filter:none;backdrop-filter:none;
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1),inset 0 1px 0 rgba(255,255,255,.12),0 30px 80px rgba(0,0,0,.6)}
+html[data-card="default"] .sheet.float :where(.key,.chip,.group,.pill.soft,.sheet.add .seg2 .tg button,.sheet.add .next:not(.ready)){background:#2c2c30;box-shadow:none}
+html[data-card="default"] .sheet.float :where(.tg:not(.seg2 .tg),.seg){background:#2c2c30;box-shadow:none}
+html[data-card="default"] .sheet.float .key:active{background:#3a3a3f}
+html[data-card="default"] .sheet.float :is(.chip.on,.tg button.on,.seg button.on){color:#000;background:#f5f5f7;box-shadow:none}
+html[data-card="default"] .sheet.float .key.clear{background:none}
+.sheet.float .key.clear{background:none!important;box-shadow:none!important}
+.sheet.float .chip.dashed{background:none!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)!important}
+.sheet.add .next:not(.ready){color:rgba(255,255,255,.45)}
 .how{font-size:13px;letter-spacing:.005em;color:var(--text2);margin-top:3px;line-height:1.35}
 .sheet .keys{margin:14px 0 4px}
 .sheet .key{height:52px}
@@ -591,7 +597,7 @@ function drawBalance(){
 const sheet = $("#sheet"), scrim = $("#scrim"), shead = $("#shead"), sbody = $("#sbody");
 let onClose = null;
 function openSheet(head, body){
-  sheet.classList.remove("add", "full");
+  sheet.classList.remove("add", "float");
   shead.innerHTML = head; sbody.innerHTML = body; sbody.scrollTop = 0;
   sheet.style.transform = ""; scrim.classList.add("on"); requestAnimationFrame(() => sheet.classList.add("on"));
 }
@@ -640,7 +646,7 @@ function newFlow(edit){
   f = edit ? { back: "none", payback: "transfer", ...edit, dir: edit.dir || "out", notes: { ...(edit.notes || {}) }, editId: edit.id, more: !!edit.note, touched: true }
            : { dir: "out", amount: 0, payee: "", back: "none", notes: {}, payback: "transfer", at: toLocalInput(new Date()), note: "", more: false, touched: false };
   if (!sheet.classList.contains("on")) openSheet("", "");
-  sheet.classList.add("add");
+  sheet.classList.add("add", "float");
   drawAdd();
 }
 function drawAdd(){
@@ -776,6 +782,7 @@ function openStatement(){
           <div class="m"><b>Balance check-in</b><span>${shortDate(ev.at)}, ${timeLabel(ev.at)}${ev.diff ? " · Mom's own money " + (ev.diff > 0 ? "+" : "&minus; ") + rs(Math.abs(ev.diff)) : ""}</span></div>
           <div class="r"><b class="num">${rs(ev.bal)}</b><span class="balr">checked</span></div></div>`).join("")}</div>
     <p class="hint">Payments made before a check-in are already inside that figure. Anything Mom spends or gets that isn't logged here shows up at the next check-in as "Mom's own money".</p>` : ""}`);
+  sheet.classList.add("float");
   (shead.querySelector("[data-x]") || {}).onclick = closeSheet;
   const q = k => sbody.querySelector(k);
   sbody.querySelectorAll("[data-entry]").forEach(r => r.onclick = () => openEntry(r.dataset.entry));
@@ -958,10 +965,11 @@ const cashOf = e => NOTES.reduce((s, n) => s + n * ((e.notes && e.notes[n]) || 0
 const ICONS = [["mono","Mono"],["green","Green"],["navy","Navy"],["paper","Paper"],["word","Word"]];
 function openSettings(){
   openSheet(head("", "Settings", closeBtn), `
+    <div class="slbl">Card style</div>
+    <div class="seg" style="margin-top:8px">${[["glass","Glass"],["default","Default"]].map(([v, l]) => `<button data-cardstyle="${v}" class="${(db.ui.card || "glass") === v ? "on" : ""}">${l}</button>`).join("")}</div>
     <div class="slbl">App icon</div>
     <div class="group" style="padding:4px 12px 12px">
       <div class="icons">${ICONS.map(([k, n]) => `<button data-icon="${k}" class="${db.ui.icon === k ? "on" : ""}"><img src="icons/${k}-180.png" alt="">${n}</button>`).join("")}</div>
-      <p class="hint" style="margin:8px 2px 0">To see a new icon, remove Settle from your Home Screen, open this page in Safari, and add it again. Your payments stay safe.</p>
     </div>
     <div class="slbl">13th reminder</div>
     <div class="group">
@@ -981,9 +989,13 @@ function openSettings(){
     <div class="group"><div class="pchips">${[...payees(), ...sources()].map(p => `<span class="chip">${esc(p.name)}<button class="x" data-rmp="${esc(p.id)}" aria-label="Remove ${esc(p.name)}">✕</button></span>`).join("")}</div></div>
     <p class="hint">Removing a name only hides it from the list. Old payments keep it.</p>
     <p class="hint" style="text-align:center;margin-top:26px;color:var(--text3)">Settle. Just for Nit.</p>`);
-  sheet.classList.add("full");
+  sheet.classList.add("float");
   (shead.querySelector("[data-x]") || {}).onclick = closeSheet;
   const q = s => sbody.querySelector(s);
+  sbody.querySelectorAll("[data-cardstyle]").forEach(b => b.onclick = () => {
+    db.ui.card = b.dataset.cardstyle; try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){}
+    document.documentElement.dataset.card = db.ui.card; haptic();
+    sbody.querySelectorAll("[data-cardstyle]").forEach(x => x.classList.toggle("on", x === b)); });
   sbody.querySelectorAll("[data-icon]").forEach(b => b.onclick = () => {
     db.ui.icon = b.dataset.icon; try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){}
     applyIcon(); haptic(); sbody.querySelectorAll("[data-icon]").forEach(x => x.classList.toggle("on", x === b)); toast("Icon picked. Re-add Settle to see it"); });
