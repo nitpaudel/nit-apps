@@ -21,6 +21,9 @@ try { var ic = JSON.parse(localStorage.getItem("settle.v1") || "{}").ui; ic = ic
 </script>
 <style>
 @font-face{font-family:"Settle Serif";src:url(fonts/instrument-serif.woff2) format("woff2");font-display:swap}
+@font-face{font-family:"Settle Sans";font-weight:400;src:url(fonts/sans-400.woff2) format("woff2");font-display:swap}
+@font-face{font-family:"Settle Sans";font-weight:500;src:url(fonts/sans-500.woff2) format("woff2");font-display:swap}
+@font-face{font-family:"Settle Sans";font-weight:600 700;src:url(fonts/sans-600.woff2) format("woff2");font-display:swap}
 :root{
   --base:#000; --text:#f5f5f7; --text2:#8e8e93; --text3:#545458;
   --sep:rgba(255,255,255,.09); --fill:rgba(118,118,128,.24); --fill2:rgba(118,118,128,.14);
@@ -31,7 +34,7 @@ try { var ic = JSON.parse(localStorage.getItem("settle.v1") || "{}").ui; ic = ic
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{height:100%;background:var(--base);color:var(--text);overflow:hidden;overscroll-behavior:none}
-body{font:17px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body{font:17px/1.35 "Settle Sans",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;letter-spacing:.1px;-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation}
 input,textarea{font:inherit;color:inherit;-webkit-user-select:text;user-select:text}
 svg{display:block}
@@ -184,7 +187,7 @@ svg{display:block}
 .notes{display:flex;flex-direction:column;gap:10px;margin-top:6px}
 .note{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 16px;border-radius:20px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1)}
 .note .nv{flex:1;font:400 26px var(--serif)}
-.note .nv small{font-size:15px;color:var(--text2);margin-right:4px;font-family:-apple-system,system-ui,sans-serif}
+.note .nv small{font-size:15px;color:var(--text2);margin-right:4px;font-family:"Settle Sans",-apple-system,system-ui,sans-serif}
 .step-n{display:flex;align-items:center;gap:6px}
 .step-n button{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.08);font-size:24px;font-weight:300}
 .step-n .c{min-width:34px;text-align:center;font-size:20px;font-weight:600}
@@ -252,11 +255,19 @@ svg{display:block}
 .morebtn{display:block;width:100%;text-align:center;margin:14px 0 0;font-size:13px;color:var(--text2)}
 [data-morebox]{margin-top:10px}
 .sheet .amt{margin:4px 0 6px;font-size:54px;min-height:62px}
+.sheet.add{height:calc(100% - var(--sat) - 14px)}
+.sheet.add .sbody{display:flex;flex-direction:column}
+.sheet.add .sbody>*{flex:none}
+.sheet.add .keys{flex:1 1 auto;min-height:176px;max-height:290px;grid-auto-rows:1fr;margin-top:auto}
+.sheet.add .key{height:auto}
+.sheet.add .next{margin-top:12px}
+.how{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.35}
 .sheet .keys{margin:14px 0 4px}
 .sheet .key{height:52px}
 .stmt{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:12px;padding:12px 2px 2px;border-top:.5px solid var(--sep);font-size:15px;font-weight:500;color:var(--text)}
 .balr{display:block;font-size:12px;color:var(--text2);margin-top:2px}
 .row.ck .av svg{width:16px;height:16px;color:var(--green)}
+.row.ck{cursor:pointer}
 /* step slide */
 .stage{animation:in .42s var(--ease) both}
 .stage.back{animation-name:inBack}
@@ -274,9 +285,9 @@ svg{display:block}
   body>*:not(#stmt){display:none!important}
   #stmt{display:block!important}
 }
-.dirsw{margin:0 auto}
-.dirsw button{padding:0 14px}
-.av.in{font:500 20px -apple-system,system-ui,sans-serif;color:var(--green)}
+.dirsw{display:grid;grid-template-columns:1fr 1fr;width:232px;margin:0 auto}
+.dirsw button{padding:0;width:100%}
+.av.in{font:500 20px "Settle Sans",-apple-system,sans-serif;color:var(--green)}
 .inamt{color:var(--green)}
 .dates{margin-top:10px}
 .dates .kv{padding:8px 4px;min-height:44px}
@@ -384,6 +395,7 @@ const isIn = e => e.dir === "in";
 const outs = () => live().filter(e => !isIn(e));                 // money out of Mom's account (what you owe her)
 const owed = () => outs().filter(e => !e.paid).reduce((s, e) => s + e.amount, 0);
 const paidTotal = () => outs().filter(e => e.paid).reduce((s, e) => s + e.amount, 0);
+const paidBy = how => outs().filter(e => e.paid && (e.payback === "cash" ? "cash" : "transfer") === how).reduce((s, e) => s + e.amount, 0);
 const inMonth = mk => outs().filter(e => e.at.slice(0, 7) === mk);
 const insInMonth = mk => live().filter(e => isIn(e) && e.at.slice(0, 7) === mk);
 const spentIn = mk => inMonth(mk).reduce((s, e) => s + e.amount, 0);
@@ -398,11 +410,13 @@ function sourceOrder(){
   return sources().slice().sort((a, b) => (n[b.name] || 0) - (n[a.name] || 0) || a.u - b.u);
 }
 const BACK = { none: "Nothing back", cash: "Cash back", online: "Online back" };
-const PAYBACK = { transfer: "Transfer to Mom", cash: "Hand Mom cash" };
+const PAYBACK = { transfer: "To Mom's Nabil Bank", cash: "Cash to Mom" };
 const sortedEntries = () => live().sort((a, b) => b.at < a.at ? -1 : b.at > a.at ? 1 : b.c - a.c);
+const ckAt = ([k, b]) => /^\d{4}-\d\d-\d\dT\d\d:\d\d/.test(b.at || "") ? b.at : k + "-13T09:00";
+const ckInMonth = mk => { const l = balanceList().filter(x => ckAt(x).slice(0, 7) === mk); return l.length ? l[l.length - 1][1] : null; };
 function checkinDue(){
   const d = new Date(); if (d.getDate() < 13) return false;
-  if (db.balances[monthKey(d)] && !db.balances[monthKey(d)].del) return false;
+  if (balanceList().some(x => ckAt(x) >= monthKey(d) + "-13")) return false;
   return !(db.ui.skip && db.ui.skip >= dayKey(d));
 }
 const balanceList = () => Object.entries(db.balances).filter(([, b]) => !b.del).sort(([a], [b]) => a < b ? -1 : 1);
@@ -423,7 +437,7 @@ function render(){
       <div class="lbl">You owe Mom</div>
       <div class="big num"><small>Rs</small>${fmt(o)}</div>
       <div class="hero-row">
-        <div class="stat"><div class="lbl">Paid back</div><div class="v num">${rs(paidTotal())}</div></div>
+        <div class="stat"><div class="lbl">Paid back</div><div class="v num">${rs(paidTotal())}</div>${paidTotal() ? `<div class="how num">Nabil ${rs(paidBy("transfer"))}<br>Cash ${rs(paidBy("cash"))}</div>` : ""}</div>
         <div class="stat"><div class="lbl">This month</div><div class="v num">${rs(spentIn(mk))}</div></div>
       </div>
       ${o > 0 ? `<button class="pill white settle-btn" data-settleall>Settle all</button>` : ""}
@@ -552,6 +566,7 @@ function drawBalance(){
 const sheet = $("#sheet"), scrim = $("#scrim"), shead = $("#shead"), sbody = $("#sbody");
 let onClose = null;
 function openSheet(head, body){
+  sheet.classList.remove("add");
   shead.innerHTML = head; sbody.innerHTML = body; sbody.scrollTop = 0;
   sheet.style.transform = ""; scrim.classList.add("on"); requestAnimationFrame(() => sheet.classList.add("on"));
 }
@@ -595,10 +610,12 @@ function bindKeypad(get, set, onChange){
 let f = null;
 const lastFor = name => sortedEntries().find(e => e.payee === name && isIn(e) === (f.dir === "in"));
 const cashTotal = () => NOTES.reduce((s, n) => s + n * (f.notes[n] || 0), 0);
+function guessNotes(amt){ const o = {}; NOTES.forEach(n => { const k = Math.floor(amt / n); if (k){ o[n] = k; amt -= k * n; } }); return o; }
 function newFlow(edit){
   f = edit ? { back: "none", payback: "transfer", ...edit, dir: edit.dir || "out", notes: { ...(edit.notes || {}) }, editId: edit.id, more: !!edit.note, touched: true }
            : { dir: "out", amount: 0, payee: "", back: "none", notes: {}, payback: "transfer", at: toLocalInput(new Date()), note: "", more: false, touched: false };
   if (!sheet.classList.contains("on")) openSheet("", "");
+  sheet.classList.add("add");
   drawAdd();
 }
 function drawAdd(){
@@ -620,7 +637,7 @@ function drawAdd(){
       <div class="cashsum"><span data-csum></span><button data-nclear>Clear</button></div>
     </div>
     <div class="seg2"><span>Pay Mom by</span><div class="tg">
-      <button data-tg="payback:transfer">Transfer</button><button data-tg="payback:cash">Cash</button></div></div>
+      <button data-tg="payback:transfer">Nabil Bank</button><button data-tg="payback:cash">Cash</button></div></div>
     </div>
     <button class="morebtn" data-more></button>
     <div class="group" data-morebox hidden>
@@ -648,7 +665,7 @@ function refreshAdd(){
 }
 function bindAdd(){
   const q = s => sbody.querySelector(s), qa = s => sbody.querySelectorAll(s);
-  bindKeypad(() => f.amount, v => f.amount = v, refreshAdd);
+  bindKeypad(() => f.amount, v => { f.amount = v; if (f.back === "cash" && f.autoN) f.notes = guessNotes(v); }, refreshAdd);
   const pick = name => {
     f.payee = name; haptic();
     const last = lastFor(name);
@@ -669,11 +686,11 @@ function bindAdd(){
   q("[data-addp]").onclick = add; inp.onkeydown = e => { if (e.key === "Enter") add(); };
   qa("[data-tg]").forEach(b => b.onclick = () => {
     const [k, v] = b.dataset.tg.split(":"); f[k] = v; f.touched = true; haptic();
-    if (k === "back"){ if (v === "cash") f.payback = "cash"; else f.notes = {}; }
+    if (k === "back"){ if (v === "cash"){ f.payback = "cash"; if (!cashTotal()){ f.notes = guessNotes(f.amount); f.autoN = true; } } else { f.notes = {}; f.autoN = false; } }
     refreshAdd();
   });
-  qa("[data-nb]").forEach(b => b.onclick = () => { const n = b.dataset.nb; f.notes[n] = (f.notes[n] || 0) + 1; haptic(); refreshAdd(); });
-  q("[data-nclear]").onclick = () => { f.notes = {}; haptic(); refreshAdd(); };
+  qa("[data-nb]").forEach(b => b.onclick = () => { const n = b.dataset.nb; if (f.autoN){ f.notes = {}; f.autoN = false; } f.notes[n] = (f.notes[n] || 0) + 1; haptic(); refreshAdd(); });
+  q("[data-nclear]").onclick = () => { f.notes = {}; f.autoN = false; haptic(); refreshAdd(); };
   q("[data-more]").onclick = () => { f.more = true; refreshAdd(); };
   q("[data-at]").onchange = e => { f.at = e.target.value || f.at; refreshAdd(); };
   q("[data-note]").oninput = e => f.note = e.target.value;
@@ -704,14 +721,14 @@ const noteText = notes => NOTES.filter(n => notes && notes[n]).map(n => `${notes
    so you can see what's left in her account right now. */
 const validAt = s => /^\d{4}-\d\d-\d\dT\d\d:\d\d/.test(s || "");
 function timeline(){
-  const cks = balanceList().map(([mk, b]) => ({ type: "check", mk, at: validAt(b.at) ? b.at : mk + "-13T09:00", ms: b.u || 0, amount: b.amount }));
+  const cks = balanceList().map(([mk, b]) => ({ type: "check", mk, key: mk, at: validAt(b.at) ? b.at : mk + "-13T09:00", ms: b.u || 0, amount: b.amount }));
   if (!cks.length) return [];
   const first = cks.map(c => c.at).sort()[0];
   const evs = [...cks, ...live().filter(e => e.at >= first).map(e => ({ type: isIn(e) ? "in" : "pay", e, at: e.at, ms: e.c || 0, amount: e.amount }))]
     .sort((a, b) => a.at < b.at ? -1 : a.at > b.at ? 1 : a.ms - b.ms);
   let bal = null;
-  evs.forEach(ev => { if (ev.type === "check"){ ev.diff = bal === null ? null : ev.amount - bal; bal = ev.amount; } else bal += ev.type === "in" ? ev.amount : -ev.amount; ev.bal = bal; });
-  return evs;
+  evs.forEach(ev => { if (ev.type === "check"){ ev.diff = bal === null ? null : ev.amount - bal; bal = ev.amount; } else if (bal !== null) bal += ev.type === "in" ? ev.amount : -ev.amount; ev.bal = bal; });
+  return evs.filter(ev => ev.bal !== null);
 }
 const shortDate = at => { const d = new Date(at); return d.getDate() + " " + SHORTM[d.getMonth()]; };
 let pdfRange = "1M", pdfMore = false;
@@ -753,7 +770,7 @@ function openStatement(){
       ? `<button class="row" data-entry="${ev.e.id}"><div class="av in">+</div>
           <div class="m"><b>From ${esc(ev.e.payee)}</b><span>${shortDate(ev.at)}, ${timeLabel(ev.at)} · Money in</span></div>
           <div class="r"><b class="num inamt">+${rs(ev.amount)}</b><span class="balr num">${rs(ev.bal)}</span></div></button>`
-      : `<div class="row ck"><div class="av">${I.check}</div>
+      : `<div class="row ck" data-ck="${esc(ev.key)}"><div class="av">${I.check}</div>
           <div class="m"><b>Balance check-in</b><span>${shortDate(ev.at)}, ${timeLabel(ev.at)}${ev.diff ? " · Mom's own money " + (ev.diff > 0 ? "+" : "&minus; ") + rs(Math.abs(ev.diff)) : ""}</span></div>
           <div class="r"><b class="num">${rs(ev.bal)}</b><span class="balr">checked</span></div></div>`).join("")}</div>
     <p class="hint">Payments made before a check-in are already inside that figure. Anything Mom spends or gets that isn't logged here shows up at the next check-in as "Mom's own money".</p>` : ""}`);
@@ -761,6 +778,7 @@ function openStatement(){
   const q = k => sbody.querySelector(k);
   sbody.querySelectorAll("[data-entry]").forEach(r => r.onclick = () => openEntry(r.dataset.entry));
   q("[data-log]").onclick = openCheckin;
+  sbody.querySelectorAll("[data-ck]").forEach(r => r.onclick = () => openCheckinRow(r.dataset.ck));
   const label = () => { const [a, b] = rangeDates(pdfRange); const f = d => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
     q("[data-prtext]").textContent = `${f(a)} to ${f(b)}`; };
   sbody.querySelectorAll("[data-pr]").forEach(b => b.onclick = () => { pdfRange = b.dataset.pr; haptic();
@@ -841,8 +859,8 @@ function openSettleAll(){
     <div class="detail-amt num">${rs(tr + ca)}</div>
     <div class="detail-sub">${un.length} payment${un.length === 1 ? "" : "s"} still owed to Mom</div>
     <div class="group">
-      <div class="kv"><span>Transfer to Mom</span><b class="num">${rs(tr)}</b></div>
-      <div class="kv"><span>Hand Mom cash</span><b class="num">${rs(ca)}</b></div>
+      <div class="kv"><span>To Mom's Nabil Bank</span><b class="num">${rs(tr)}</b></div>
+      <div class="kv"><span>Cash to Mom</span><b class="num">${rs(ca)}</b></div>
     </div>
     <p class="hint">Only tap this once you've actually given Mom the money.</p>
     <div class="btns"><button class="pill white" data-go>Mark all as paid back</button></div>`);
@@ -852,22 +870,34 @@ function openSettleAll(){
 
 /* ================= 13th check-in ================= */
 function openCheckin(){
-  const now = new Date(), mk = monthKey(now), ex = db.balances[mk] && !db.balances[mk].del ? db.balances[mk] : null;
-  let v = ex ? ex.amount : 0;
+  const now = new Date(), bl = balanceList(), ex = bl.length ? bl[bl.length - 1][1] : null;
+  let v = 0;
   openSheet(head(cancelBtn, "Check-in"), `
-    <h2 class="q">How much is in Mom's account?</h2><p class="qs">${MONTHS[now.getMonth()]} ${now.getFullYear()} · the exact figure</p>
+    <h2 class="q">How much is in Mom's account?</h2><p class="qs">Right now, the exact figure</p>
     <div class="amt num ${v ? "" : "zero"}" data-amt>${amtHTML(v)}</div>
     ${keypadHTML()}<button class="pill white next" data-save ${v ? "" : 'aria-disabled="true"'}>Save</button>
-    ${ex ? `<p class="hint" style="text-align:center">You already logged ${rs(ex.amount)} this month. Saving replaces it.</p>` : ""}`);
+    ${ex ? `<p class="hint" style="text-align:center">Last check-in: ${rs(ex.amount)} on ${shortDate(ex.at)}. Earlier check-ins and payments stay as they are.</p>` : ""}`);
   shead.querySelector("[data-x]").onclick = closeSheet;
   const sv = sbody.querySelector("[data-save]");
   bindKeypad(() => v, x => v = x, () => { const a = sbody.querySelector("[data-amt]"); a.innerHTML = amtHTML(v); a.classList.toggle("zero", !v); v ? sv.removeAttribute("aria-disabled") : sv.setAttribute("aria-disabled", "true"); });
-  sv.onclick = () => { if (!v) return; db.balances[mk] = { amount: v, at: toLocalInput(new Date()), u: Date.now() }; save(); haptic(); closeSheet(); render(); toast("Mom's balance saved"); };
+  sv.onclick = () => { if (!v) return; const at = toLocalInput(new Date()); db.balances[at] = { amount: v, at, u: Date.now() }; save(); haptic(); closeSheet(); render(); toast("Mom's balance saved"); };
+}
+
+function openCheckinRow(key){
+  const b = db.balances[key]; if (!b) return; let armed = false;
+  openSheet(head(`<button class="txt-btn" data-back>Back</button>`, "Check-in"), `
+    <div class="detail-amt num">${rs(b.amount)}</div><div class="detail-sub">read from Mom's account on ${shortDate(ckAt([key, b]))}, ${timeLabel(ckAt([key, b]))}</div>
+    <p class="hint" style="text-align:center;margin-top:14px">Logged a wrong figure? Delete it and log the right one.</p>
+    <div class="btns"><button class="pill red" data-del>Delete this check-in</button></div>`);
+  shead.querySelector("[data-back]").onclick = openStatement;
+  sbody.querySelector("[data-del]").onclick = ev => { const btn = ev.currentTarget;
+    if (!armed){ armed = true; btn.textContent = "Tap again to delete"; haptic(); setTimeout(() => { armed = false; if (btn.isConnected) btn.textContent = "Delete this check-in"; }, 3000); return; }
+    b.del = true; save(); haptic(); render(); openStatement(); toast("Check-in deleted"); };
 }
 
 /* ================= month summary ================= */
 function summaryText(mk){
-  const es = inMonth(mk).sort((a, b) => a.at < b.at ? -1 : 1), b = db.balances[mk];
+  const es = inMonth(mk).sort((a, b) => a.at < b.at ? -1 : 1), b = ckInMonth(mk);
   const spent = es.reduce((s, e) => s + e.amount, 0), paid = es.filter(e => e.paid).reduce((s, e) => s + e.amount, 0);
   return [`Settle. ${monthName(mk)}`, "",
     `Spent from Mom's account: ${rs(spent)} (${es.length} payment${es.length === 1 ? "" : "s"})`,
@@ -878,7 +908,7 @@ function summaryText(mk){
   ].filter(x => x !== null).join("\n");
 }
 function openMonth(mk){
-  const es = inMonth(mk).sort((a, b) => a.at < b.at ? 1 : -1), b = db.balances[mk], ins = insInMonth(mk);
+  const es = inMonth(mk).sort((a, b) => a.at < b.at ? 1 : -1), b = ckInMonth(mk), ins = insInMonth(mk);
   const spent = es.reduce((s, e) => s + e.amount, 0), paid = es.filter(e => e.paid).reduce((s, e) => s + e.amount, 0);
   const cash = es.filter(e => e.back === "cash").reduce((s, e) => s + cashOf(e), 0);
   openSheet(head("", monthName(mk), closeBtn), `

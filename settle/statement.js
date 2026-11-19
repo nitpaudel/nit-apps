@@ -87,8 +87,8 @@ function renderStatement(db, start, end, opts = {}){
     const e = r.e, note = e.note ? `<span>${esc(e.note)}</span>` : "";
     if (r.type === "in") return `<tr><td class="s-w">${when(x)}</td><td><b>From ${esc(e.payee)}</b>${note || "<span>Money in</span>"}</td><td class="s-st"><em class="s-tag s-in">Money in</em></td><td class="s-n"></td><td class="s-n">${rs(e.amount, "+")}</td><td class="s-n s-b">${bal}</td></tr>`;
     const back = e.back === "cash" ? "Cash back" + (noteText(e.notes) ? " · " + noteText(e.notes) : "") : e.back === "online" ? "Sent back online" : "Nothing came back";
-    const st = e.paid && e.paidAt ? `<em class="s-tag s-ok">Paid back</em><span>${dshort(D(e.paidAt))}, ${e.payback === "transfer" ? "transfer" : "cash"}</span>`
-                                  : `<em class="s-tag">Owed</em><span>${e.payback === "transfer" ? "by transfer" : "in cash"}</span>`;
+    const st = e.paid && e.paidAt ? `<em class="s-tag s-ok">Paid back</em><span>${dshort(D(e.paidAt))}, ${e.payback === "transfer" ? "Nabil Bank" : "cash"}</span>`
+                                  : `<em class="s-tag">Owed</em><span>${e.payback === "transfer" ? "to Nabil Bank" : "in cash"}</span>`;
     return `<tr><td class="s-w">${when(x)}</td><td><b>To ${esc(e.payee)}</b><span>${back}</span>${note}</td><td class="s-st">${st}</td><td class="s-n">${rs(-e.amount)}</td><td class="s-n"></td><td class="s-n s-b">${bal}</td></tr>`;
   };
   const all = [];
@@ -101,9 +101,9 @@ function renderStatement(db, start, end, opts = {}){
   /* ---- paying Mom back ---- */
   const noteSpan = e => e.note ? `<span>${esc(e.note)}</span>` : "";
   const paidRow = e => { const x = D(e.paidAt), o = D(e.at);
-    return `<tr><td class="s-w">${when(x)}</td><td><b>For ${esc(e.payee)}</b><span>Paid on ${dshort(o)}, ${dtime(o)}</span>${noteSpan(e)}</td><td>${e.payback === "transfer" ? "Transfer to her other account" : "Handed to her in cash"}</td><td class="s-n s-b">${rs(e.amount)}</td></tr>`; };
+    return `<tr><td class="s-w">${when(x)}</td><td><b>For ${esc(e.payee)}</b><span>Paid on ${dshort(o)}, ${dtime(o)}</span>${noteSpan(e)}</td><td>${e.payback === "transfer" ? "To her Nabil Bank account" : "Cash, handed to her"}</td><td class="s-n s-b">${rs(e.amount)}</td></tr>`; };
   const owedRow = e => { const o = D(e.at), days = Math.max(0, Math.round((new Date(e0.getFullYear(), e0.getMonth(), e0.getDate()) - new Date(o.getFullYear(), o.getMonth(), o.getDate())) / 864e5));
-    return `<tr><td class="s-w">${when(o)}</td><td><b>${esc(e.payee)}</b>${noteSpan(e)}<span>Owed for ${plural(days, "day")}</span></td><td>${e.payback === "transfer" ? "Transfer to her" : "Hand her cash"}</td><td class="s-n s-b">${rs(e.amount)}</td></tr>`; };
+    return `<tr><td class="s-w">${when(o)}</td><td><b>${esc(e.payee)}</b>${noteSpan(e)}<span>Owed for ${plural(days, "day")}</span></td><td>${e.payback === "transfer" ? "Nabil Bank" : "Cash"}</td><td class="s-n s-b">${rs(e.amount)}</td></tr>`; };
   const byTr = paidIn.filter(e => e.payback === "transfer").reduce((s, e) => s + e.amount, 0), byCa = paidTotal - byTr;
   const pHead = `<thead><tr><th>Paid back on</th><th>What it was for</th><th>How</th><th class="s-n">Amount</th></tr></thead>`;
   const oHead = `<thead><tr><th>Paid on</th><th>Paid to</th><th>How Mom gets it</th><th class="s-n">Amount</th></tr></thead>`;
@@ -136,7 +136,7 @@ function renderStatement(db, start, end, opts = {}){
   pages.push(`<div class="s-ph"><h2>Paying Mom back</h2></div>
     <div class="s-cards s-three">
       <div class="s-card"><span>Paid back this period</span><b>${rs(paidTotal)}</b><small>${plural(paidIn.length, "payment")}</small></div>
-      <div class="s-card"><span>By transfer</span><b>${rs(byTr)}</b><small>to her other account</small></div>
+      <div class="s-card"><span>To Nabil Bank</span><b>${rs(byTr)}</b><small>bank transfer</small></div>
       <div class="s-card"><span>In cash</span><b>${rs(byCa)}</b><small>handed to her</small></div>
     </div>
     <div class="s-owedbar"><span>Still owed to Mom on ${ddate(e0)}</span><b>${rs(owedTotal)}</b></div>
@@ -154,9 +154,9 @@ function renderStatement(db, start, end, opts = {}){
 
 const STYLE = `
 @font-face{font-family:SettleSerif;src:url(@@BASE@@fonts/instrument-serif.woff2) format("woff2")}
-@font-face{font-family:SInter;font-weight:400;src:url(@@BASE@@fonts/inter-400.woff2) format("woff2")}
-@font-face{font-family:SInter;font-weight:500;src:url(@@BASE@@fonts/inter-500.woff2) format("woff2")}
-@font-face{font-family:SInter;font-weight:600;src:url(@@BASE@@fonts/inter-600.woff2) format("woff2")}
+@font-face{font-family:SInter;font-weight:400;src:url(@@BASE@@fonts/sans-400.woff2) format("woff2")}
+@font-face{font-family:SInter;font-weight:500;src:url(@@BASE@@fonts/sans-500.woff2) format("woff2")}
+@font-face{font-family:SInter;font-weight:600;src:url(@@BASE@@fonts/sans-600.woff2) format("woff2")}
 @page{size:A4;margin:0}
 #stmt,#stmt *{box-sizing:border-box;margin:0;padding:0}
 #stmt{font:10pt/1.5 SInter,-apple-system,sans-serif;color:#111;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-user-select:text;user-select:text}
