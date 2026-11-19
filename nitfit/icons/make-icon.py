@@ -26,7 +26,14 @@ mid = fy + (68 + 20) * k                     # middle bar centre, measured (68..
 f_mid = f"M{a:.1f},{mid:.1f} L{W:.1f},{mid:.1f}"
 gw, gh = W, 2*H + gap
 ox, oy = (S-gw)/2, (S-gh)/2
-letters = f'<g transform="translate({ox:.1f},{oy:.1f})" fill="none" stroke="#fff" stroke-width="{s:.1f}" stroke-linecap="butt" stroke-linejoin="miter"><path d="{n}"/><path d="{f_top}"/><path d="{f_mid}"/></g>'
+# each letter fades white -> silver top to bottom, measured from the MF / WO icons on the phone
+def metal(id_, y0, y1):
+    return (f'<linearGradient id="{id_}" gradientUnits="userSpaceOnUse" x1="0" y1="{y0:.1f}" x2="0" y2="{y1:.1f}">'
+            '<stop offset="0" stop-color="#ffffff"/><stop offset=".2" stop-color="#ffffff"/>'
+            '<stop offset=".6" stop-color="#eeeeee"/><stop offset=".85" stop-color="#e0e0e0"/><stop offset="1" stop-color="#d2d2d2"/></linearGradient>')
+lgrad = metal("mN", 0, H) + metal("mF", fy, fy+H)
+letters = (f'<g transform="translate({ox:.1f},{oy:.1f})" fill="none" stroke-width="{s:.1f}" stroke-linecap="butt" stroke-linejoin="miter">'
+           f'<defs>{lgrad}</defs><path d="{n}" stroke="url(#mN)"/><path d="{f_top}" stroke="url(#mF)"/><path d="{f_mid}" stroke="url(#mF)"/></g>')
 # ---- scanner: near the edges, glassy tube like the Visual Look Up icon ----
 inset, arm, r, w = 158, 170, 105, 48
 brk = []
@@ -47,9 +54,9 @@ defs = f'''<defs>
 <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.5"/></filter>
 </defs>'''
 svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="{S}" height="{S}" viewBox="0 0 {S} {S}">{defs}<rect width="{S}" height="{S}" fill="url(#bg)"/>{scanner}{letters}</svg>'
-open("/home/claude/nitfit-icon/nitfit4.svg", "w").write(svg)
+open("/home/claude/nitfit-icon/nitfit5.svg", "w").write(svg)
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path="/usr/bin/google-chrome", args=["--no-sandbox"])
     pg = b.new_page(viewport={"width": S, "height": S}); pg.set_content(f'<html><body style="margin:0">{svg}</body></html>')
-    pg.screenshot(path="/home/claude/nitfit-icon/nitfit4-1024.png"); b.close()
+    pg.screenshot(path="/home/claude/nitfit-icon/nitfit5-1024.png"); b.close()
 print("ok")
