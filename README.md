@@ -9,3 +9,7 @@ My to-do app. Open https://nitpaudel.github.io/nit-apps/daily/ in Safari, then t
 ## NitFit
 
 My gym and food app. Open https://nitpaudel.github.io/nit-apps/nitfit/ in Safari, then tap Share > Add to Home Screen. Data is saved in my private nitfit-data repository.
+
+## Settle
+
+Tracks every payment I make from Mom's account and how I pay her back. Open https://nitpaudel.github.io/nit-apps/settle/ in Safari, then tap Share > Add to Home Screen. Backup can go to my private settle-data repository.
