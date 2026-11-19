@@ -1,6 +1,6 @@
 // Makes Settle open instantly from the copy saved on the phone, and quietly checks for a newer
 // version in the background. A newer version is saved and shows the next time Settle opens.
-const CACHE = "settle-v1";
+const CACHE = "settle-v2";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./fonts/instrument-serif.woff2", "./icons/icon-180.png", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/launch-1170x2532.png",
   ...["mono", "green", "navy", "paper", "word"].map(k => `./icons/${k}-180.png`)];
 

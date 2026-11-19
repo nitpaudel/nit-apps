@@ -35,6 +35,7 @@ body{font:17px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,san
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation}
 input,textarea{font:inherit;color:inherit;-webkit-user-select:text;user-select:text}
 svg{display:block}
+[hidden]{display:none!important}
 .num{font-variant-numeric:tabular-nums}
 
 /* ===== glass ===== */
@@ -228,6 +229,34 @@ svg{display:block}
 .pchips .chip{height:36px;padding:0 8px 0 14px;font-size:15px}
 .pchips .chip .x{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.1);font-size:14px;color:var(--text2)}
 
+/* one-screen add */
+.prow{display:flex;gap:8px;overflow-x:auto;margin:4px -18px 2px;padding:4px 18px;scrollbar-width:none}
+.prow::-webkit-scrollbar{display:none}
+.prow .chip{flex:none;height:40px;padding:0 16px;font-size:15px}
+.seg2{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:0 2px}
+.seg2>span{font-size:14px;color:var(--text2)}
+.tg{display:flex;background:var(--fill2);border-radius:12px;padding:2px}
+.tg button{height:34px;padding:0 13px;border-radius:10px;font-size:14px;font-weight:600;color:var(--text2);transition:background .2s,color .2s}
+.tg button.on{background:rgba(255,255,255,.16);color:var(--text);box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.cashrow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.nb{height:50px;border-radius:14px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.nb b{font-size:15px;font-weight:600}
+.nb i{font-style:normal;font-size:12px;color:var(--text3)}
+.nb.has{background:rgba(255,255,255,.15)}
+.nb.has i{color:var(--text)}
+.nb:active{transform:scale(.95)}
+.cashsum{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--text2);margin:8px 4px 0}
+.cashsum b{color:var(--text);margin-left:4px}
+.cashsum .ok{color:var(--green)}
+.cashsum button{font-size:13px;color:var(--text2);padding:4px 0 4px 10px}
+.morebtn{display:block;width:100%;text-align:center;margin:14px 0 0;font-size:13px;color:var(--text2)}
+[data-morebox]{margin-top:10px}
+.sheet .amt{margin:4px 0 6px;font-size:54px;min-height:62px}
+.sheet .keys{margin:14px 0 4px}
+.sheet .key{height:52px}
+.stmt{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:12px;padding:12px 2px 2px;border-top:.5px solid var(--sep);font-size:15px;font-weight:500;color:var(--text)}
+.balr{display:block;font-size:12px;color:var(--text2);margin-top:2px}
+.row.ck .av svg{width:16px;height:16px;color:var(--green)}
 /* step slide */
 .stage{animation:in .42s var(--ease) both}
 .stage.back{animation-name:inBack}
@@ -381,9 +410,10 @@ function render(){
       <div class="seg">${["1M","6M","1Y","All"].map(r => `<button data-range="${r}" class="${r === range ? "on" : ""}">${r}</button>`).join("")}</div>
     </div>
     <div class="chart-card card">
-      <div class="ch-head"><div><div class="lbl">Mom's balance</div><div class="ch-val num" id="blV"></div><div class="ch-sub" id="blS"></div></div>
+      <div class="ch-head"><div><div class="lbl">Mom's balance now</div><div class="ch-val num" id="blV"></div><div class="ch-sub" id="blS"></div></div>
         <button class="mini-btn" data-checkin>Log</button></div>
       <div class="chart" id="blC"></div>
+      <button class="stmt" data-statement>See statement ${I.chev}</button>
     </div>
     ${months.length ? `<div class="sec"><h2>Months</h2></div>
       <div class="card list">${months.slice(0, 12).map(m => `<button class="mrow" data-month="${m}"><div class="m"><b>${monthName(m)}</b><span class="num">${inMonth(m).length} payment${inMonth(m).length === 1 ? "" : "s"}</span></div><b class="num">${rs(spentIn(m))}</b>${I.chev}</button>`).join("")}</div>` : ""}
@@ -392,10 +422,10 @@ function render(){
       : `<div class="card empty"><b>Nothing yet</b>Tap + when you pay from Mom's account.</div>`}
     ${!showAll && ents.length > 40 ? `<button class="more" data-more>Show all ${ents.length}</button>` : ""}
   `;
-  drawSpend(); drawBalance(bl);
+  drawSpend(); drawBalance();
 }
 function rowHTML(e){
-  const meta = [BACK[e.back], PAYBACK[e.payback]].join(" · ");
+  const meta = `${timeLabel(e.at)} · ${BACK[e.back]}`;
   return `<button class="row" data-entry="${e.id}"><div class="av">${esc(e.payee.slice(0, 1).toUpperCase())}</div>
     <div class="m"><b>${esc(e.payee)}</b><span>${meta}</span></div>
     <div class="r"><b class="num">${rs(e.amount)}</b>${e.paid ? `<span class="tag paid">${I.check}Paid</span>` : `<span class="tag"><i class="dot"></i>Owed</span>`}</div></button>`;
@@ -428,7 +458,8 @@ function lineChart(host, data, { onScrub, fromZero = true, emptyText }){
   if (max === min) max = min + 1;
   const xy = pts.map((d, i) => ({ x: 6 + i / (pts.length - 1) * (W - 12), y: top + (1 - (d.v - min) / (max - min)) * (H - top - bot) }));
   const line = smooth(xy), id = "g" + (++gid), last = xy[xy.length - 1];
-  const lab = [0, Math.floor((pts.length - 1) / 2), pts.length - 1].filter((v, i, a) => a.indexOf(v) === i && pts.length > 1);
+  const lab = [0, Math.floor((pts.length - 1) / 2), pts.length - 1].filter((v, i, a) => a.indexOf(v) === i && pts.length > 1)
+    .filter((v, i, a) => !a.slice(0, i).some(w => pts[w].label === pts[v].label) || v === pts.length - 1 && pts[0].label !== pts[v].label);
   host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
     <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
     <line x1="0" x2="${W}" y1="${H - bot}" y2="${H - bot}" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
@@ -477,17 +508,18 @@ function drawSpend(){
   rest();
   lineChart($("#spC"), data, { emptyText: "Your spending line starts with your first payment.", onScrub: i => { if (i === null) return rest(); V.textContent = rs(data[i].v); S.textContent = data[i].sub; } });
 }
-function drawBalance(bl){
-  const data = bl.map(([mk, b]) => ({ v: b.amount, label: SHORTM[+mk.slice(5) - 1], sub: "13th check-in, " + monthName(mk) }));
-  const V = $("#blV"), S = $("#blS");
+function drawBalance(){
+  const tl = timeline(), V = $("#blV"), S = $("#blS");
+  const data = tl.map(ev => ({ v: ev.bal, label: shortDate(ev.at),
+    sub: ev.type === "check" ? `Check-in, ${shortDate(ev.at)}` : `After ${rs(ev.amount)} to ${ev.e.payee}, ${shortDate(ev.at)}` }));
   const rest = () => {
-    if (!data.length){ V.textContent = "Not logged yet"; V.style.fontSize = "24px"; S.textContent = "Your first check-in is on the 13th"; return; }
-    V.style.fontSize = ""; V.textContent = rs(data[data.length - 1].v);
-    if (data.length > 1){ const ch = data[data.length - 1].v - data[data.length - 2].v; S.textContent = (ch >= 0 ? "Up " : "Down ") + rs(Math.abs(ch)) + " since " + MONTHS[+bl[bl.length - 2][0].slice(5) - 1]; }
-    else S.textContent = data[0].sub;
+    if (!tl.length){ V.textContent = "Not logged yet"; V.style.fontSize = "24px"; S.textContent = "Log her balance once to start"; return; }
+    V.style.fontSize = ""; const last = tl[tl.length - 1]; V.textContent = rs(last.bal);
+    const ck = tl.filter(ev => ev.type === "check").pop(), since = ck.bal - last.bal;
+    S.textContent = since > 0 ? `${rs(since)} spent since the ${shortDate(ck.at)} check-in` : `Checked ${shortDate(ck.at)}`;
   };
   rest();
-  lineChart($("#blC"), data, { fromZero: false, emptyText: "Log Mom's account balance every 13th and it shows here as a line.", onScrub: i => { if (i === null) return rest(); V.style.fontSize = ""; V.textContent = rs(data[i].v); S.textContent = data[i].sub; } });
+  lineChart($("#blC"), data, { fromZero: false, emptyText: "Log Mom's balance and every payment after it gets taken off, like a bank statement.", onScrub: i => { if (i === null) return rest(); V.style.fontSize = ""; V.textContent = rs(data[i].v); S.textContent = data[i].sub; } });
 }
 
 /* ================= sheet ================= */
@@ -531,130 +563,133 @@ function bindKeypad(get, set, onChange){
   });
 }
 
-/* ================= add / edit flow ================= */
+/* ================= add / edit: everything on one screen =================
+   Type the amount, tap who you paid, Save. The rest is filled in from the last time
+   you paid that person, and you only touch it when it's different. */
 let f = null;
-const ORDER = ["amount", "payee", "back", "cash", "payback", "review"];
-function stepsFor(){ return ORDER.filter(s => s !== "cash" || f.back === "cash"); }
-function newFlow(edit){
-  f = edit ? { ...edit, notes: { ...(edit.notes || {}) }, editId: edit.id, step: "review" }
-           : { amount: 0, payee: "", back: null, notes: {}, payback: null, at: toLocalInput(new Date()), note: "", step: "amount" };
-  openSheet("", ""); drawStep();
-}
-function go(step, dir){ f.step = step; drawStep(dir); }
-function nextStep(){ const s = stepsFor(); go(s[s.indexOf(f.step) + 1], 1); }
-function prevStep(){ if (f.editId) return f.step === "review" ? closeSheet() : go("review", -1); const s = stepsFor(); const i = s.indexOf(f.step); if (i <= 0) return closeSheet(); go(s[i - 1], -1); }
+const lastFor = name => sortedEntries().find(e => e.payee === name);
 const cashTotal = () => NOTES.reduce((s, n) => s + n * (f.notes[n] || 0), 0);
-function againList(){
-  const seen = new Set(), out = [];
-  sortedEntries().forEach(e => { const k = e.payee + "|" + e.amount; if (!seen.has(k) && out.length < 6){ seen.add(k); out.push(e); } });
-  return out;
+function newFlow(edit){
+  f = edit ? { ...edit, notes: { ...(edit.notes || {}) }, editId: edit.id, more: !!edit.note, touched: true }
+           : { amount: 0, payee: "", back: "none", notes: {}, payback: "transfer", at: toLocalInput(new Date()), note: "", more: false, touched: false };
+  if (!sheet.classList.contains("on")) openSheet("", "");
+  drawAdd();
 }
-function drawStep(dir){
-  const s = stepsFor(), i = s.indexOf(f.step);
-  const left = (i === 0 && !f.editId) || (f.editId && f.step === "review") ? cancelBtn : `<button class="txt-btn" data-prev>Back</button>`;
-  setSheet(head(left, `<div class="steps">${s.map((x, k) => `<i class="${k === i ? "on" : ""}"></i>`).join("")}</div>`), `<div class="stage ${dir < 0 ? "back" : ""}">${stepBody()}</div>`);
-  shead.querySelector("[data-x]") && (shead.querySelector("[data-x]").onclick = closeSheet);
-  shead.querySelector("[data-prev]") && (shead.querySelector("[data-prev]").onclick = () => { haptic(); prevStep(); });
-  bindStep();
+function drawAdd(){
+  setSheet(head(cancelBtn, f.editId ? "Edit payment" : "New payment"), `
+    <div class="amt num" data-amt></div>
+    <div class="prow">${payeeOrder().map(p => `<button class="chip" data-payee="${esc(p.name)}">${esc(p.name)}</button>`).join("")}
+      ${f.payee && !payees().some(p => p.name === f.payee) ? `<button class="chip" data-payee="${esc(f.payee)}">${esc(f.payee)}</button>` : ""}
+      <button class="chip dashed" data-newp>+ New</button></div>
+    <div class="newp" data-newbox hidden><input class="field" data-newname placeholder="Name or shop" autocapitalize="words" maxlength="40"><button class="pill white" data-addp>Add</button></div>
+    <div class="seg2"><span>Came back</span><div class="tg">
+      <button data-tg="back:none">Nothing</button><button data-tg="back:cash">Cash</button><button data-tg="back:online">Online</button></div></div>
+    <div data-cashbox>
+      <div class="cashrow">${NOTES.map(n => `<button class="nb" data-nb="${n}"><b class="num">${fmt(n)}</b><i class="num" data-nc="${n}"></i></button>`).join("")}</div>
+      <div class="cashsum"><span data-csum></span><button data-nclear>Clear</button></div>
+    </div>
+    <div class="seg2"><span>Pay Mom by</span><div class="tg">
+      <button data-tg="payback:transfer">Transfer</button><button data-tg="payback:cash">Cash</button></div></div>
+    <button class="morebtn" data-more></button>
+    <div class="group" data-morebox hidden>
+      <label class="kv"><span>When</span><input type="datetime-local" data-at value="${esc(f.at)}"></label>
+      <label class="kv"><span>Note</span><input data-note placeholder="Optional" value="${esc(f.note || "")}" maxlength="120"></label>
+    </div>
+    ${keypadHTML()}
+    <button class="pill white next" data-save>${f.editId ? "Save changes" : "Save"}</button>`);
+  shead.querySelector("[data-x]").onclick = closeSheet;
+  bindAdd(); refreshAdd();
 }
-function stepBody(){
-  switch (f.step){
-    case "amount": {
-      const ag = againList();
-      return `<h2 class="q">How much did you pay?</h2><p class="qs">From Mom's account</p>
-        <div class="amt num ${f.amount ? "" : "zero"}" data-amt>${amtHTML(f.amount)}</div>
-        ${ag.length ? `<div class="again">${ag.map(e => `<button class="chip" data-again="${e.id}">${esc(e.payee)} <small class="num">${rs(e.amount)}</small></button>`).join("")}</div>` : ""}
-        ${keypadHTML()}<button class="pill white next" data-next ${f.amount ? "" : 'aria-disabled="true"'}>Next</button>`;
-    }
-    case "payee":
-      return `<h2 class="q">Who did you pay?</h2><p class="qs num">${rs(f.amount)}</p>
-        <div class="chips">${payeeOrder().map(p => `<button class="chip ${p.name === f.payee ? "on" : ""}" data-payee="${esc(p.name)}">${esc(p.name)}</button>`).join("")}
-        <button class="chip dashed" data-newp>+ Someone new</button></div>
-        <div class="newp" data-newbox hidden><input class="field" data-newname placeholder="Name or shop" autocapitalize="words" maxlength="40"><button class="pill white" data-addp>Add</button></div>`;
-    case "back":
-      return `<h2 class="q">Did anything come back to you?</h2><p class="qs num">${rs(f.amount)} to ${esc(f.payee)}</p>
-        <div class="opts">
-          ${opt("none", "back", I.out, "No", "It's spent, like the gym")}
-          ${opt("cash", "back", I.cash, "Yes, cash", "They gave you cash for it")}
-          ${opt("online", "back", I.phone, "Yes, online", "They sent it back to your account")}
-        </div>`;
-    case "cash": {
-      const t = cashTotal(), ok = t === f.amount;
-      return `<h2 class="q">Which notes did you get?</h2><p class="qs num">${rs(f.amount)} from ${esc(f.payee)}</p>
-        <div class="notes">${NOTES.map(n => `<div class="note"><div class="nv num"><small>Rs</small>${fmt(n)}</div>
-          <div class="step-n"><button data-minus="${n}" aria-label="One less">&minus;</button><span class="c num">${f.notes[n] || 0}</span><button data-plus="${n}" aria-label="One more">+</button></div></div>`).join("")}</div>
-        <div class="total"><span>Cash you got</span><b class="num ${ok ? "ok" : ""}">${rs(t)}${ok ? " ✓" : ""}</b></div>
-        ${t && !ok ? `<p class="hint">That's ${rs(Math.abs(f.amount - t))} ${t < f.amount ? "less" : "more"} than you paid. Fine if that's right.</p>` : ""}
-        <button class="pill white next" data-next ${t ? "" : 'aria-disabled="true"'}>Next</button>`;
-    }
-    case "payback":
-      return `<h2 class="q">How will you pay Mom back?</h2><p class="qs num">${rs(f.amount)}</p>
-        <div class="opts">
-          ${opt("transfer", "payback", I.bank, "Transfer to Mom", "From your account to her other account")}
-          ${opt("cash", "payback", I.hand, "Hand Mom cash", "Give her the cash yourself")}
-        </div>`;
-    case "review":
-      return `<h2 class="q">${f.editId ? "Edit payment" : "All good?"}</h2>
-        <div class="group">
-          <button class="kv tap" data-goto="amount"><span>Amount</span><b class="num">${rs(f.amount)}</b></button>
-          <button class="kv tap" data-goto="payee"><span>Paid to</span><b>${esc(f.payee)}</b></button>
-          <button class="kv tap" data-goto="back"><span>Came back</span><b>${f.back === "cash" ? "Cash " + noteText(f.notes) : BACK[f.back]}</b></button>
-          <button class="kv tap" data-goto="payback"><span>Pay Mom back</span><b>${PAYBACK[f.payback]}</b></button>
-        </div>
-        <div class="group">
-          <label class="kv"><span>When</span><input type="datetime-local" data-at value="${esc(f.at)}"></label>
-          <label class="kv"><span>Note</span><input data-note placeholder="Optional" value="${esc(f.note || "")}" maxlength="120"></label>
-        </div>
-        <button class="pill white next" data-save>${f.editId ? "Save changes" : "Save"}</button>`;
-  }
-}
-const opt = (val, field, icon, title, sub) => `<button class="opt ${f[field] === val ? "on" : ""}" data-opt="${field}:${val}"><div class="oi">${icon}</div><div><b>${title}</b><span>${sub}</span></div></button>`;
-const noteText = notes => NOTES.filter(n => notes && notes[n]).map(n => `${notes[n]}×${n}`).join(", ") || "";
-function bindStep(){
+function refreshAdd(){
   const q = s => sbody.querySelector(s), qa = s => sbody.querySelectorAll(s);
-  const nx = q("[data-next]"); if (nx) nx.onclick = () => { if (nx.getAttribute("aria-disabled")) return; haptic(); f.editId && f.step !== "cash" ? go("review", 1) : nextStep(); };
-  if (f.step === "amount"){
-    bindKeypad(() => f.amount, v => f.amount = v, () => {
-      const a = q("[data-amt]"); a.innerHTML = amtHTML(f.amount); a.classList.toggle("zero", !f.amount);
-      f.amount ? nx.removeAttribute("aria-disabled") : nx.setAttribute("aria-disabled", "true"); });
-    qa("[data-again]").forEach(b => b.onclick = () => { const e = db.entries.find(x => x.id === b.dataset.again); if (!e) return;
-      Object.assign(f, { amount: e.amount, payee: e.payee, back: e.back, notes: { ...(e.notes || {}) }, payback: e.payback }); haptic(); go("review", 1); });
-  }
-  if (f.step === "payee"){
-    qa("[data-payee]").forEach(b => b.onclick = () => { f.payee = b.dataset.payee; haptic(); qa("[data-payee]").forEach(x => x.classList.toggle("on", x === b)); setTimeout(() => f.editId ? go("review", 1) : nextStep(), 160); });
-    const box = q("[data-newbox]"), inp = q("[data-newname]");
-    q("[data-newp]").onclick = () => { box.hidden = false; inp.focus(); };
-    const add = () => { const n = inp.value.trim().replace(/\s+/g, " "); if (!n) return inp.focus();
-      const ex = db.payees.find(p => p.name.toLowerCase() === n.toLowerCase());
-      if (ex){ ex.del = false; ex.name = n; } else db.payees.push({ id: n.toLowerCase(), name: n, u: Date.now() });
-      save(); f.payee = n; haptic(); inp.blur(); f.editId ? go("review", 1) : nextStep(); };
-    q("[data-addp]").onclick = add; inp.onkeydown = e => { if (e.key === "Enter") add(); };
-  }
-  qa("[data-opt]").forEach(b => b.onclick = () => {
-    const [field, val] = b.dataset.opt.split(":"); f[field] = val; haptic();
-    qa("[data-opt]").forEach(x => x.classList.toggle("on", x === b));
-    if (field === "back"){ if (val !== "cash") f.notes = {}; if (!f.payback) f.payback = val === "cash" ? "cash" : "transfer"; }
-    setTimeout(() => { if (f.editId && !(field === "back" && val === "cash")) go("review", 1); else nextStep(); }, 170);
+  const a = q("[data-amt]"); a.innerHTML = amtHTML(f.amount); a.classList.toggle("zero", !f.amount);
+  qa("[data-payee]").forEach(b => b.classList.toggle("on", b.dataset.payee === f.payee));
+  qa("[data-tg]").forEach(b => { const [k, v] = b.dataset.tg.split(":"); b.classList.toggle("on", f[k] === v); });
+  q("[data-cashbox]").hidden = f.back !== "cash";
+  NOTES.forEach(n => { const c = f.notes[n] || 0; q(`[data-nc="${n}"]`).textContent = c ? "×" + c : "tap"; q(`[data-nb="${n}"]`).classList.toggle("has", !!c); });
+  const t = cashTotal(), ok = t === f.amount && t > 0;
+  q("[data-csum]").innerHTML = t ? `Cash you got <b class="num ${ok ? "ok" : ""}">${rs(t)}${ok ? " ✓" : ""}</b>` : "Tap the notes you got";
+  const d = new Date(f.at), today = dayKey(d) === dayKey(new Date());
+  q("[data-more]").textContent = `${today ? "Now" : dayLabel(dayKey(d)) + ", " + timeLabel(f.at)}${f.note ? " · " + f.note : ""} · ${f.more ? "Hide" : "Change date or add a note"}`;
+  q("[data-more]").hidden = f.more; q("[data-morebox]").hidden = !f.more;
+  q("[data-save]").setAttribute("aria-disabled", f.amount && f.payee ? "false" : "true");
+}
+function bindAdd(){
+  const q = s => sbody.querySelector(s), qa = s => sbody.querySelectorAll(s);
+  bindKeypad(() => f.amount, v => f.amount = v, refreshAdd);
+  const pick = name => {
+    f.payee = name; haptic();
+    const last = lastFor(name);
+    if (last && !f.editId){
+      if (!f.amount) f.amount = last.amount;                         // tap Gym on an empty amount: last gym amount comes back
+      if (!f.touched){ f.back = last.back; f.payback = last.payback; if (last.back === "cash" && last.amount === f.amount) f.notes = { ...(last.notes || {}) }; }
+    }
+    refreshAdd();
+  };
+  qa("[data-payee]").forEach(b => b.onclick = () => pick(b.dataset.payee));
+  const box = q("[data-newbox]"), inp = q("[data-newname]");
+  q("[data-newp]").onclick = () => { box.hidden = false; inp.focus(); };
+  const add = () => { const n = inp.value.trim().replace(/\s+/g, " "); if (!n) return inp.focus();
+    const ex = db.payees.find(p => p.name.toLowerCase() === n.toLowerCase());
+    if (ex){ ex.del = false; ex.name = n; } else db.payees.push({ id: n.toLowerCase(), name: n, u: Date.now() });
+    save(); f.payee = n; inp.blur(); haptic(); drawAdd(); };
+  q("[data-addp]").onclick = add; inp.onkeydown = e => { if (e.key === "Enter") add(); };
+  qa("[data-tg]").forEach(b => b.onclick = () => {
+    const [k, v] = b.dataset.tg.split(":"); f[k] = v; f.touched = true; haptic();
+    if (k === "back"){ if (v === "cash") f.payback = "cash"; else f.notes = {}; }
+    refreshAdd();
   });
-  if (f.step === "cash"){
-    const redraw = () => { const keep = sbody.scrollTop; sbody.querySelector(".stage").innerHTML = stepBody(); sbody.querySelector(".stage").style.animation = "none"; sbody.scrollTop = keep; bindStep(); };
-    qa("[data-plus]").forEach(b => b.onclick = () => { const n = b.dataset.plus; f.notes[n] = (f.notes[n] || 0) + 1; haptic(); redraw(); });
-    qa("[data-minus]").forEach(b => b.onclick = () => { const n = b.dataset.minus; f.notes[n] = Math.max(0, (f.notes[n] || 0) - 1); haptic(); redraw(); });
-  }
-  if (f.step === "review"){
-    qa("[data-goto]").forEach(b => b.onclick = () => { haptic(); go(b.dataset.goto, -1); });
-    q("[data-at]").onchange = e => f.at = e.target.value || f.at;
-    q("[data-note]").oninput = e => f.note = e.target.value;
-    q("[data-save]").onclick = saveFlow;
-  }
+  qa("[data-nb]").forEach(b => b.onclick = () => { const n = b.dataset.nb; f.notes[n] = (f.notes[n] || 0) + 1; haptic(); refreshAdd(); });
+  q("[data-nclear]").onclick = () => { f.notes = {}; haptic(); refreshAdd(); };
+  q("[data-more]").onclick = () => { f.more = true; refreshAdd(); };
+  q("[data-at]").onchange = e => { f.at = e.target.value || f.at; refreshAdd(); };
+  q("[data-note]").oninput = e => f.note = e.target.value;
+  q("[data-save]").onclick = saveFlow;
 }
 function saveFlow(){
-  const at = sbody.querySelector("[data-at]").value || f.at, note = sbody.querySelector("[data-note]").value.trim();
-  const data = { amount: f.amount, payee: f.payee, back: f.back, notes: f.back === "cash" ? f.notes : {}, payback: f.payback, at, note };
+  if (!f.amount) return toast("Type how much you paid");
+  if (!f.payee) return toast("Tap who you paid");
+  if (f.back === "cash" && !cashTotal()) return toast("Tap the notes you got back");
+  const data = { amount: f.amount, payee: f.payee, back: f.back, notes: f.back === "cash" ? f.notes : {}, payback: f.payback, at: f.at, note: (f.note || "").trim() };
   if (f.editId){ const e = db.entries.find(x => x.id === f.editId); Object.assign(e, data); }
   else db.entries.push({ id: uid(), c: Date.now(), paid: false, paidAt: null, ...data });
   const wasEdit = !!f.editId;
   save(); haptic(); closeSheet(); render(); toast(wasEdit ? "Saved" : `${rs(f.amount)} added. You owe Mom ${rs(owed())}`);
+}
+const noteText = notes => NOTES.filter(n => notes && notes[n]).map(n => `${notes[n]}×${n}`).join(", ") || "";
+
+/* ================= Mom's balance, like a bank statement =================
+   Each check-in is the real figure. Every payment after it is taken off,
+   so you can see what's left in her account right now. */
+const validAt = s => /^\d{4}-\d\d-\d\dT\d\d:\d\d/.test(s || "");
+function timeline(){
+  const cks = balanceList().map(([mk, b]) => ({ type: "check", mk, at: validAt(b.at) ? b.at : mk + "-13T09:00", ms: b.u || 0, amount: b.amount }));
+  if (!cks.length) return [];
+  const first = cks.map(c => c.at).sort()[0];
+  const evs = [...cks, ...live().filter(e => e.at >= first).map(e => ({ type: "pay", e, at: e.at, ms: e.c || 0, amount: e.amount }))]
+    .sort((a, b) => a.at < b.at ? -1 : a.at > b.at ? 1 : a.ms - b.ms);
+  let bal = null;
+  evs.forEach(ev => { if (ev.type === "check"){ ev.diff = bal === null ? null : ev.amount - bal; bal = ev.amount; } else bal -= ev.amount; ev.bal = bal; });
+  return evs;
+}
+const shortDate = at => { const d = new Date(at); return d.getDate() + " " + SHORTM[d.getMonth()]; };
+function openStatement(){
+  const tl = timeline(), now = tl.length ? tl[tl.length - 1].bal : null;
+  openSheet(head("", "Statement", closeBtn), !tl.length
+    ? `<div class="empty"><b>No check-in yet</b>Log Mom's balance once, and every payment after that is taken off here.</div>
+       <div class="btns"><button class="pill white" data-log>Log Mom's balance</button></div>`
+    : `<div class="detail-amt num">${rs(now)}</div><div class="detail-sub">left in Mom's account now</div>
+    <div class="group list" style="padding:0">${tl.slice().reverse().map(ev => ev.type === "pay"
+      ? `<button class="row" data-entry="${ev.e.id}"><div class="av">${esc(ev.e.payee.slice(0, 1).toUpperCase())}</div>
+          <div class="m"><b>${esc(ev.e.payee)}</b><span>${shortDate(ev.at)}, ${timeLabel(ev.at)} · ${BACK[ev.e.back]}</span></div>
+          <div class="r"><b class="num">&minus; ${rs(ev.amount)}</b><span class="balr num">${rs(ev.bal)}</span></div></button>`
+      : `<div class="row ck"><div class="av">${I.check}</div>
+          <div class="m"><b>Balance check-in</b><span>${shortDate(ev.at)}, ${timeLabel(ev.at)}${ev.diff ? " · Mom's own money " + (ev.diff > 0 ? "+" : "&minus; ") + rs(Math.abs(ev.diff)) : ""}</span></div>
+          <div class="r"><b class="num">${rs(ev.bal)}</b><span class="balr">checked</span></div></div>`).join("")}</div>
+    <p class="hint">Payments made before a check-in are already inside that figure. Mom's own money coming in or going out isn't tracked here, so the next 13th check-in sets it straight again.</p>`);
+  shead.querySelector("[data-x]").onclick = closeSheet;
+  sbody.querySelectorAll("[data-entry]").forEach(r => r.onclick = () => openEntry(r.dataset.entry));
+  const lg = sbody.querySelector("[data-log]"); if (lg) lg.onclick = openCheckin;
 }
 
 /* ================= one payment ================= */
@@ -663,7 +698,13 @@ function openEntry(id){
   let armed = false;
   openSheet(head("", "", closeBtn), `
     <div class="detail-amt num">${rs(e.amount)}</div>
-    <div class="detail-sub">to ${esc(e.payee)} · ${dayLabel(e.at.slice(0, 10))}, ${timeLabel(e.at)}</div>
+    <div class="detail-sub">to ${esc(e.payee)}</div>
+    <div class="group">
+      <div class="kv"><span>Paid to</span><b>${esc(e.payee)}</b></div>
+      <div class="kv"><span>Amount</span><b class="num">${rs(e.amount)}</b></div>
+      <div class="kv"><span>When</span><b>${new Date(e.at).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}, ${timeLabel(e.at)}</b></div>
+      ${(() => { const ev = timeline().find(x => x.type === "pay" && x.e.id === e.id); return ev ? `<div class="kv"><span>Mom's balance after</span><b class="num">${rs(ev.bal)}</b></div>` : ""; })()}
+    </div>
     <div class="group">
       <div class="kv"><span>Came back</span><b>${e.back === "cash" ? "Cash " + noteText(e.notes) : BACK[e.back]}</b></div>
       <div class="kv"><span>Pay Mom back</span><b>${PAYBACK[e.payback]}</b></div>
@@ -679,7 +720,7 @@ function openEntry(id){
   const q = s => sbody.querySelector(s);
   if (q("[data-pay]")) q("[data-pay]").onclick = () => { e.paid = true; e.paidAt = toLocalInput(new Date()); save(); haptic(); closeSheet(); render(); toast("Paid back. You owe Mom " + rs(owed())); };
   if (q("[data-unpay]")) q("[data-unpay]").onclick = () => { e.paid = false; e.paidAt = null; save(); haptic(); closeSheet(); render(); };
-  q("[data-edit]").onclick = () => { haptic(); f = { ...e, notes: { ...(e.notes || {}) }, editId: e.id, step: "review" }; drawStep(1); };
+  q("[data-edit]").onclick = () => { haptic(); newFlow(e); };
   q("[data-del]").onclick = ev => { const b = ev.currentTarget;
     if (!armed){ armed = true; b.textContent = "Tap again to delete"; haptic(); setTimeout(() => { armed = false; if (b.isConnected) b.textContent = "Delete"; }, 3000); return; }
     e.del = true; save(); haptic(); closeSheet(); render(); toast("Deleted"); };
@@ -937,6 +978,7 @@ $("#main").addEventListener("click", e => {
   if ("settings" in d) return openSettings();
   if ("settleall" in d) return openSettleAll();
   if ("checkin" in d) return openCheckin();
+  if ("statement" in d) return openStatement();
   if ("skip" in d){ db.ui.skip = dayKey(new Date()); try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(_){} haptic(); render(); return toast("Okay, I'll ask again tomorrow"); }
   if ("more" in d){ showAll = true; return render(); }
   if (d.range){ range = d.range; haptic(); document.querySelectorAll("[data-range]").forEach(b => b.classList.toggle("on", b === t)); return drawSpend(); }
@@ -945,9 +987,9 @@ $("#fab").onclick = () => { haptic(); newFlow(); };
 $("#main").addEventListener("scroll", () => $("#bar").classList.toggle("on", $("#main").scrollTop > 46), { passive: true });
 let lastDay = dayKey(new Date());
 document.addEventListener("visibilitychange", () => { if (!document.hidden && dayKey(new Date()) !== lastDay){ lastDay = dayKey(new Date()); if (!sheet.classList.contains("on")) render(); } });
-let rw; addEventListener("resize", () => { clearTimeout(rw); rw = setTimeout(() => { drawSpend(); drawBalance(balanceList()); }, 150); });
+let rw; addEventListener("resize", () => { clearTimeout(rw); rw = setTimeout(() => { drawSpend(); drawBalance(); }, 150); });
 render();
-if (document.fonts) document.fonts.ready.then(() => { drawSpend(); drawBalance(balanceList()); });
+if (document.fonts) document.fonts.ready.then(() => { drawSpend(); drawBalance(); });
 
 if ("serviceWorker" in navigator){
   navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).catch(() => {});
