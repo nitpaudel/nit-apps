@@ -268,6 +268,19 @@ svg{display:block}
   white-space:nowrap;transition:transform .5s var(--ease)}
 .toast.on{transform:translate(-50%,0)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+#stmt{display:none}
+@media print{
+  html,body{height:auto!important;overflow:visible!important;background:#fff!important}
+  body>*:not(#stmt){display:none!important}
+  #stmt{display:block!important}
+}
+.dirsw{margin:0 auto}
+.dirsw button{padding:0 14px}
+.av.in{font:500 20px -apple-system,system-ui,sans-serif;color:var(--green)}
+.inamt{color:var(--green)}
+.dates{margin-top:10px}
+.dates .kv{padding:8px 4px;min-height:44px}
+.dates input{color-scheme:dark}
 @media (min-width:600px){ #main{padding-left:calc(50% - 280px);padding-right:calc(50% - 280px)} .sheet{left:calc(50% - 300px);right:calc(50% - 300px)} }
 @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
 </style>
@@ -284,6 +297,8 @@ svg{display:block}
   <div class="sbody" id="sbody"></div>
 </section>
 <div class="toast panel" id="toast"></div>
+<div id="stmt"></div>
+<script src="statement.js"></script>
 
 <script>
 /* ================= data =================
@@ -311,6 +326,7 @@ function load(){
   }
   d = d || fresh();
   d.payees = d.payees || []; d.balances = d.balances || {}; d.gone = d.gone || []; d.ui = d.ui || {}; d.ui.icon = d.ui.icon || "mono";
+  if (!d.payees.some(p => p.kind === "in")) ["Salary", "Rent", "Family"].forEach((n, i) => d.payees.push({ id: "in:" + n.toLowerCase(), name: n, kind: "in", u: 1 + i }));
   return d;
 }
 var db = load();
@@ -364,14 +380,22 @@ const I = {
 
 /* ================= model ================= */
 const live = () => db.entries.filter(e => !e.del);
-const owed = () => live().filter(e => !e.paid).reduce((s, e) => s + e.amount, 0);
-const paidTotal = () => live().filter(e => e.paid).reduce((s, e) => s + e.amount, 0);
-const inMonth = mk => live().filter(e => e.at.slice(0, 7) === mk);
+const isIn = e => e.dir === "in";
+const outs = () => live().filter(e => !isIn(e));                 // money out of Mom's account (what you owe her)
+const owed = () => outs().filter(e => !e.paid).reduce((s, e) => s + e.amount, 0);
+const paidTotal = () => outs().filter(e => e.paid).reduce((s, e) => s + e.amount, 0);
+const inMonth = mk => outs().filter(e => e.at.slice(0, 7) === mk);
+const insInMonth = mk => live().filter(e => isIn(e) && e.at.slice(0, 7) === mk);
 const spentIn = mk => inMonth(mk).reduce((s, e) => s + e.amount, 0);
-const payees = () => db.payees.filter(p => !p.del);
+const payees = () => db.payees.filter(p => !p.del && p.kind !== "in");
+const sources = () => db.payees.filter(p => !p.del && p.kind === "in");
 function payeeOrder(){
-  const n = {}; live().forEach(e => n[e.payee] = (n[e.payee] || 0) + 1);
+  const n = {}; outs().forEach(e => n[e.payee] = (n[e.payee] || 0) + 1);
   return payees().slice().sort((a, b) => (n[b.name] || 0) - (n[a.name] || 0) || a.u - b.u);
+}
+function sourceOrder(){
+  const n = {}; live().filter(isIn).forEach(e => n[e.payee] = (n[e.payee] || 0) + 1);
+  return sources().slice().sort((a, b) => (n[b.name] || 0) - (n[a.name] || 0) || a.u - b.u);
 }
 const BACK = { none: "Nothing back", cash: "Cash back", online: "Online back" };
 const PAYBACK = { transfer: "Transfer to Mom", cash: "Hand Mom cash" };
@@ -389,7 +413,7 @@ function render(){
   const ents = sortedEntries(), o = owed(), mk = monthKey(new Date());
   const groups = []; let cur = null;
   (showAll ? ents : ents.slice(0, 40)).forEach(e => { const dk = e.at.slice(0, 10); if (!cur || cur.dk !== dk){ cur = { dk, items: [] }; groups.push(cur); } cur.items.push(e); });
-  const months = [...new Set(live().map(e => e.at.slice(0, 7)))].sort().reverse();
+  const months = [...new Set(outs().map(e => e.at.slice(0, 7)))].sort().reverse();
   const bl = balanceList();
   $("#main").innerHTML = `
     <div class="top"><h1 class="title">Settle.</h1><button class="round gbtn" data-settings aria-label="Settings">${I.gear}</button></div>
@@ -410,10 +434,9 @@ function render(){
       <div class="seg">${["1M","6M","1Y","All"].map(r => `<button data-range="${r}" class="${r === range ? "on" : ""}">${r}</button>`).join("")}</div>
     </div>
     <div class="chart-card card">
-      <div class="ch-head"><div><div class="lbl">Mom's balance now</div><div class="ch-val num" id="blV"></div><div class="ch-sub" id="blS"></div></div>
-        <button class="mini-btn" data-checkin>Log</button></div>
+      <div class="ch-head"><div><div class="lbl">Mom's balance now</div><div class="ch-val num" id="blV"></div><div class="ch-sub" id="blS"></div></div></div>
       <div class="chart" id="blC"></div>
-      <button class="stmt" data-statement>See statement ${I.chev}</button>
+      <button class="stmt" data-statement>Statement, PDF and check-in ${I.chev}</button>
     </div>
     ${months.length ? `<div class="sec"><h2>Months</h2></div>
       <div class="card list">${months.slice(0, 12).map(m => `<button class="mrow" data-month="${m}"><div class="m"><b>${monthName(m)}</b><span class="num">${inMonth(m).length} payment${inMonth(m).length === 1 ? "" : "s"}</span></div><b class="num">${rs(spentIn(m))}</b>${I.chev}</button>`).join("")}</div>` : ""}
@@ -425,6 +448,9 @@ function render(){
   drawSpend(); drawBalance();
 }
 function rowHTML(e){
+  if (isIn(e)) return `<button class="row" data-entry="${e.id}"><div class="av in">+</div>
+    <div class="m"><b>From ${esc(e.payee)}</b><span>${timeLabel(e.at)} · Money in${e.note ? " · " + esc(e.note) : ""}</span></div>
+    <div class="r"><b class="num inamt">+${rs(e.amount)}</b><span class="tag">Into Mom's account</span></div></button>`;
   const meta = `${timeLabel(e.at)} · ${BACK[e.back]}`;
   return `<button class="row" data-entry="${e.id}"><div class="av">${esc(e.payee.slice(0, 1).toUpperCase())}</div>
     <div class="m"><b>${esc(e.payee)}</b><span>${meta}</span></div>
@@ -490,17 +516,17 @@ function spendData(){
   if (range === "1M"){
     const out = []; let sum = 0;
     for (let k = 29; k >= 0; k--){ const d = new Date(now); d.setDate(now.getDate() - k); const dk = dayKey(d);
-      sum += live().filter(e => e.at.slice(0, 10) === dk).reduce((s, e) => s + e.amount, 0);
+      sum += outs().filter(e => e.at.slice(0, 10) === dk).reduce((s, e) => s + e.amount, 0);
       out.push({ v: sum, label: d.getDate() + " " + SHORTM[d.getMonth()], sub: "By " + d.toLocaleDateString("en-GB", { day: "numeric", month: "long" }) }); }
-    return { data: live().length ? out : [], total: sum, what: "in the last 30 days" };
+    return { data: outs().length ? out : [], total: sum, what: "in the last 30 days" };
   }
   let n = range === "6M" ? 6 : 12;
-  if (range === "All"){ const first = live().map(e => e.at).sort()[0];
+  if (range === "All"){ const first = outs().map(e => e.at).sort()[0];
     if (first){ const f = new Date(first); n = Math.max(2, (now.getFullYear() - f.getFullYear()) * 12 + now.getMonth() - f.getMonth() + 1); } }
   const out = [];
   for (let k = n - 1; k >= 0; k--){ const d = new Date(now.getFullYear(), now.getMonth() - k, 1); const mk = monthKey(d);
     out.push({ v: spentIn(mk), label: SHORTM[d.getMonth()] + (n > 12 ? " " + String(d.getFullYear()).slice(2) : ""), sub: "In " + monthName(mk) }); }
-  return { data: live().length ? out : [], total: out.reduce((s, d) => s + d.v, 0), what: range === "All" ? "all time" : `in the last ${n} months` };
+  return { data: outs().length ? out : [], total: out.reduce((s, d) => s + d.v, 0), what: range === "All" ? "all time" : `in the last ${n} months` };
 }
 function drawSpend(){
   const { data, total, what } = spendData(), V = $("#spV"), S = $("#spS");
@@ -511,12 +537,12 @@ function drawSpend(){
 function drawBalance(){
   const tl = timeline(), V = $("#blV"), S = $("#blS");
   const data = tl.map(ev => ({ v: ev.bal, label: shortDate(ev.at),
-    sub: ev.type === "check" ? `Check-in, ${shortDate(ev.at)}` : `After ${rs(ev.amount)} to ${ev.e.payee}, ${shortDate(ev.at)}` }));
+    sub: ev.type === "check" ? `Check-in, ${shortDate(ev.at)}` : ev.type === "in" ? `After +${rs(ev.amount)} from ${ev.e.payee}, ${shortDate(ev.at)}` : `After ${rs(ev.amount)} to ${ev.e.payee}, ${shortDate(ev.at)}` }));
   const rest = () => {
     if (!tl.length){ V.textContent = "Not logged yet"; V.style.fontSize = "24px"; S.textContent = "Log her balance once to start"; return; }
     V.style.fontSize = ""; const last = tl[tl.length - 1]; V.textContent = rs(last.bal);
     const ck = tl.filter(ev => ev.type === "check").pop(), since = ck.bal - last.bal;
-    S.textContent = since > 0 ? `${rs(since)} spent since the ${shortDate(ck.at)} check-in` : `Checked ${shortDate(ck.at)}`;
+    S.textContent = since > 0 ? `${rs(since)} down since the ${shortDate(ck.at)} check-in` : since < 0 ? `${rs(-since)} up since the ${shortDate(ck.at)} check-in` : `Checked ${shortDate(ck.at)}`;
   };
   rest();
   lineChart($("#blC"), data, { fromZero: false, emptyText: "Log Mom's balance and every payment after it gets taken off, like a bank statement.", onScrub: i => { if (i === null) return rest(); V.style.fontSize = ""; V.textContent = rs(data[i].v); S.textContent = data[i].sub; } });
@@ -567,21 +593,26 @@ function bindKeypad(get, set, onChange){
    Type the amount, tap who you paid, Save. The rest is filled in from the last time
    you paid that person, and you only touch it when it's different. */
 let f = null;
-const lastFor = name => sortedEntries().find(e => e.payee === name);
+const lastFor = name => sortedEntries().find(e => e.payee === name && isIn(e) === (f.dir === "in"));
 const cashTotal = () => NOTES.reduce((s, n) => s + n * (f.notes[n] || 0), 0);
 function newFlow(edit){
-  f = edit ? { ...edit, notes: { ...(edit.notes || {}) }, editId: edit.id, more: !!edit.note, touched: true }
-           : { amount: 0, payee: "", back: "none", notes: {}, payback: "transfer", at: toLocalInput(new Date()), note: "", more: false, touched: false };
+  f = edit ? { back: "none", payback: "transfer", ...edit, dir: edit.dir || "out", notes: { ...(edit.notes || {}) }, editId: edit.id, more: !!edit.note, touched: true }
+           : { dir: "out", amount: 0, payee: "", back: "none", notes: {}, payback: "transfer", at: toLocalInput(new Date()), note: "", more: false, touched: false };
   if (!sheet.classList.contains("on")) openSheet("", "");
   drawAdd();
 }
 function drawAdd(){
-  setSheet(head(cancelBtn, f.editId ? "Edit payment" : "New payment"), `
+  const IN = f.dir === "in", list = IN ? sourceOrder() : payeeOrder(), names = (IN ? sources() : payees()).map(p => p.name);
+  const title = f.editId ? (IN ? "Edit money in" : "Edit payment")
+    : `<div class="tg dirsw"><button data-dir="out" class="${IN ? "" : "on"}">Money out</button><button data-dir="in" class="${IN ? "on" : ""}">Money in</button></div>`;
+  setSheet(head(cancelBtn, title), `
     <div class="amt num" data-amt></div>
-    <div class="prow">${payeeOrder().map(p => `<button class="chip" data-payee="${esc(p.name)}">${esc(p.name)}</button>`).join("")}
-      ${f.payee && !payees().some(p => p.name === f.payee) ? `<button class="chip" data-payee="${esc(f.payee)}">${esc(f.payee)}</button>` : ""}
+    ${IN ? `<p class="qs" style="margin:-2px 0 8px">Into Mom's account. Where did it come from?</p>` : ""}
+    <div class="prow">${list.map(p => `<button class="chip" data-payee="${esc(p.name)}">${esc(p.name)}</button>`).join("")}
+      ${f.payee && !names.includes(f.payee) ? `<button class="chip" data-payee="${esc(f.payee)}">${esc(f.payee)}</button>` : ""}
       <button class="chip dashed" data-newp>+ New</button></div>
-    <div class="newp" data-newbox hidden><input class="field" data-newname placeholder="Name or shop" autocapitalize="words" maxlength="40"><button class="pill white" data-addp>Add</button></div>
+    <div class="newp" data-newbox hidden><input class="field" data-newname placeholder="${IN ? "Who sent it" : "Name or shop"}" autocapitalize="words" maxlength="40"><button class="pill white" data-addp>Add</button></div>
+    <div ${IN ? "hidden" : ""}>
     <div class="seg2"><span>Came back</span><div class="tg">
       <button data-tg="back:none">Nothing</button><button data-tg="back:cash">Cash</button><button data-tg="back:online">Online</button></div></div>
     <div data-cashbox>
@@ -590,6 +621,7 @@ function drawAdd(){
     </div>
     <div class="seg2"><span>Pay Mom by</span><div class="tg">
       <button data-tg="payback:transfer">Transfer</button><button data-tg="payback:cash">Cash</button></div></div>
+    </div>
     <button class="morebtn" data-more></button>
     <div class="group" data-morebox hidden>
       <label class="kv"><span>When</span><input type="datetime-local" data-at value="${esc(f.at)}"></label>
@@ -622,7 +654,7 @@ function bindAdd(){
     const last = lastFor(name);
     if (last && !f.editId){
       if (!f.amount) f.amount = last.amount;                         // tap Gym on an empty amount: last gym amount comes back
-      if (!f.touched){ f.back = last.back; f.payback = last.payback; if (last.back === "cash" && last.amount === f.amount) f.notes = { ...(last.notes || {}) }; }
+      if (!f.touched && f.dir !== "in"){ f.back = last.back || "none"; f.payback = last.payback || "transfer"; if (last.back === "cash" && last.amount === f.amount) f.notes = { ...(last.notes || {}) }; }
     }
     refreshAdd();
   };
@@ -630,9 +662,10 @@ function bindAdd(){
   const box = q("[data-newbox]"), inp = q("[data-newname]");
   q("[data-newp]").onclick = () => { box.hidden = false; inp.focus(); };
   const add = () => { const n = inp.value.trim().replace(/\s+/g, " "); if (!n) return inp.focus();
-    const ex = db.payees.find(p => p.name.toLowerCase() === n.toLowerCase());
-    if (ex){ ex.del = false; ex.name = n; } else db.payees.push({ id: n.toLowerCase(), name: n, u: Date.now() });
+    const IN = f.dir === "in", ex = db.payees.find(p => p.name.toLowerCase() === n.toLowerCase() && (p.kind === "in") === IN);
+    if (ex){ ex.del = false; ex.name = n; } else db.payees.push({ id: (IN ? "in:" : "") + n.toLowerCase(), name: n, kind: IN ? "in" : undefined, u: Date.now() });
     save(); f.payee = n; inp.blur(); haptic(); drawAdd(); };
+  sbody.parentNode.querySelectorAll("[data-dir]").forEach(b => b.onclick = () => { if (f.dir === b.dataset.dir) return; f.dir = b.dataset.dir; f.payee = ""; f.touched = false; haptic(); drawAdd(); });
   q("[data-addp]").onclick = add; inp.onkeydown = e => { if (e.key === "Enter") add(); };
   qa("[data-tg]").forEach(b => b.onclick = () => {
     const [k, v] = b.dataset.tg.split(":"); f[k] = v; f.touched = true; haptic();
@@ -647,10 +680,18 @@ function bindAdd(){
   q("[data-save]").onclick = saveFlow;
 }
 function saveFlow(){
+  if (f.dir === "in"){
+    if (!f.amount) return toast("Type how much came in");
+    if (!f.payee) return toast("Tap where it came from");
+    const data = { dir: "in", amount: f.amount, payee: f.payee, at: f.at, note: (f.note || "").trim() };
+    if (f.editId) Object.assign(db.entries.find(x => x.id === f.editId), data); else db.entries.push({ id: uid(), c: Date.now(), ...data });
+    const wasEdit = !!f.editId; save(); haptic(); closeSheet(); render();
+    const tl = timeline(); return toast(wasEdit ? "Saved" : tl.length ? `+${rs(f.amount)} in. Mom has ${rs(tl[tl.length - 1].bal)}` : `+${rs(f.amount)} added`);
+  }
   if (!f.amount) return toast("Type how much you paid");
   if (!f.payee) return toast("Tap who you paid");
   if (f.back === "cash" && !cashTotal()) return toast("Tap the notes you got back");
-  const data = { amount: f.amount, payee: f.payee, back: f.back, notes: f.back === "cash" ? f.notes : {}, payback: f.payback, at: f.at, note: (f.note || "").trim() };
+  const data = { dir: "out", amount: f.amount, payee: f.payee, back: f.back, notes: f.back === "cash" ? f.notes : {}, payback: f.payback, at: f.at, note: (f.note || "").trim() };
   if (f.editId){ const e = db.entries.find(x => x.id === f.editId); Object.assign(e, data); }
   else db.entries.push({ id: uid(), c: Date.now(), paid: false, paidAt: null, ...data });
   const wasEdit = !!f.editId;
@@ -666,36 +707,103 @@ function timeline(){
   const cks = balanceList().map(([mk, b]) => ({ type: "check", mk, at: validAt(b.at) ? b.at : mk + "-13T09:00", ms: b.u || 0, amount: b.amount }));
   if (!cks.length) return [];
   const first = cks.map(c => c.at).sort()[0];
-  const evs = [...cks, ...live().filter(e => e.at >= first).map(e => ({ type: "pay", e, at: e.at, ms: e.c || 0, amount: e.amount }))]
+  const evs = [...cks, ...live().filter(e => e.at >= first).map(e => ({ type: isIn(e) ? "in" : "pay", e, at: e.at, ms: e.c || 0, amount: e.amount }))]
     .sort((a, b) => a.at < b.at ? -1 : a.at > b.at ? 1 : a.ms - b.ms);
   let bal = null;
-  evs.forEach(ev => { if (ev.type === "check"){ ev.diff = bal === null ? null : ev.amount - bal; bal = ev.amount; } else bal -= ev.amount; ev.bal = bal; });
+  evs.forEach(ev => { if (ev.type === "check"){ ev.diff = bal === null ? null : ev.amount - bal; bal = ev.amount; } else bal += ev.type === "in" ? ev.amount : -ev.amount; ev.bal = bal; });
   return evs;
 }
 const shortDate = at => { const d = new Date(at); return d.getDate() + " " + SHORTM[d.getMonth()]; };
+let pdfRange = "1M", pdfMore = false;
+function rangeDates(r){
+  const t = new Date(), end = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+  const back = { "1M": 1, "3M": 3, "6M": 6, "1Y": 12 }[r];
+  if (back){ const st = new Date(end); st.setMonth(st.getMonth() - back); st.setDate(st.getDate() + 1); return [st, end]; }
+  if (r === "All"){ const ds = [...live().map(e => e.at), ...balanceList().map(([mk, b]) => validAt(b.at) ? b.at : mk + "-13")].sort();
+    return [ds.length ? new Date(ds[0].slice(0, 10) + "T00:00") : end, end]; }
+  const v = k => (sbody.querySelector(k) || {}).value;
+  return [new Date((v("[data-from]") || dayKey(end)) + "T00:00"), new Date((v("[data-to]") || dayKey(end)) + "T00:00")];
+}
 function openStatement(){
   const tl = timeline(), now = tl.length ? tl[tl.length - 1].bal : null;
-  openSheet(head("", "Statement", closeBtn), !tl.length
-    ? `<div class="empty"><b>No check-in yet</b>Log Mom's balance once, and every payment after that is taken off here.</div>
-       <div class="btns"><button class="pill white" data-log>Log Mom's balance</button></div>`
-    : `<div class="detail-amt num">${rs(now)}</div><div class="detail-sub">left in Mom's account now</div>
-    <div class="group list" style="padding:0">${tl.slice().reverse().map(ev => ev.type === "pay"
+  const t = new Date(), monthAgo = new Date(t); monthAgo.setMonth(t.getMonth() - 1);
+  const ranges = ["1M", "3M", "6M", "1Y"], more = ["All", "Custom"];
+  openSheet(head("", "Statement", closeBtn), `
+    ${tl.length ? `<div class="detail-amt num">${rs(now)}</div><div class="detail-sub">left in Mom's account now</div>`
+                : `<div class="empty" style="padding:18px 10px 6px"><b>No check-in yet</b>Log Mom's balance once. After that every payment and deposit is added or taken off.</div>`}
+    <div class="btns"><button class="pill soft" data-log>Log Mom's balance</button></div>
+    <div class="slbl">Statement PDF</div>
+    <div class="group" style="padding:14px">
+      <div class="seg" style="margin-top:0">${ranges.map(r => `<button data-pr="${r}" class="${pdfRange === r ? "on" : ""}">${r}</button>`).join("")}<button data-prmore class="${more.includes(pdfRange) ? "on" : ""}">More</button></div>
+      <div data-morebox ${pdfMore || more.includes(pdfRange) ? "" : "hidden"} style="margin-top:10px">
+        <div class="seg" style="margin-top:0">${more.map(r => `<button data-pr="${r}" class="${pdfRange === r ? "on" : ""}">${r === "All" ? "All time" : "Custom dates"}</button>`).join("")}</div>
+        <div data-custom ${pdfRange === "Custom" ? "" : "hidden"} class="dates">
+          <label class="kv"><span>From</span><input type="date" data-from value="${dayKey(monthAgo)}"></label>
+          <label class="kv"><span>To</span><input type="date" data-to value="${dayKey(t)}"></label>
+        </div>
+      </div>
+      <p class="hint" data-prtext style="margin:10px 2px 0"></p>
+      <button class="pill white next" data-pdf style="margin-top:12px">Download statement</button>
+    </div>
+    ${tl.length ? `<div class="slbl">Since your first check-in</div><div class="group list" style="padding:0">${tl.slice().reverse().map(ev => ev.type === "pay"
       ? `<button class="row" data-entry="${ev.e.id}"><div class="av">${esc(ev.e.payee.slice(0, 1).toUpperCase())}</div>
           <div class="m"><b>${esc(ev.e.payee)}</b><span>${shortDate(ev.at)}, ${timeLabel(ev.at)} · ${BACK[ev.e.back]}</span></div>
           <div class="r"><b class="num">&minus; ${rs(ev.amount)}</b><span class="balr num">${rs(ev.bal)}</span></div></button>`
+      : ev.type === "in"
+      ? `<button class="row" data-entry="${ev.e.id}"><div class="av in">+</div>
+          <div class="m"><b>From ${esc(ev.e.payee)}</b><span>${shortDate(ev.at)}, ${timeLabel(ev.at)} · Money in</span></div>
+          <div class="r"><b class="num inamt">+${rs(ev.amount)}</b><span class="balr num">${rs(ev.bal)}</span></div></button>`
       : `<div class="row ck"><div class="av">${I.check}</div>
           <div class="m"><b>Balance check-in</b><span>${shortDate(ev.at)}, ${timeLabel(ev.at)}${ev.diff ? " · Mom's own money " + (ev.diff > 0 ? "+" : "&minus; ") + rs(Math.abs(ev.diff)) : ""}</span></div>
           <div class="r"><b class="num">${rs(ev.bal)}</b><span class="balr">checked</span></div></div>`).join("")}</div>
-    <p class="hint">Payments made before a check-in are already inside that figure. Mom's own money coming in or going out isn't tracked here, so the next 13th check-in sets it straight again.</p>`);
+    <p class="hint">Payments made before a check-in are already inside that figure. Anything Mom spends or gets that isn't logged here shows up at the next check-in as "Mom's own money".</p>` : ""}`);
   shead.querySelector("[data-x]").onclick = closeSheet;
+  const q = k => sbody.querySelector(k);
   sbody.querySelectorAll("[data-entry]").forEach(r => r.onclick = () => openEntry(r.dataset.entry));
-  const lg = sbody.querySelector("[data-log]"); if (lg) lg.onclick = openCheckin;
+  q("[data-log]").onclick = openCheckin;
+  const label = () => { const [a, b] = rangeDates(pdfRange); const f = d => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    q("[data-prtext]").textContent = `${f(a)} to ${f(b)}`; };
+  sbody.querySelectorAll("[data-pr]").forEach(b => b.onclick = () => { pdfRange = b.dataset.pr; haptic();
+    sbody.querySelectorAll("[data-pr]").forEach(x => x.classList.toggle("on", x === b));
+    q("[data-prmore]").classList.toggle("on", more.includes(pdfRange));
+    q("[data-custom]").hidden = pdfRange !== "Custom"; if (!more.includes(pdfRange)){ pdfMore = false; q("[data-morebox]").hidden = true; } label(); });
+  q("[data-prmore]").onclick = () => { pdfMore = !pdfMore || more.includes(pdfRange); q("[data-morebox]").hidden = !pdfMore; haptic(); };
+  ["[data-from]", "[data-to]"].forEach(k => q(k).onchange = label);
+  q("[data-pdf]").onclick = () => { const [a, b] = rangeDates(pdfRange); if (a > b) return toast("The From date is after the To date"); makePDF(a, b); };
+  label();
 }
+async function makePDF(start, end){
+  if (typeof renderStatement !== "function") return toast("Statement isn't ready. Open Settle once with internet.");
+  const box = $("#stmt"); box.innerHTML = renderStatement(db, start, end, { base: "" });
+  try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch(e){}
+  document.title = `Settle statement ${dayKey(start)} to ${dayKey(end)}`;
+  haptic(); setTimeout(() => { window.print(); }, 60);
+}
+addEventListener("afterprint", () => { $("#stmt").innerHTML = ""; document.title = "Settle"; });
 
 /* ================= one payment ================= */
 function openEntry(id){
   const e = db.entries.find(x => x.id === id); if (!e) return;
   let armed = false;
+  if (isIn(e)){
+    const ev = timeline().find(x => x.e && x.e.id === e.id);
+    openSheet(head("", "", closeBtn), `
+      <div class="detail-amt num">+${rs(e.amount)}</div><div class="detail-sub">into Mom's account</div>
+      <div class="group">
+        <div class="kv"><span>From</span><b>${esc(e.payee)}</b></div>
+        <div class="kv"><span>Amount</span><b class="num">${rs(e.amount)}</b></div>
+        <div class="kv"><span>When</span><b>${new Date(e.at).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}, ${timeLabel(e.at)}</b></div>
+        ${ev ? `<div class="kv"><span>Mom's balance after</span><b class="num">${rs(ev.bal)}</b></div>` : ""}
+        ${e.note ? `<div class="kv"><span>Note</span><b>${esc(e.note)}</b></div>` : ""}
+      </div>
+      <div class="btns"><button class="pill soft" data-edit>Edit</button><button class="pill red" data-del>Delete</button></div>`);
+    shead.querySelector("[data-x]").onclick = closeSheet;
+    sbody.querySelector("[data-edit]").onclick = () => { haptic(); newFlow(e); };
+    sbody.querySelector("[data-del]").onclick = evt => { const b = evt.currentTarget;
+      if (!armed){ armed = true; b.textContent = "Tap again to delete"; haptic(); setTimeout(() => { armed = false; if (b.isConnected) b.textContent = "Delete"; }, 3000); return; }
+      e.del = true; save(); haptic(); closeSheet(); render(); toast("Deleted"); };
+    return;
+  }
   openSheet(head("", "", closeBtn), `
     <div class="detail-amt num">${rs(e.amount)}</div>
     <div class="detail-sub">to ${esc(e.payee)}</div>
@@ -728,7 +836,7 @@ function openEntry(id){
 
 /* ================= settle all ================= */
 function openSettleAll(){
-  const un = live().filter(e => !e.paid), tr = un.filter(e => e.payback === "transfer").reduce((s, e) => s + e.amount, 0), ca = un.filter(e => e.payback === "cash").reduce((s, e) => s + e.amount, 0);
+  const un = outs().filter(e => !e.paid), tr = un.filter(e => e.payback === "transfer").reduce((s, e) => s + e.amount, 0), ca = un.filter(e => e.payback === "cash").reduce((s, e) => s + e.amount, 0);
   openSheet(head(cancelBtn, "Settle all"), `
     <div class="detail-amt num">${rs(tr + ca)}</div>
     <div class="detail-sub">${un.length} payment${un.length === 1 ? "" : "s"} still owed to Mom</div>
@@ -765,11 +873,12 @@ function summaryText(mk){
     `Spent from Mom's account: ${rs(spent)} (${es.length} payment${es.length === 1 ? "" : "s"})`,
     `Paid back to Mom: ${rs(paid)}`, `Still owed: ${rs(spent - paid)}`,
     b && !b.del ? `Mom's balance on check-in: ${rs(b.amount)}` : null, "",
+    ...insInMonth(mk).map(e => `${new Date(e.at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}  +${rs(e.amount)} from ${e.payee} into Mom's account${e.note ? " · " + e.note : ""}`),
     ...es.map(e => `${new Date(e.at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}  ${rs(e.amount)} to ${e.payee} · ${BACK[e.back]}${e.back === "cash" && noteText(e.notes) ? " (" + noteText(e.notes) + ")" : ""} · ${PAYBACK[e.payback]} · ${e.paid ? "paid back" : "owed"}${e.note ? " · " + e.note : ""}`)
   ].filter(x => x !== null).join("\n");
 }
 function openMonth(mk){
-  const es = inMonth(mk).sort((a, b) => a.at < b.at ? 1 : -1), b = db.balances[mk];
+  const es = inMonth(mk).sort((a, b) => a.at < b.at ? 1 : -1), b = db.balances[mk], ins = insInMonth(mk);
   const spent = es.reduce((s, e) => s + e.amount, 0), paid = es.filter(e => e.paid).reduce((s, e) => s + e.amount, 0);
   const cash = es.filter(e => e.back === "cash").reduce((s, e) => s + cashOf(e), 0);
   openSheet(head("", monthName(mk), closeBtn), `
@@ -778,10 +887,11 @@ function openMonth(mk){
       <div class="kv"><span>Payments</span><b class="num">${es.length}</b></div>
       <div class="kv"><span>Paid back to Mom</span><b class="num">${rs(paid)}</b></div>
       <div class="kv"><span>Still owed</span><b class="num">${rs(spent - paid)}</b></div>
-      <div class="kv"><span>Cash you got back</span><b class="num">${rs(cash)}</b></div>
-      <div class="kv"><span>Mom's balance</span><b class="num">${b && !b.del ? rs(b.amount) : "Not logged"}</b></div>
+      <div class="kv"><span>Cash handed to you</span><b class="num">${rs(cash)}</b></div>
+      <div class="kv"><span>Money in</span><b class="num">+${rs(ins.reduce((s, e) => s + e.amount, 0))}</b></div>
+      <div class="kv"><span>Mom's balance check-in</span><b class="num">${b && !b.del ? rs(b.amount) : "Not logged"}</b></div>
     </div>
-    <div class="group list" style="padding:0">${es.map(rowHTML).join("")}</div>
+    <div class="group list" style="padding:0">${[...es, ...ins].sort((x, y) => x.at < y.at ? 1 : -1).map(rowHTML).join("")}</div>
     <div class="btns"><button class="pill white" data-share>Share summary</button></div>`);
   shead.querySelector("[data-x]").onclick = closeSheet;
   sbody.querySelectorAll("[data-entry]").forEach(r => r.onclick = () => openEntry(r.dataset.entry));
@@ -817,7 +927,7 @@ function openSettings(){
     </div>
     <p class="hint">${sync ? "Every change is copied to your private settle-data repository, so a lost phone doesn't lose a thing." : "Turn on GitHub backup so every change is also saved in your private GitHub. Then nothing is lost, even with a new phone."}</p>
     <div class="slbl">People and places</div>
-    <div class="group"><div class="pchips">${payees().map(p => `<span class="chip">${esc(p.name)}<button class="x" data-rmp="${esc(p.id)}" aria-label="Remove ${esc(p.name)}">✕</button></span>`).join("")}</div></div>
+    <div class="group"><div class="pchips">${[...payees(), ...sources()].map(p => `<span class="chip">${esc(p.name)}<button class="x" data-rmp="${esc(p.id)}" aria-label="Remove ${esc(p.name)}">✕</button></span>`).join("")}</div></div>
     <p class="hint">Removing a name only hides it from the list. Old payments keep it.</p>
     <p class="hint" style="text-align:center;margin-top:26px;color:var(--text3)">Settle. Just for Nit.</p>`);
   shead.querySelector("[data-x]").onclick = closeSheet;
