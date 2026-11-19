@@ -253,10 +253,18 @@ svg{display:block}
 [data-morebox]{margin-top:10px}
 .sheet .amt{margin:4px 0 6px;font-size:54px;min-height:62px}
 .sheet.add{left:6px;right:6px;bottom:6px;top:calc(var(--sat) + 84px);height:auto;max-height:none;border-radius:40px;overflow:hidden;
-  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015)),rgba(20,20,24,.31);
-  -webkit-backdrop-filter:blur(22px) saturate(200%) brightness(1.05);backdrop-filter:blur(22px) saturate(200%) brightness(1.05);
+  background:rgba(22,22,25,.74);
+  -webkit-backdrop-filter:blur(40px) saturate(180%);backdrop-filter:blur(40px) saturate(180%);
   box-shadow:inset 0 0 0 .5px rgba(255,255,255,.14),inset 0 1.5px 0 rgba(255,255,255,.3),inset 1px 0 0 rgba(255,255,255,.08),inset -1px 0 0 rgba(255,255,255,.08),0 30px 80px rgba(0,0,0,.55)}
 .sheet.add .sbody{padding-bottom:max(10px, calc(var(--sab) - 16px))}
+/* the soft coloured light you see through Daily's glass */
+.sheet.add::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(38% 22% at 52% 22%,rgba(255,96,64,.13),transparent 70%),
+    radial-gradient(30% 16% at 88% 45%,rgba(255,60,70,.16),transparent 70%),
+    radial-gradient(34% 20% at 8% 52%,rgba(255,150,70,.12),transparent 70%),
+    radial-gradient(34% 18% at 6% 72%,rgba(40,200,90,.14),transparent 70%),
+    radial-gradient(40% 18% at 34% 92%,rgba(60,110,255,.14),transparent 70%)}
+.sheet.add>.grab,.sheet.add>.shead,.sheet.add>.sbody{position:relative;z-index:1}
 .sheet.add .amt{margin-top:16px}
 .sheet.full{top:0;max-height:none;border-radius:0}
 .sheet.add .sbody{display:flex;flex-direction:column}
