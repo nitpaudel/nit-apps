@@ -12,6 +12,14 @@ const unit = ex => ex.t ? " s" : "";
 // hist: past sessions for this exercise, oldest first: [{d, sets:[{kg,reps,rir}]}], working sets only
 // ctx: {sets, flags (0,1,2), deload (bool), gap (days since any last workout)}
 function coachTarget(ex, hist, ctx) {
+  hist = hist.map(h => ({ d: h.d, sets: h.sets.map(s => Object.assign({}, s, { reps: s.q === "cheated" ? Math.max(0, s.reps - 2) : s.reps })) }));
+  const t = coachCore(ex, hist, ctx);
+  if (ctx.light && t.kg != null) t.reason = "Light pump. Stop 2 to 3 reps short of failure. " + t.reason;
+  if (ctx.easy && t.tag !== "new") t.reason = "Easy week: keep 3 to 4 reps in the tank. " + t.reason;
+  if (ctx.easy && t.tag === "new") t.reason = t.reason.replace("with 2 left in the tank", "with 3 to 4 left in the tank");
+  return t;
+}
+function coachCore(ex, hist, ctx) {
   const lo = ex.r[0], hi = ex.r[1], step = ex.step || 0, n = ctx.sets || 3, u = unit(ex);
   if (!hist.length) {
     return { kg: null, reps: fill(n, null), sets: n, tag: "new", reason: ex.eq === "bw"
@@ -23,7 +31,7 @@ function coachTarget(ex, hist, ctx) {
   let r = last.sets.map(s => s.reps);
   while (r.length < n) r.push(r[r.length - 1]);
   r = r.slice(0, n);
-  const lastTxt = "Last time " + (kg ? kgTxt(kg) + " kg x " : "") + last.sets.map(s => s.reps).join(", ") + u + ".";
+  const lastTxt = "Last time " + (kg ? kgTxt(kg) + " kg × " : "") + last.sets.map(s => s.reps).join(", ") + u + ".";
   const bw = !kg;
   const down = pct => { if (bw) return kg; let nk = snap(kg * (1 - pct), step, 0); if (nk >= kg) nk = kg - step; return Math.max(step || 0, nk); };
 
@@ -139,17 +147,4 @@ function foodCheckin(days, s) {              // s: {tdee, kcalTarget, goalRate, 
   return { status: "updated", tdee, raw: Math.round(raw), kcalTarget: target, weekly: wk, reason };
 }
 
-// future you
-const FUTURE_KNOTS = [[0, 0, 0, 0], [3, 1, 1.6, 2.3], [6, 2, 3.3, 4.5], [9, 3, 4.9, 6.8], [12, 4, 6.5, 9], [18, 5, 8.3, 11.5], [24, 6, 10, 14], [60, 8, 14, 20]];
-function leanGain(months, which) {           // which: 1 low, 2 mid, 3 high
-  const k = FUTURE_KNOTS; if (months >= 60) return k[k.length - 1][which];
-  for (let i = 1; i < k.length; i++) if (months <= k[i][0]) { const a = k[i - 1], b = k[i]; return a[which] + (b[which] - a[which]) * (months - a[0]) / (b[0] - a[0]); }
-  return 0;
-}
-const ffmi = (leanKg, hM) => leanKg / (hM * hM) + 6.1 * (1.8 - hM);
-const leanCap = hM => (25 - 6.1 * (1.8 - hM)) * hM * hM;
-function navyBf(waistCm, neckCm, heightCm) { // men, returns %
-  const inch = c => c / 2.54; if (!(waistCm > neckCm)) return null;
-  return 86.010 * Math.log10(inch(waistCm) - inch(neckCm)) - 70.041 * Math.log10(inch(heightCm)) + 36.76;
-}
-if (typeof module !== "undefined") module.exports = { coachTarget, warmupSets, stalled, trendSeries, foodCheckin, leanGain, ffmi, leanCap, navyBf, e1rm, snap };
+if (typeof module !== "undefined") module.exports = { coachTarget, warmupSets, stalled, trendSeries, foodCheckin, e1rm, snap, kgTxt };

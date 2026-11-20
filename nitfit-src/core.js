@@ -1,5 +1,5 @@
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "1.0";
+const APP_VERSION = "2.0";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -40,10 +40,10 @@ let storageBroken = "";
 function storageFail(e) { storageBroken = (e && e.name === "QuotaExceededError") ? "Your phone is out of space. Free some space now." : "Could not save to the phone. Close NitFit and open it again."; if (typeof render === "function") render(); }
 
 // ----- events and state -----
-const DEFAULT_SETTINGS = { heightCm: 177, bfGuess: 14, sleepBadH: 7, vol: 0.6, mix: true, restOn: true, theme: "light", blockStart: null, easyOff: null, easyOn: null };
+const DEFAULT_SETTINGS = { card: "glass", vol: 0.6, restOn: true };
 let EV = []; const EVIDS = new Set(); let S = null;
 function freshState() {
-  return { sessions: {}, sets: {}, bySession: {}, byEx: {}, weights: {}, settings: clone(DEFAULT_SETTINGS), plan: clone(DEFAULT_PLAN), dayMap: DEFAULT_DAYMAP.slice(), exo: {}, sleepManual: {}, energy: {} };
+  return { sessions: {}, sets: {}, bySession: {}, byEx: {}, weights: {}, waists: {}, measures: {}, settings: clone(DEFAULT_SETTINGS), program: {}, exo: {}, fixDone: {} };
 }
 const evSort = (a, b) => a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 function rebuild() {
@@ -55,25 +55,26 @@ function removeRef(id) {
   const st = S.sets[id];
   if (st) { delete S.sets[id]; const a = S.bySession[st.sessionId], b = S.byEx[st.exId]; if (a) a.splice(a.indexOf(id), 1); if (b) b.splice(b.indexOf(id), 1); return; }
   if (S.sessions[id]) { delete S.sessions[id]; return; }
-  for (const k of [])  { const i = S[k].findIndex(x => x.id === id); if (i >= 0) { S[k].splice(i, 1); return; } }
-  for (const d in S.weights) if (S.weights[d].id === id) { delete S.weights[d]; return; }
+  for (const k of ["weights", "waists", "measures"]) for (const d in S[k]) if (S[k][d].id === id) { delete S[k][d]; return; }
 }
 function applyEvent(e) {
   const p = e.p || {};
   switch (e.type) {
-    case "session.started": S.sessions[e.id] = { id: e.id, d: e.d, startTs: e.ts, endTs: null, dayKey: p.dayKey, items: p.items || [], flags: p.flags || 0, deload: !!p.deload, gap: p.gap || 0 }; S.bySession[e.id] = S.bySession[e.id] || []; break;
+    case "session.started": if (!p.v2) break; S.sessions[e.id] = { id: e.id, d: e.d, startTs: e.ts, endTs: null, dayKey: p.dayKey, name: p.name || "", items: p.items || [] }; S.bySession[e.id] = S.bySession[e.id] || []; break;
     case "session.edited": if (S.sessions[p.sessionId]) S.sessions[p.sessionId].items = p.items; break;
-    case "session.finished": if (S.sessions[p.sessionId]) S.sessions[p.sessionId].endTs = e.ts; break;
-    case "set.logged": S.sets[e.id] = { id: e.id, d: e.d, ts: e.ts, sessionId: p.sessionId, exId: p.exId, idx: p.idx, kg: p.kg || 0, reps: p.reps, rir: p.rir == null ? null : p.rir, tKg: p.tKg, tReps: p.tReps };
+    case "session.finished": if (S.sessions[p.sessionId]) S.sessions[p.sessionId].endTs = p.endTs || e.ts; break;
+    case "set.logged": if (!S.sessions[p.sessionId]) break; S.sets[e.id] = { id: e.id, d: e.d, ts: e.ts, sessionId: p.sessionId, exId: p.exId, idx: p.idx, kg: p.kg || 0, reps: p.reps, q: p.q || "clean", tKg: p.tKg, tReps: p.tReps };
       (S.bySession[p.sessionId] = S.bySession[p.sessionId] || []).push(e.id); (S.byEx[p.exId] = S.byEx[p.exId] || []).push(e.id); break;
-    case "set.rir": if (S.sets[p.ref]) S.sets[p.ref].rir = p.rir; break;
+    case "set.q": if (S.sets[p.ref]) S.sets[p.ref].q = p.q; break;
+    case "set.edited": if (S.sets[p.ref]) { if (p.kg != null) S.sets[p.ref].kg = p.kg; if (p.reps != null) S.sets[p.ref].reps = p.reps; } break;
     case "entity.deleted": removeRef(p.ref); break;
     case "weight.logged": S.weights[e.d] = { id: e.id, d: e.d, kg: p.kg }; break;
+    case "waist.logged": S.waists[e.d] = { id: e.id, d: e.d, inch: p.inch }; break;
+    case "measure.logged": S.measures[e.d] = Object.assign({ id: e.id, d: e.d }, p); break;
     case "settings.upserted": Object.assign(S.settings, p); break;
-    case "plan.upserted": if (p.plan) S.plan = p.plan; if (p.dayMap) S.dayMap = p.dayMap; break;
+    case "program.upserted": if (p.dayKey && p.items) S.program[p.dayKey] = p.items; if (p.dayKey && p.reset) delete S.program[p.dayKey]; break;
     case "exercise.upserted": S.exo[p.exId] = Object.assign(S.exo[p.exId] || {}, p); break;
-    case "sleep.manual": S.sleepManual[e.d] = p.flag; break;
-    case "energy.logged": S.energy[e.d] = p.level; break;
+    case "fix.done": S.fixDone[p.sessionId] = p.done || []; break;
   }
 }
 function addEvent(type, p, d) {
@@ -85,7 +86,7 @@ function addEvent(type, p, d) {
 }
 const DIRTYSEQ = {};
 function markDirty(m) { DIRTYSEQ[m] = (DIRTYSEQ[m] || 0) + 1; const a = KV.dirty || []; if (!a.includes(m)) { a.push(m); kvSet("dirty", a); } }
-const getEx = id => { const b = EXMAP[id], o = S.exo[id]; return b || o ? Object.assign({ id, n: id, m: "Other", s: [], eq: "machine", kind: "i", r: [10, 15], rest: 90, step: 5, cue: "" }, b, o) : null; };
+const getEx = id => { const b = EXMAP[id], o = S.exo[id]; return b || o ? Object.assign({ id, n: id, m: "Other", eq: "machine", kind: "i", r: [10, 15], rest: 90, step: 2.5, cue: "" }, b, o && o.custom ? o : {}) : null; };
 const allExercises = () => EXERCISES.map(e => getEx(e.id)).concat(Object.values(S.exo).filter(o => o.custom && !EXMAP[o.exId]).map(o => getEx(o.exId)));
 
 // history of one exercise: finished sets grouped by workout, oldest first
@@ -101,18 +102,10 @@ function activeSession() {
   const s = open[open.length - 1]; return Date.now() - Date.parse(s.startTs) < 18 * 3600e3 ? s : null;
 }
 const weightList = () => Object.values(S.weights).sort((a, b) => a.d < b.d ? -1 : 1);
-function sleepFor(d) {                      // {min, flag} flag: bad, ok, good
-  const man = S.sleepManual[d], rem = (KV.sleepRemote || {})[d];
-  if (man) return { min: rem || null, flag: man, manual: true };
-  if (rem) return { min: rem, flag: rem < S.settings.sleepBadH * 60 ? "bad" : rem >= (S.settings.sleepBadH + 1) * 60 ? "good" : "ok" };
-  return null;
-}
-function weekInfo(d) {                      // which week of the 6 week block, and is it an easy week
-  const st = S.settings, start = st.blockStart; if (!start) return { week: 1, easy: false, ws: d };
-  const ws = addDays(d, -dow(d)), idx = Math.floor(daysBetween(addDays(start, -dow(start)), ws) / 7);
-  let easy = idx % 6 === 5; if (st.easyOff === ws) easy = false; if (st.easyOn === ws) easy = true;
-  return { week: (idx % 6) + 1, easy, ws };
-}
+// which program week: weeks 1 and 2 are easy (2 sets), 3 and 4 the planned sets, 5 on the full sets
+function programWeek(d) { const n = Math.floor(daysBetween(PROGRAM_START, d) / 7) + 1; return Math.max(1, n); }
+function setsFor(item, d) { const w = programWeek(d); return w <= 2 ? Math.min(2, item.sets) : w <= 4 ? item.sets : (item.p5 || item.sets); }
+function planFor(dayKey) { return S.program[dayKey] || (DAYS[dayKey] ? DAYS[dayKey].items : []); }
 
 // ----- GitHub sync -----
 const GH = "https://api.github.com/repos/";
@@ -156,14 +149,6 @@ async function listMonths() {
   for (const y of top.list.filter(x => x.type === "dir")) { const l = await ghGet("log/" + y.name); if (l && l.list) l.list.forEach(x => { const m = /^(\d{4}-\d{2})\.jsonl$/.exec(x.name); if (m) out.push(m[1]); }); }
   return out;
 }
-async function pullSleep() {
-  const map = Object.assign({}, KV.sleepRemote || {}), t = today();
-  for (const m of [addDays(t, -31).slice(0, 7), t.slice(0, 7)].filter((x, i, a) => a.indexOf(x) === i)) {
-    const f = await ghGet("sleep/" + m.slice(0, 4) + "/" + m + ".jsonl"); if (!f) continue;
-    for (const line of f.text.split("\n")) { try { const o = JSON.parse(line); if (o && o.d && o.p && o.p.minutes) map[o.d] = o.p.minutes; } catch (_) {} }
-  }
-  if (JSON.stringify(map) !== JSON.stringify(KV.sleepRemote || {})) { await kvSet("sleepRemote", map); syncPulled++; }
-}
 const buildExport = () => ({ app: "NitFit", schema: 1, exported: new Date().toISOString(), events: EV.slice().sort(evSort) });
 async function monthlyBackup() {
   const m = today().slice(0, 7); if (KV.backupMonth === m || !EV.length) return;
@@ -180,7 +165,6 @@ async function syncNow(full) {
     const t = today(), months = new Set((KV.dirty || []).concat([t.slice(0, 7), addDays(t, -31).slice(0, 7)]));
     if (full) (await listMonths()).forEach(m => months.add(m));
     for (const m of Array.from(months).sort()) { const seq = DIRTYSEQ[m] || 0; await syncMonth(m); if ((DIRTYSEQ[m] || 0) === seq) await kvSet("dirty", (KV.dirty || []).filter(x => x !== m)); else syncAgain = true; }
-    await pullSleep();
     await kvSet("lastSync", Date.now()); await kvSet("syncErr", "");
     try { await monthlyBackup(); } catch (_) {}
   } catch (e) { okAll = false; await kvSet("syncErr", (navigator.onLine === false || e instanceof TypeError) ? "Offline. It will save when you are back online." : (e.message || "Could not reach GitHub.")); }
@@ -218,10 +202,6 @@ async function importExport(obj) {
   if (fresh.length) { await idbDo("events", "readwrite", s => { fresh.forEach(o => s.put(o)); }); fresh.forEach(o => { EV.push(o); EVIDS.add(o.id); if (o.d) markDirty(o.d.slice(0, 7)); }); rebuild(); syncSoon(); }
   return fresh.length;
 }
-// photos stay on the phone only
-const mediaPut = (id, buf, type) => idbDo("media", "readwrite", s => { s.put({ buf, type }, id); });
-const mediaGet = id => idbDo("media", "readonly", s => s.get(id));
-const mediaDel = id => idbDo("media", "readwrite", s => { s.delete(id); });
 async function coreBoot() {
   IDB = await idbOpen(); await kvLoad();
   if (!KV.dev) await kvSet("dev", "d" + Math.random().toString(36).slice(2, 8));
