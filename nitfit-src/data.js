@@ -159,6 +159,29 @@ const DAYS = {
 const DAYMAP = ["legsA", "chestA", "backA", "legsB", "chestB", "backB", null];
 const DAY_KEYS = ["legsA", "chestA", "backA", "legsB", "chestB", "backB"];
 
+
+// Muscle tags for every exercise, main muscle first (these names match the body map).
+// Weekly sets: the first tag counts a full set, the others count half.
+const TAGS = {
+  squat: ["Quads", "Glutes", "Adductors", "Lower Back"], smith_squat: ["Quads", "Glutes", "Adductors"], leg_press: ["Quads", "Glutes", "Adductors"],
+  leg_press_high: ["Glutes", "Hamstrings", "Quads"], bulgarian: ["Quads", "Glutes", "Adductors"], leg_ext: ["Quads"], leg_curl: ["Hamstrings"],
+  rdl: ["Hamstrings", "Glutes", "Lower Back"], good_morning: ["Lower Back", "Hamstrings", "Glutes"], hip_thrust: ["Glutes", "Hamstrings"], abductor: ["Glutes"],
+  calf_standing: ["Calves"], calf_seated: ["Calves"], back_ext: ["Lower Back", "Glutes", "Hamstrings"], lunge: ["Quads", "Glutes"],
+  neck_flex: ["Neck"], neck_side: ["Neck"],
+  inc_smith_press: ["Chest", "Front Delts", "Triceps"], inc_db_press: ["Chest", "Front Delts", "Triceps"], flat_db_press: ["Chest", "Front Delts", "Triceps"],
+  mach_inc_press: ["Chest", "Front Delts", "Triceps"], mach_inc_fly: ["Chest", "Front Delts"], cable_fly_low: ["Chest", "Front Delts"], pec_deck: ["Chest"],
+  flat_smith: ["Chest", "Front Delts", "Triceps"], dip: ["Chest", "Triceps", "Front Delts"], pushup: ["Chest", "Triceps", "Front Delts"],
+  preacher_curl: ["Biceps"], incline_curl: ["Biceps"], db_curl: ["Biceps", "Forearms"], rope_hammer: ["Biceps", "Forearms"], cable_curl: ["Biceps"], hammer_curl: ["Biceps", "Forearms"],
+  tri_overhead: ["Triceps"], tri_pushdown: ["Triceps"], rope_pushdown: ["Triceps"], skullcrusher: ["Triceps"], reverse_curl: ["Forearms", "Biceps"], wrist_curl: ["Forearms"],
+  pullup: ["Lats", "Upper Back", "Biceps"], chinup: ["Lats", "Biceps", "Upper Back"], pulldown: ["Lats", "Upper Back", "Biceps"], pulldown_close: ["Lats", "Biceps"],
+  rope_pullover: ["Lats"], chest_sup_row: ["Upper Back", "Lats", "Rear Delts", "Biceps"], cable_row: ["Upper Back", "Lats", "Biceps"], db_row: ["Lats", "Upper Back", "Biceps"],
+  straight_arm: ["Lats"], y_raise: ["Upper Back", "Traps", "Rear Delts"], shrug: ["Traps"],
+  cable_ohp_1arm: ["Front Delts", "Side Delts", "Triceps"], bb_ohp: ["Front Delts", "Side Delts", "Triceps"], db_ohp: ["Front Delts", "Side Delts", "Triceps"],
+  cable_lat_raise: ["Side Delts"], db_lat_raise: ["Side Delts"], rev_pec_deck: ["Rear Delts", "Upper Back"], face_pull: ["Rear Delts", "Upper Back", "Traps"],
+  plank: ["Abs", "Obliques"], hang_leg_raise: ["Abs", "Obliques"], cable_crunch: ["Abs"],
+};
+const PROGRAM_NAME = "Nit's V-Taper Plan";
+
 // Week 1 starts Sunday 22 Nov 2026. Anything before counts as week 1.
 const PROGRAM_START = "2026-11-22";
 
@@ -185,4 +208,4 @@ const ROUTINE = [
   { t: "21:30", n: "Sleep. Side, pillow between knees" },
 ];
 
-if (typeof module !== "undefined") module.exports = { EXERCISES, EXMAP, DAYS, DAYMAP, DAY_KEYS, PROGRAM_START, BACK_FIX, COOLDOWN, ROUTINE, MUSCLE_ORDER };
+if (typeof module !== "undefined") module.exports = { TAGS, PROGRAM_NAME, EXERCISES, EXMAP, DAYS, DAYMAP, DAY_KEYS, PROGRAM_START, BACK_FIX, COOLDOWN, ROUTINE, MUSCLE_ORDER };

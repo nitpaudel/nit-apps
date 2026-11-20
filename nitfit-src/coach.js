@@ -12,7 +12,7 @@ const unit = ex => ex.t ? " s" : "";
 // hist: past sessions for this exercise, oldest first: [{d, sets:[{kg,reps,rir}]}], working sets only
 // ctx: {sets, flags (0,1,2), deload (bool), gap (days since any last workout)}
 function coachTarget(ex, hist, ctx) {
-  hist = hist.map(h => ({ d: h.d, sets: h.sets.map(s => Object.assign({}, s, { reps: s.q === "cheated" ? Math.max(0, s.reps - 2) : s.reps })) }));
+  hist = hist.map(h => ({ d: h.d, sets: h.sets.map(s => Object.assign({}, s, { raw: s.raw != null ? s.raw : s.reps, reps: s.q === "cheated" ? Math.max(0, s.reps - 2) : s.reps })) }));
   const t = coachCore(ex, hist, ctx);
   if (ctx.light && t.kg != null) t.reason = "Light pump. Stop 2 to 3 reps short of failure. " + t.reason;
   if (ctx.easy && t.tag !== "new") t.reason = "Easy week: keep 3 to 4 reps in the tank. " + t.reason;
@@ -31,7 +31,7 @@ function coachCore(ex, hist, ctx) {
   let r = last.sets.map(s => s.reps);
   while (r.length < n) r.push(r[r.length - 1]);
   r = r.slice(0, n);
-  const lastTxt = "Last time " + (kg ? kgTxt(kg) + " kg × " : "") + last.sets.map(s => s.reps).join(", ") + u + ".";
+  const lastTxt = "Last time " + (kg ? kgTxt(kg) + " kg × " : "") + last.sets.map(s => s.raw != null ? s.raw : s.reps).join(", ") + u + ".";
   const bw = !kg;
   const down = pct => { if (bw) return kg; let nk = snap(kg * (1 - pct), step, 0); if (nk >= kg) nk = kg - step; return Math.max(step || 0, nk); };
 
@@ -147,4 +147,49 @@ function foodCheckin(days, s) {              // s: {tdee, kcalTarget, goalRate, 
   return { status: "updated", tdee, raw: Math.round(raw), kcalTarget: target, weekly: wk, reason };
 }
 
-if (typeof module !== "undefined") module.exports = { coachTarget, warmupSets, stalled, trendSeries, foodCheckin, e1rm, snap, kgTxt };
+
+// ---------------------------------------------------------------------------
+// Smart progression with RIR (reps left in the tank).
+// ---------------------------------------------------------------------------
+// RIR target for every set. Easy weeks and light pumps stay at 3.
+function rirTargets(ex, item, week, n) {
+  if (week <= 2 || (item && item.light)) return fill(n, 3);
+  const comp = ex.kind === "c";
+  return Array.from({ length: n }, (_, k) => k === n - 1 ? (comp ? 1 : 0) : (comp ? 2 : 1));
+}
+// Reps "at the target effort": 8 reps with 4 in the tank when the target was 2
+// counts like 10. Capped at 3 either way so one odd set can't swing things.
+function effReps(s, tRir) {
+  let r = s.reps;
+  if (s.rir != null && tRir != null) r += Math.max(-3, Math.min(3, s.rir - tRir));
+  if (s.q === "cheated") r -= 2;
+  return Math.max(0, r);
+}
+function smartTarget(ex, hist, ctx) {
+  const adj = hist.map(h => ({ d: h.d, sets: h.sets.map(s => Object.assign({}, s, { raw: s.reps, reps: effReps(s, s.tRir), q: "clean" })) }));
+  return coachTarget(ex, adj, ctx);
+}
+// Rows for today, after the sets already logged in this workout.
+// If a set comes out too easy or too hard, the sets after it change straight away.
+function liveRows(ex, base, logged, rirT) {
+  const lo = ex.r[0], hi = ex.r[1], step = ex.step || 0, n = rirT.length, rows = [], events = [];
+  let kg = base.kg;
+  for (let k = 0; k < n; k++) {
+    const s = logged[k];
+    if (s) {
+      rows.push({ kg: s.kg, lo, hi, rir: rirT[k], done: true });
+      if (step && s.kg > 0) {
+        const eff = effReps(s, rirT[k]); let nk = s.kg, why = "";
+        if (eff >= hi + 2) { nk = s.kg + step * (eff >= hi + 5 ? 2 : 1); why = "Set " + (k + 1) + " was easier than the target, so the next sets go up to " + kgTxt(nk) + " kg."; }
+        else if (eff < lo - 1) { nk = Math.max(step, s.kg - step * (eff < lo - 3 ? 2 : 1)); why = "Set " + (k + 1) + " was harder than the target, so the next sets drop to " + kgTxt(nk) + " kg."; }
+        if (why && k < n - 1 && !logged[k + 1]) events.push({ k, ts: s.ts, text: why, from: s.kg, to: nk });
+        kg = nk;
+      } else if (kg == null) kg = s.kg;
+      continue;
+    }
+    rows.push({ kg, lo, hi, rir: rirT[k], done: false, adjusted: base.kg != null && kg != null && kg !== base.kg, reps: base.reps[k] != null ? base.reps[k] : base.reps[base.reps.length - 1] });
+  }
+  return { rows, events };
+}
+
+if (typeof module !== "undefined") module.exports = { rirTargets, effReps, smartTarget, liveRows, coachTarget, warmupSets, stalled, trendSeries, foodCheckin, e1rm, snap, kgTxt };

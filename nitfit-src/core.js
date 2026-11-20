@@ -40,7 +40,7 @@ let storageBroken = "";
 function storageFail(e) { storageBroken = (e && e.name === "QuotaExceededError") ? "Your phone is out of space. Free some space now." : "Could not save to the phone. Close NitFit and open it again."; if (typeof render === "function") render(); }
 
 // ----- events and state -----
-const DEFAULT_SETTINGS = { card: "glass", vol: 0.6, restOn: true };
+const DEFAULT_SETTINGS = { theme: "dark", vol: 0.6, restOn: true };
 let EV = []; const EVIDS = new Set(); let S = null;
 function freshState() {
   return { sessions: {}, sets: {}, bySession: {}, byEx: {}, weights: {}, waists: {}, measures: {}, settings: clone(DEFAULT_SETTINGS), program: {}, exo: {}, fixDone: {} };
@@ -63,9 +63,10 @@ function applyEvent(e) {
     case "session.started": if (!p.v2) break; S.sessions[e.id] = { id: e.id, d: e.d, startTs: e.ts, endTs: null, dayKey: p.dayKey, name: p.name || "", items: p.items || [] }; S.bySession[e.id] = S.bySession[e.id] || []; break;
     case "session.edited": if (S.sessions[p.sessionId]) S.sessions[p.sessionId].items = p.items; break;
     case "session.finished": if (S.sessions[p.sessionId]) S.sessions[p.sessionId].endTs = p.endTs || e.ts; break;
-    case "set.logged": if (!S.sessions[p.sessionId]) break; S.sets[e.id] = { id: e.id, d: e.d, ts: e.ts, sessionId: p.sessionId, exId: p.exId, idx: p.idx, kg: p.kg || 0, reps: p.reps, q: p.q || "clean", tKg: p.tKg, tReps: p.tReps };
+    case "set.logged": if (!S.sessions[p.sessionId]) break; S.sets[e.id] = { id: e.id, d: e.d, ts: e.ts, sessionId: p.sessionId, exId: p.exId, idx: p.idx, kg: p.kg || 0, reps: p.reps, rir: p.rir == null ? null : p.rir, w: !!p.w, q: p.q || "clean", tKg: p.tKg, tReps: p.tReps, tRir: p.tRir };
       (S.bySession[p.sessionId] = S.bySession[p.sessionId] || []).push(e.id); (S.byEx[p.exId] = S.byEx[p.exId] || []).push(e.id); break;
     case "set.q": if (S.sets[p.ref]) S.sets[p.ref].q = p.q; break;
+    case "set.rir": if (S.sets[p.ref]) S.sets[p.ref].rir = p.rir; break;
     case "set.edited": if (S.sets[p.ref]) { if (p.kg != null) S.sets[p.ref].kg = p.kg; if (p.reps != null) S.sets[p.ref].reps = p.reps; } break;
     case "entity.deleted": removeRef(p.ref); break;
     case "weight.logged": S.weights[e.d] = { id: e.id, d: e.d, kg: p.kg }; break;
@@ -92,10 +93,11 @@ const allExercises = () => EXERCISES.map(e => getEx(e.id)).concat(Object.values(
 // history of one exercise: finished sets grouped by workout, oldest first
 function histFor(exId, skipSid) {
   const by = {};
-  for (const id of S.byEx[exId] || []) { const st = S.sets[id]; if (!st || st.sessionId === skipSid || !S.sessions[st.sessionId]) continue; (by[st.sessionId] = by[st.sessionId] || []).push(st); }
+  for (const id of S.byEx[exId] || []) { const st = S.sets[id]; if (!st || st.w || st.sessionId === skipSid || !S.sessions[st.sessionId]) continue; (by[st.sessionId] = by[st.sessionId] || []).push(st); }
   return Object.keys(by).map(sid => ({ sid, d: S.sessions[sid].d, sets: by[sid].sort((a, b) => a.idx - b.idx) })).sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : a.sid < b.sid ? -1 : 1);
 }
-const sessionSets = sid => (S.bySession[sid] || []).map(id => S.sets[id]).filter(Boolean);
+const sessionSets = sid => (S.bySession[sid] || []).map(id => S.sets[id]).filter(x => x && !x.w);
+const sessionAllSets = sid => (S.bySession[sid] || []).map(id => S.sets[id]).filter(Boolean);
 const sessionsSorted = () => Object.values(S.sessions).sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : a.startTs < b.startTs ? -1 : a.startTs > b.startTs ? 1 : a.id < b.id ? -1 : 1);
 function activeSession() {
   const open = sessionsSorted().filter(s => !s.endTs); if (!open.length) return null;
