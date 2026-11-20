@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="NitFit">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#212121">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#000000">
 <meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/nf3-180.png">
@@ -599,6 +599,22 @@ html[data-theme="light"] .kp-grid .ks.fp button.on{background:rgba(0,0,0,.08)}
 .ic .v{border-top:1px solid var(--line);padding-top:10px;margin-top:8px}
 .ic .chev{bottom:18px}
 
+/* ===== v3.3 ===== */
+body::before{display:none}
+.gfield{font:inherit;color:var(--text)}
+.gfield.act{box-shadow:inset 0 0 0 2px var(--blue)!important}
+.fin.gfield{width:100%;justify-content:space-between;text-align:left}
+.fin .gv{font-size:18px}
+.fin .gv.ph{color:var(--text3)}
+.kv .fin.gfield{width:120px;height:42px}
+.wbox{width:110px;height:48px;border-radius:12px;background:var(--chip);font-size:20px;font-weight:500;color:var(--text);display:grid;place-items:center;flex:none}
+.wbox.act{background:var(--card)}
+.tin.gfield{display:grid;place-items:center}
+.kp.gp{z-index:58}
+body.gpon .sheet .sbody{padding-bottom:350px}
+body.gpon #main{padding-bottom:420px}
+.kp-info b{color:var(--text);font-weight:600}
+
 </style>
 </head>
 <body>
@@ -1117,7 +1133,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "3.2";
+const APP_VERSION = "3.3";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -1413,7 +1429,7 @@ function applyTheme() {
   const t = (S && S.settings.theme) || "dark", r = t === "system" ? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : t;
   document.documentElement.dataset.theme = r;
   try { localStorage.setItem("nitfit:theme", r); } catch (_) {}
-  const m = $('meta[name="theme-color"]'); if (m) m.content = r === "light" ? "#fbfbf9" : "#212121";
+  const m = $('meta[name="theme-color"]'); if (m) m.content = r === "light" ? "#fbfbf9" : "#000000";
 }
 
 // ----- sheets -----
@@ -1428,7 +1444,7 @@ function openSheet(title, sub, html, opts) {
   $(".sbody", sh).innerHTML = html; if (!opts.keep) $(".sbody", sh).scrollTop = 0;
   sh.style.transform = ""; $("#scrim").classList.add("on"); sh.classList.add("on");
 }
-function closeSheet() { SHEET = null; $("#sheet").classList.remove("on"); $("#scrim").classList.remove("on"); $("#sheet").style.transform = ""; if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }
+function closeSheet() { if (GP) gpClose(); SHEET = null; $("#sheet").classList.remove("on"); $("#scrim").classList.remove("on"); $("#sheet").style.transform = ""; if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }
 ACT.closeSheet = closeSheet;
 (function sheetDrag() {
   let y0 = null, dy = 0;
@@ -1481,11 +1497,12 @@ const autoTxt = (r, ex) => { const rr = r.lo === r.hi ? r.lo : r.lo + "-" + r.hi
 // ===== render =====
 function blurAll() { const a = document.activeElement; if (a && a !== document.body && a.blur && !(a.closest && a.closest("#sheet"))) a.blur(); }
 function render() {
-  blurAll();
+  blurAll(); if (GP && !SHEET) gpClose();
   if (!isStandalone() && !/dev/.test(location.search)) { $("#main").innerHTML = vInstall(); $("#tabs").hidden = true; return; }
   const m = $("#main");
+  const keep = m.dataset.tab === TAB ? m.scrollTop : (SCROLL[TAB] || 0);
   m.innerHTML = TAB === "dashboard" ? vDash() : TAB === "workout" ? vWorkoutTab() : TAB === "levels" ? vLevels() : vMore();
-  m.scrollTop = SCROLL[TAB] || 0;
+  m.dataset.tab = TAB; m.scrollTop = keep;
   $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB));
   const pg = $("#pager"); if (pg) pg.addEventListener("scroll", () => { const i = Math.round(pg.scrollLeft / pg.clientWidth); $$(".pdots i").forEach((d, k) => d.classList.toggle("on", k === i)); }, { passive: true });
   renderPage();
@@ -1506,8 +1523,8 @@ function renderPage(keepScroll) {
   const on = $("#strip .st.on"); if (on) { const st = $("#strip"); st.scrollLeft = Math.max(0, on.offsetLeft - st.clientWidth / 2 + on.clientWidth / 2); }
   if (K === "log" && setOn("keepAlive")) wakeOn();
 }
-function openPage(p) { if (PAGE) STACK.push(PAGE); PAGE = p; closeSheet(); $("#page").scrollTop = 0; renderPage(); }
-ACT.pageBack = () => { PAGE = STACK.pop() || null; $("#page").scrollTop = 0; renderPage(); if (!PAGE) render(); };
+function openPage(p) { if (PAGE) STACK.push(PAGE); else SCROLL[TAB] = $("#main").scrollTop; PAGE = p; closeSheet(); $("#page").scrollTop = 0; renderPage(); }
+ACT.pageBack = () => { PAGE = STACK.pop() || null; $("#page").scrollTop = 0; renderPage(); if (!PAGE) { const y = $("#main").scrollTop; render(); $("#main").scrollTop = y; } };
 const nav = (title, right) => '<div class="nav"><button class="back" data-a="pageBack">' + I.back + "</button><h3>" + esc(title) + "</h3>" + (right || '<span style="width:44px"></span>') + "</div>";
 function vInstall() {
   return '<div class="head"><div class="title">NitFit</div></div><div class="body-pad"><div class="card" style="padding:18px;margin-top:16px"><b>Open NitFit from its own icon.</b>'
@@ -1547,7 +1564,7 @@ function vDash() {
   if (storageBroken) h += '<div class="banner">' + esc(storageBroken) + "</div>";
   else if (!KV.token) h += '<div class="banner">Not backed up yet<button data-a="backup">Set up</button></div>';
   if (activeSession()) h += '<button class="prompt press" data-a="resume" style="width:100%;text-align:left"><div class="m"><b>' + esc(activeSession().name) + '</b><span class="small">Workout in progress</span></div><span class="ul">Resume</span></button>';
-  if (!S.weights[d]) h += '<div class="prompt"><div class="m"><b>Morning weigh-in</b><span class="small">After you pee, before food</span></div><input id="wIn" inputmode="decimal" placeholder="kg" enterkeyhint="done"></div>';
+  if (!S.weights[d]) h += '<div class="prompt"><div class="m"><b>Morning weigh-in</b><span class="small">After you pee, before food</span></div><button class="gfield wbox" data-a="gpOpen" data-k="wIn" data-label="Morning weight" data-unit="kg" data-step="0.1">kg</button></div>';
   if (dashOn("insights")) {
     const past = sessionsSorted().filter(s2 => s2.endTs).slice(-7), sv = past.map(s2 => sessionSets(s2.id).length);
     const tr = trendSeries(weightList()), last7 = tr.filter(x => x.d >= addDays(d, -6));
@@ -1752,7 +1769,7 @@ function vExPage(s, i) {
   h += '<div class="tbl"><div class="th"><span>Set</span><span>Auto ' + I.swap + "</span><span>" + (bw ? "" : "kg") + "</span><span>" + (ex.t ? "Sec" : "Reps") + '</span><button class="cb hcb' + (allDone ? " on" : "") + '" data-a="logAll" data-i="' + i + '" aria-label="Log all sets">' + I.tick + "</button></div>";
   if (warm) wsets.forEach((w, k) => {
     const st = wl[k];
-    h += '<div class="tr warm' + (st ? " done" : "") + '"><span class="sb">W</span><span class="auto">' + fmtKg(w[0]) + " kg × " + w[1] + '</span><span class="cell"><input disabled value="' + fmtKg(w[0]) + '"></span><span class="cell"><input disabled value="' + w[1] + '"></span>'
+    h += '<div class="tr warm' + (st ? " done" : "") + '"><span class="sb">W</span><span class="auto">' + fmtKg(w[0]) + " kg × " + w[1] + '</span><span class="cell"><span class="cellb ph">' + fmtKg(w[0]) + '</span></span><span class="cell"><span class="cellb ph">' + w[1] + '</span></span>'
       + '<button class="cb' + (st ? " on" : "") + '" data-a="warmTick" data-i="' + i + '" data-k="' + k + '" data-kg="' + w[0] + '" data-r="' + w[1] + '">' + I.tick + "</button></div>";
   });
   R.rows.forEach((r, k) => {
@@ -1848,7 +1865,7 @@ ACT.targetsSheet = el => {
 };
 function paintTargets(err) {
   const T = TED;
-  let h = '<div class="tgh"><span>Set</span><span>Rep Range</span><span>RIR</span></div>' + T.rows.map((r, k) => '<div class="tgr"><button class="sb" data-a="tDel" data-k="' + k + '" aria-label="Remove set">' + (k + 1) + '</button><input class="tin' + (r.hi < r.lo ? " bad" : "") + '" inputmode="numeric" data-tk="' + k + '" data-tf="lo" value="' + r.lo + '"><input class="tin' + (r.hi < r.lo ? " bad" : "") + '" inputmode="numeric" data-tk="' + k + '" data-tf="hi" value="' + r.hi + '"><button class="rir r' + Math.min(6, r.rir) + '" data-a="tRir" data-k="' + k + '">' + r.rir + "</button></div>").join("");
+  let h = '<div class="tgh"><span>Set</span><span>Rep Range</span><span>RIR</span></div>' + T.rows.map((r, k) => '<div class="tgr"><button class="sb" data-a="tDel" data-k="' + k + '" aria-label="Remove set">' + (k + 1) + '</button><button class="tin gfield' + (r.hi < r.lo ? " bad" : "") + '" data-a="gpOpen" data-k="t:' + k + ':lo" data-int="1" data-label="Set ' + (k + 1) + ' reps min">' + r.lo + '</button><button class="tin gfield' + (r.hi < r.lo ? " bad" : "") + '" data-a="gpOpen" data-k="t:' + k + ':hi" data-int="1" data-label="Set ' + (k + 1) + ' reps max">' + r.hi + '</button><button class="rir r' + Math.min(6, r.rir) + '" data-a="tRir" data-k="' + k + '">' + r.rir + "</button></div>").join("");
   if (err) h += '<p class="err">' + err + "</p>";
   h += '<button class="addset" data-a="tAdd">' + I.plus + "</button><p class=\"hint\">Tap a set number to remove that set. Tap a RIR badge to change it.</p>";
   h += '<div class="trest"><div class="m"><b>Set Rest Timers</b><span>Use your own rest for this exercise</span></div><button class="sw' + (T.restOn ? " on" : "") + '" data-a="tRestOn"><i></i></button></div>';
@@ -1862,7 +1879,7 @@ ACT.tDel = el => { if (TED.rows.length < 2) return toast("Keep at least one set"
 ACT.tRestOn = () => { TED.restOn = !TED.restOn; paintTargets(); };
 ACT.tRest = el => { TED.rest = Math.max(15, TED.rest + +el.dataset.v); paintTargets(); };
 ACT.tSave = () => {
-  const T = TED, c = T.c; if (T.rows.some(r => r.hi < r.lo || r.lo < 1)) return paintTargets("Reps max must be the same as or higher than reps min.");
+  gpClose(); const T = TED, c = T.c; if (T.rows.some(r => r.hi < r.lo || r.lo < 1)) return paintTargets("Reps max must be the same as or higher than reps min.");
   const n = T.rows.length, same = T.rows.every(r => r.lo === T.rows[0].lo && r.hi === T.rows[0].hi);
   const upd = { r: [T.rows[0].lo, T.rows[0].hi], rr: same ? null : T.rows.map(r => [r.lo, r.hi]), rirs: T.rows.map((r, k) => r.rir === T.def[k] ? null : r.rir), rest: T.restOn ? T.rest : null };
   if (!upd.rirs.some(x => x != null)) upd.rirs = null;
@@ -2074,16 +2091,16 @@ function saveWeight(v) { const kg = numIn(v); if (kg == null) return; if (kg < 3
 function saveWaist(v) { const inch = numIn(v); if (inch == null) return; if (inch < 20 || inch > 50) return toast("Type it in inches"); addEvent("waist.logged", { inch: Math.round(inch * 4) / 4 }); haptic(); toast("Waist saved"); closeSheet(); render(); }
 const ddmmyyyy = d => d.slice(8) + "/" + d.slice(5, 7) + "/" + d.slice(0, 4);
 function entrySheet(d) {
-  ENTRY_D = d; const w = S.weights[d], wa = S.waists[d], fut = d > today();
+  ENTRY_D = d; const w = S.weights[d], wa = S.waists[d], fut = d > today(); GV.eW = w ? String(w.kg) : ""; GV.eWa = wa ? String(wa.inch) : "";
   const title = '<label class="dpick">' + ddmmyyyy(d) + " " + I.down + '<input type="date" id="entryDate" value="' + d + '"></label>';
   const right = (w || wa) ? '<button class="ib plain" data-a="entryDel" aria-label="Delete">' + I.trash + "</button>" : "";
   const body = fut ? '<p class="hint" style="margin-top:6px">This day has not happened yet. Pick today or an earlier day to add a weigh-in.</p>'
-    : '<div class="ef"><div><label>Weight</label><div class="fin"><input id="eW" inputmode="decimal" value="' + (w ? w.kg : "") + '"><span>kg</span></div></div><div><label>Waist</label><div class="fin"><input id="eWa" inputmode="decimal" value="' + (wa ? wa.inch : "") + '"><span>in</span></div></div></div><button class="big" style="margin-top:14px" data-a="entrySave">Save</button><p class="hint">Weigh in the morning after you pee, before food or water. Waist on Saturdays at the belly button, breathing out normally.</p>';
+    : '<div class="ef"><div><label>Weight</label>' + gField("eW", w ? String(w.kg) : "", "kg", "Weight", "0.1") + '</div><div><label>Waist</label>' + gField("eWa", wa ? String(wa.inch) : "", "in", "Waist", "0.25") + '</div></div><button class="big" style="margin-top:14px" data-a="entrySave">Save</button><p class="hint">Weigh in the morning after you pee, before food or water. Waist on Saturdays at the belly button, breathing out normally.</p>';
   openSheet("", "Body Metrics", body, { titleHtml: title, right, name: "entry" });
 }
 ACT.weightSheet = el => entrySheet((el && el.dataset && el.dataset.d) || today());
 ACT.entrySave = () => {
-  const d = ENTRY_D, kg = numIn($("#eW").value), inch = numIn($("#eWa").value);
+  gpClose(); const d = ENTRY_D, kg = numIn(GV.eW), inch = numIn(GV.eWa);
   if (kg == null && inch == null) return toast("Type your weight or waist");
   if (kg != null && (kg < 35 || kg > 150)) return toast("Weight should be in kg");
   if (inch != null && (inch < 20 || inch > 50)) return toast("Waist should be in inches");
@@ -2098,9 +2115,10 @@ ACT.saveWa = () => saveWaist($("#waEdit").value);
 const MEAS = [["armR", "Arm, relaxed"], ["armF", "Arm, flexed"], ["calf", "Calf"], ["neck", "Neck"], ["thigh", "Thigh"], ["chest", "Chest"]];
 ACT.measureSheet = () => {
   const last = Object.values(S.measures).sort((a, b) => a.d < b.d ? 1 : -1)[0] || {};
-  openSheet("Measurements", "Inches, once a month", MEAS.map(([k, n]) => '<div class="kv" style="align-items:center"><span>' + n + '</span><input class="field" style="width:110px;height:42px;text-align:right" data-m="' + k + '" inputmode="decimal" placeholder="' + (last[k] || "in") + '"></div>').join("") + '<button class="big" style="margin-top:14px" data-a="saveMeas">Save</button>');
+  MEAS.forEach(([k]) => { GV["m:" + k] = ""; });
+  openSheet("Measurements", "Inches, once a month", MEAS.map(([k, n]) => '<div class="kv" style="align-items:center"><span>' + n + "</span>" + gField("m:" + k, "", "in", n, "0.25", last[k] ? String(last[k]) : "in") + "</div>").join("") + '<button class="big" style="margin-top:14px" data-a="saveMeas">Save</button>', { name: "meas" });
 };
-ACT.saveMeas = () => { const p = {}; $$("#sheet [data-m]").forEach(i => { const v = numIn(i.value); if (v != null) p[i.dataset.m] = v; }); if (!Object.keys(p).length) return toast("Type at least one"); addEvent("measure.logged", p); closeSheet(); toast("Saved"); render(); };
+ACT.saveMeas = () => { gpClose(); const p = {}; MEAS.forEach(([k]) => { const v = numIn(GV["m:" + k]); if (v != null) p[k] = v; }); if (!Object.keys(p).length) return toast("Type at least one"); addEvent("measure.logged", p); closeSheet(); toast("Saved"); render(); };
 
 // ===== Levels =====
 function vLevels() {
@@ -2276,6 +2294,46 @@ ACT.kpGo = () => {
   const btn = $('.tr[data-i="' + KP.i + '"][data-k="' + KP.k + '"] [data-a="tick"]'); const i = KP.i, k = KP.k;
   kpClose(true); ACT.tick(btn || { dataset: { i: String(i), k: String(k) }, closest: () => null });
 };
+
+// ===== the same keypad for any other number box =====
+const GV = {}; let GP = null;
+function gField(k, val, unit, label, step, ph) { return '<button class="gfield fin" data-a="gpOpen" data-k="' + k + '" data-unit="' + (unit || "") + '" data-label="' + esc(label || "") + '" data-step="' + (step || "1") + '"' + (ph ? ' data-ph="' + esc(ph) + '"' : "") + '><span class="gv' + (val ? "" : " ph") + '">' + esc(val || ph || "") + '</span><span class="gu">' + (unit || "") + "</span></button>"; }
+function gpEl() { return $('[data-a="gpOpen"][data-k="' + GP.k + '"]'); }
+function gpShow() {
+  const el = gpEl(); if (!el) return; const v = GP.typed ? GP.buf : (GV[GP.k] != null ? GV[GP.k] : "");
+  const t = $(".gv", el) || el; t.textContent = v || (GP.typed ? "" : (el.dataset.ph || (el.classList.contains("wbox") ? "kg" : ""))); t.classList.toggle("ph", !v);
+  $$(".gfield.act").forEach(x => x.classList.remove("act")); el.classList.add("act");
+}
+ACT.gpOpen = el => {
+  if (KP) kpClose(); if (GP) gpCommit();
+  const k = el.dataset.k; if (k.startsWith("t:")) { const [, rk, f] = k.split(":"); GV[k] = String(TED.rows[+rk][f]); }
+  GP = { k, int: el.dataset.int === "1", step: +(el.dataset.step || 1), label: el.dataset.label || "", unit: el.dataset.unit || "", buf: "", typed: false };
+  document.body.classList.add("gpon"); haptic(); paintGp(); el.scrollIntoView({ block: "center", behavior: "smooth" });
+};
+function gpCommit() {
+  if (!GP || !GP.typed) return; GV[GP.k] = GP.buf;
+  if (GP.k.startsWith("t:") && TED) { const [, rk, f] = GP.k.split(":"); TED.rows[+rk][f] = Math.max(0, Math.round(numIn(GP.buf) || 0)); }
+}
+function gpClose() { if (!GP) return; gpCommit(); const k = GP.k; GP = null; document.body.classList.remove("gpon"); const kp = $("#kp"); kp.classList.remove("on", "gp"); $$(".gfield.act").forEach(x => x.classList.remove("act")); if (k.startsWith("t:") && TED && SHEET === "targets") paintTargets(); }
+function paintGp() {
+  const el = $("#kp"), cur = GP.typed ? GP.buf : (GV[GP.k] || "");
+  let g = '<div class="kp-top"><div class="kp-info"><b>' + esc(GP.label) + "</b>" + (GP.unit ? " in " + (GP.unit === "kg" ? "kilograms" : GP.unit === "in" ? "inches" : GP.unit) : "") + '</div></div><div class="kp-grid">';
+  ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"].forEach((k, n) => {
+    g += '<button class="kk"' + (k === "." && GP.int ? " disabled" : "") + ' data-a="gpKey" data-v="' + k + '">' + (k === "del" ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11v14H9l-6-7z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/></svg>' : k === "." && GP.int ? "" : k) + "</button>";
+    if (n % 3 === 2) { const row = (n + 1) / 3; g += row === 1 ? '<button class="ks" data-a="gpDone" aria-label="Hide keypad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="11" rx="2"/><path d="M7 8h.01M11 8h.01M15 8h.01M7 11h10M9 19l3 2 3-2"/></svg></button>' : row === 2 ? '<button class="ks dim" disabled></button>' : row === 3 ? '<div class="ks pm"><button data-a="gpStep" data-v="-1">−</button><button data-a="gpStep" data-v="1">+</button></div>' : '<button class="ks go" data-a="gpDone" aria-label="Done">' + I.tick + "</button>"; }
+  });
+  el.innerHTML = g + "</div>"; el.classList.add("on", "gp"); gpShow();
+}
+ACT.gpKey = el => {
+  if (!GP) return; const v = el.dataset.v; haptic();
+  if (!GP.typed) { GP.buf = ""; GP.typed = true; }
+  if (v === "del") GP.buf = GP.buf.slice(0, -1);
+  else if (v === ".") { if (!GP.int && !GP.buf.includes(".")) GP.buf = (GP.buf || "0") + "."; }
+  else if (GP.buf.replace(".", "").length < 5) GP.buf = GP.buf === "0" ? v : GP.buf + v;
+  gpShow();
+};
+ACT.gpStep = el => { const cur = numIn(GP.typed ? GP.buf : GV[GP.k]) || (GP.k === "wIn" ? (weightList().slice(-1)[0] || { kg: 60 }).kg : 0); GP.buf = String(Math.max(0, Math.round((cur + GP.step * +el.dataset.v) * 100) / 100)); GP.typed = true; haptic(); gpShow(); };
+ACT.gpDone = () => { const k = GP && GP.k; gpCommit(); const v = GV[k]; gpClose(); if (k === "wIn" && v) saveWeight(v); };
 
 // ===== pause, mini player, dialog =====
 const pauseKey = s => "nitfit:pause:" + s.id;
@@ -2476,9 +2534,21 @@ ACT.habitDay = el => {
   const dk = dayKeyFor(x); toast(dk ? DAYS[dk].name + (x > today() ? " is planned" : " was not logged") : "Rest day");
 };
 
-// iPhone keeps the page pushed up after its keyboard closes. Put it back.
-document.addEventListener("focusout", () => setTimeout(() => { const a = document.activeElement; if (!a || a.tagName !== "INPUT") { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; } }, 80));
-if (window.visualViewport) visualViewport.addEventListener("resize", () => { const a = document.activeElement; if (!a || a.tagName !== "INPUT") window.scrollTo(0, 0); });
+// iOS 26 bug: after the iPhone keyboard closes, a home-screen app can stay shrunk with a dead band at the bottom.
+// Hiding and showing the full-height screens for one frame makes iOS measure the screen again.
+let MAXH = window.innerHeight;
+window.addEventListener("resize", () => { MAXH = Math.max(MAXH, window.innerHeight); });
+function healViewport(force) {
+  const a = document.activeElement; if (a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA")) return;
+  window.scrollTo(0, 0);
+  if (!force && window.innerHeight >= MAXH - 4) return;
+  const els = [$("#main"), $("#page")], ys = els.map(e => e.scrollTop);
+  els.forEach(e => { e.style.display = "none"; }); void document.body.offsetHeight;
+  els.forEach((e, i) => { e.style.display = ""; e.scrollTop = ys[i]; });
+}
+document.addEventListener("focusout", e => { if (e.target && e.target.tagName === "INPUT") { setTimeout(healViewport, 150); setTimeout(healViewport, 600); } });
+if (window.visualViewport) visualViewport.addEventListener("resize", () => setTimeout(healViewport, 120));
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") setTimeout(() => healViewport(true), 200); });
 // ----- boot -----
 async function boot() {
   try { await coreBoot(); } catch (e) { $("#main").innerHTML = '<div class="head"><div class="title">NitFit</div></div><p class="hint" style="padding:20px">NitFit could not open its storage. Close it and open it again.</p>'; return; }

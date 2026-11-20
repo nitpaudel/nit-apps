@@ -581,3 +581,19 @@ html[data-theme="light"] .kp-grid .ks.fp button.on{background:rgba(0,0,0,.08)}
 /* dashboard cards: divider above the number */
 .ic .v{border-top:1px solid var(--line);padding-top:10px;margin-top:8px}
 .ic .chev{bottom:18px}
+
+/* ===== v3.3 ===== */
+body::before{display:none}
+.gfield{font:inherit;color:var(--text)}
+.gfield.act{box-shadow:inset 0 0 0 2px var(--blue)!important}
+.fin.gfield{width:100%;justify-content:space-between;text-align:left}
+.fin .gv{font-size:18px}
+.fin .gv.ph{color:var(--text3)}
+.kv .fin.gfield{width:120px;height:42px}
+.wbox{width:110px;height:48px;border-radius:12px;background:var(--chip);font-size:20px;font-weight:500;color:var(--text);display:grid;place-items:center;flex:none}
+.wbox.act{background:var(--card)}
+.tin.gfield{display:grid;place-items:center}
+.kp.gp{z-index:58}
+body.gpon .sheet .sbody{padding-bottom:350px}
+body.gpon #main{padding-bottom:420px}
+.kp-info b{color:var(--text);font-weight:600}
