@@ -534,3 +534,50 @@ body.hasmini #main{padding-bottom:calc(var(--sab) + 180px)}
 .dlg .x svg{width:20px;height:20px}
 .dlg p{color:var(--text2);font-size:15px;line-height:1.5;margin:10px 0 16px}
 .dlg .big+.big{margin-top:10px}
+
+/* ===== v3.2: app keypad, status bar cover, countdown ===== */
+body::before{content:"";position:fixed;left:0;right:0;top:0;height:var(--sat);background:var(--top);z-index:40;pointer-events:none}
+body.pageon::before{background:var(--bg)}
+html,body{height:100%;min-height:-webkit-fill-available}
+.cellb{width:100%;height:46px;border-radius:10px;background:var(--chip);font-size:18px;font-weight:500;text-align:center;font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center;gap:1px;color:var(--text)}
+.cellb.ph{color:var(--text2)}
+.cellb.act{box-shadow:inset 0 0 0 2px var(--blue);background:var(--card)}
+.cellb.act::after{content:"";width:2px;height:20px;background:var(--blue);margin-left:2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.tr.done .cellb{background:transparent;color:var(--text2)}
+em.pp{font-style:normal;font-size:13px;color:var(--teal);margin-left:1px}
+.cell{position:relative}
+.cell .rir{position:absolute;right:-6px;bottom:-6px}
+body.kpon #page{padding-bottom:360px}
+.kp{position:fixed;left:0;right:0;bottom:0;z-index:45;background:var(--top);border-radius:20px 20px 0 0;padding:10px 8px calc(var(--sab) + 8px);box-shadow:0 -8px 30px rgba(0,0,0,.4);transform:translateY(105%);transition:transform .28s var(--ease)}
+.kp.on{transform:none}
+.kp-top{min-height:44px;display:flex;align-items:center;justify-content:center;padding:0 4px 8px}
+.kp-info{font-size:14px;color:var(--text2)}
+.kp-rir{display:flex;justify-content:space-between;width:100%}
+.kp-rir .rir{position:static;width:34px;height:34px;font-size:15px;border-radius:50%}
+.kp-rir .rir.sel{box-shadow:0 0 0 2.5px var(--top),0 0 0 4.5px var(--text)}
+.rir.rq{background:var(--chip);color:var(--text)}
+.kp-grid{display:grid;grid-template-columns:1fr 1fr 1fr 0.9fr;gap:7px}
+.kp-grid .kk{height:52px;border-radius:10px;font-size:24px;font-weight:500;text-align:center;display:grid;place-items:center;background:transparent}
+.kp-grid .kk:active{background:var(--chip)}
+.kp-grid .kk svg{width:26px;height:26px}
+.kp-grid .ks{height:52px;border-radius:12px;background:var(--chip);display:grid;place-items:center;font-size:16px;font-weight:600;text-align:center}
+.kp-grid .ks svg{width:24px;height:24px}
+.kp-grid .ks.dim{opacity:.35}
+.kp-grid .ks.on{background:var(--inv);color:var(--invtext)}
+.kp-grid .ks.pm{display:flex;padding:0;overflow:hidden}
+.kp-grid .ks.pm button{flex:1;height:100%;font-size:22px;font-weight:500;text-align:center}
+.kp-grid .ks.fp button{font-size:17px;color:var(--text2)}
+.kp-grid .ks.fp button.on{color:var(--text);font-weight:700;background:rgba(255,255,255,.1)}
+html[data-theme="light"] .kp-grid .ks.fp button.on{background:rgba(0,0,0,.08)}
+.kp-grid .ks.go{background:var(--inv);color:var(--invtext)}
+/* countdown: long bar like the real thing */
+.lg-bar > span[style]{display:none}
+.restw{flex:1;justify-content:flex-end;margin-left:auto;max-width:60%}
+.restw .rbar{flex:1;max-width:none;height:26px;border-radius:8px}
+.restw .rbar b{background:var(--text)}
+.restw.on{color:var(--text)}
+.restw.done .rbar b{background:var(--green)}
+/* dashboard cards: divider above the number */
+.ic .v{border-top:1px solid var(--line);padding-top:10px;margin-top:8px}
+.ic .chev{bottom:18px}

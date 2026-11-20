@@ -126,7 +126,7 @@ function thumbFor(exId) {
 }
 function muscleThumb(m) { const v = MUSCLE_VIEW[m] || ["front", "up"], lv = {}; lv[m] = 1; return bodySvg(v[0], lv, { crop: v[1] }); }
 
-const shortName = id => { const n = ((getEx(id) || {}).n || "").replace(/^(Dumbbell|Barbell|Cable|Machine|Smith|Standing|Seated|One-arm|Chest-supported|Weighted)\s+/i, ""); return n.length > 14 ? n.slice(0, 13) + "…" : n; };
+const shortName = id => { let n = ((getEx(id) || {}).n || "").split(",")[0].trim(); const t = n.replace(/^(Dumbbell|Barbell|Cable|Machine|Smith|Standing|Seated|One-arm|Chest-supported|Weighted|Single-arm)\s+/i, ""); if (t.split(" ").length >= 2) n = t; n = n.charAt(0).toUpperCase() + n.slice(1); return n.length > 13 ? n.slice(0, 12) + "…" : n; };
 function rirFor(ex, it, week, n) { const d = rirTargets(ex, it, week, n); if (it.rirs) for (let k = 0; k < n; k++) if (it.rirs[k] != null) d[k] = it.rirs[k]; return d; }
 // ----- targets for the live workout -----
 const TGT = {};
@@ -149,7 +149,9 @@ function warmLogged(sess, exId) { const out = {}; sessionAllSets(sess.id).filter
 const autoTxt = (r, ex) => { const rr = r.lo === r.hi ? r.lo : r.lo + "-" + r.hi; return r.kg ? fmtKg(r.kg) + " kg × " + rr : rr + (ex.t ? " sec" : " reps"); };
 
 // ===== render =====
+function blurAll() { const a = document.activeElement; if (a && a !== document.body && a.blur && !(a.closest && a.closest("#sheet"))) a.blur(); }
 function render() {
+  blurAll();
   if (!isStandalone() && !/dev/.test(location.search)) { $("#main").innerHTML = vInstall(); $("#tabs").hidden = true; return; }
   const m = $("#main");
   m.innerHTML = TAB === "dashboard" ? vDash() : TAB === "workout" ? vWorkoutTab() : TAB === "levels" ? vLevels() : vMore();
@@ -159,7 +161,9 @@ function render() {
   renderPage();
 }
 function renderPage(keepScroll) {
-  const pg = $("#page"), y = pg.scrollTop;
+  const pg = $("#page"), y = pg.scrollTop; blurAll();
+  if (KP && (!PAGE || PAGE.kind !== "log" || !activeSession())) { KP = null; document.body.classList.remove("kpon"); $("#kp").classList.remove("on"); }
+  document.body.classList.toggle("pageon", !!PAGE);
   if (!PAGE) { pg.classList.remove("on"); $("#tabs").hidden = false; paintMini(); return; }
   if (PAGE.kind === "log" && !activeSession()) { PAGE = null; STACK = []; return renderPage(); }
   const K = PAGE.kind;
@@ -414,6 +418,7 @@ function vExPage(s, i) {
     + '<button class="pl" data-a="swapEx" data-i="' + i + '">' + I.swap + "Swap</button>"
     + '<button class="pl" data-a="exOpts" data-i="' + i + '">' + I.kebab + "</button></div>";
   const allDone = nLogged >= it.n;
+  h += tip("logging", "How to log a set", "Grey numbers are what the app wants you to do. Tap kg or reps to type something different. Tap the coloured badge for reps in reserve. Tick the box when the set is done and the rest timer starts.");
   h += '<div class="tbl"><div class="th"><span>Set</span><span>Auto ' + I.swap + "</span><span>" + (bw ? "" : "kg") + "</span><span>" + (ex.t ? "Sec" : "Reps") + '</span><button class="cb hcb' + (allDone ? " on" : "") + '" data-a="logAll" data-i="' + i + '" aria-label="Log all sets">' + I.tick + "</button></div>";
   if (warm) wsets.forEach((w, k) => {
     const st = wl[k];
@@ -423,8 +428,8 @@ function vExPage(s, i) {
   R.rows.forEach((r, k) => {
     const st = R.logged[k], dk = s.id + ":" + i + ":" + k, dr = DRAFT[dk] || {}, pr = PENDRIR[dk], rirShow = st ? (st.rir != null ? st.rir : r.rir) : (pr != null ? pr : r.rir);
     h += '<div class="tr' + (st ? " done" : "") + '" data-i="' + i + '" data-k="' + k + '"><span class="sb">' + (k + 1) + '</span><span class="auto' + (r.adjusted ? " adj" : "") + '">' + autoTxt(r, ex) + (rirOn ? "<br>" + r.rir + " RIR" : "") + "</span>"
-      + '<span class="cell">' + (bw ? '<div class="bw">BW</div>' : '<input inputmode="decimal" data-f="kg" placeholder="' + (r.kg != null ? fmtKg(r.kg) : "") + '" value="' + (st ? fmtKg(st.kg) : (dr.kg || "")) + '">') + "</span>"
-      + '<span class="cell"><input inputmode="numeric" data-f="reps" placeholder="' + (r.reps != null ? r.reps : r.lo) + '" value="' + (st ? st.reps : (dr.reps || "")) + '">' + (rirOn && rirShow != null ? '<button class="rir r' + Math.min(6, rirShow) + '" data-a="rirPick" data-i="' + i + '" data-k="' + k + '">' + (rirShow >= 6 ? "6+" : rirShow) + "</button>" : "") + "</span>"
+      + '<span class="cell">' + (bw ? '<div class="bw">BW</div>' : cellBtn(i, k, "kg", st ? fmtKg(st.kg) : dr.kg, r.kg != null ? fmtKg(r.kg) : "")) + "</span>"
+      + '<span class="cell">' + cellBtn(i, k, "reps", st ? st.reps + (st.p ? "+" + st.p : "") : (dr.reps != null && dr.reps !== "" ? dr.reps + (dr.p ? "+" + dr.p : "") : null), String(r.reps != null ? r.reps : r.lo)) + (rirOn && rirShow != null ? '<button class="rir r' + Math.min(6, rirShow) + '" data-a="kpOpen" data-i="' + i + '" data-k="' + k + '" data-f="reps">' + (rirShow >= 6 ? "6+" : rirShow) + "</button>" : "") + "</span>"
       + '<button class="cb' + (st ? " on" : "") + '" data-a="tick" data-i="' + i + '" data-k="' + k + '">' + I.tick + "</button></div>";
     if (st && bw) h += '<div class="qrow"><button class="clean' + (st.q !== "cheated" ? " on" : "") + '" data-a="q" data-id="' + st.id + '" data-v="clean">Clean</button><button class="cheated' + (st.q === "cheated" ? " on" : "") + '" data-a="q" data-id="' + st.id + '" data-v="cheated">Cheated</button></div>';
   });
@@ -434,7 +439,7 @@ function vExPage(s, i) {
   h += '<div class="lg-next">' + (p >= 0 && lab.endsWith("1") ? '<button class="big soft press" data-a="goEx" data-i="' + p + '">Go to ' + esc((getEx(s.items[p].ex) || {}).n) + "</button>" : '<button class="big' + (exDone(s, i) ? "" : " soft") + ' press" data-a="goEx" data-i="' + next + '">' + (next >= s.items.length ? "Cool down and finish" : "Next exercise") + "</button>") + "</div>";
   return h;
 }
-ACT.goEx = el => { LOGI = +el.dataset.i; haptic(); $("#page").scrollTop = 0; renderPage(); const on = $("#strip .st.on"); if (on) on.scrollIntoView({ inline: "center", block: "nearest" }); };
+ACT.goEx = el => { kpClose(true); LOGI = +el.dataset.i; haptic(); $("#page").scrollTop = 0; renderPage(); const on = $("#strip .st.on"); if (on) on.scrollIntoView({ inline: "center", block: "nearest" }); };
 ACT.warm = el => { const s = activeSession(), k = s.id + ":" + el.dataset.i; WARM[k] = !WARM[k]; renderPage(true); };
 ACT.warmTick = el => {
   const s = activeSession(), i = +el.dataset.i, k = +el.dataset.k, it = s.items[i], st = warmLogged(s, it.ex)[k];
@@ -442,17 +447,18 @@ ACT.warmTick = el => {
   rebuild(); haptic(); renderPage(true);
 };
 ACT.tick = el => {
-  const s = activeSession(); if (!s) return;
-  const i = +el.dataset.i, k = +el.dataset.k, it = s.items[i], R = rowsFor(s, i), ex = R.ex, row = el.closest(".tr");
+  const s = activeSession(); if (!s) return; if (KP) kpCommit();
+  const i = +el.dataset.i, k = +el.dataset.k, it = s.items[i], R = rowsFor(s, i), ex = R.ex;
   if (R.logged[k]) { addEvent("entity.deleted", { ref: R.logged[k].id }); rebuild(); haptic(); renderPage(true); return; }
-  const kIn = $('input[data-f="kg"]', row), rIn = $('input[data-f="reps"]', row), r = R.rows[k];
-  let kg = ex.eq === "bw" ? 0 : numIn(kIn.value); if (kg == null) kg = numIn(kIn.placeholder);
-  let reps = numIn(rIn.value); if (reps == null) reps = numIn(rIn.placeholder);
-  if (ex.eq !== "bw" && kg == null) { kIn.focus(); return toast("Type the weight first"); }
-  if (reps == null || reps <= 0) { rIn.focus(); return toast("Type your reps"); }
+  const r = R.rows[k], D = DRAFT[s.id + ":" + i + ":" + k] || {};
+  let kg = ex.eq === "bw" ? 0 : numIn(D.kg); if (kg == null) kg = r.kg;
+  let reps = numIn(D.reps); if (reps == null) reps = r.reps != null ? r.reps : r.lo;
+  const part = Math.max(0, Math.round(numIn(D.p) || 0));
+  if (ex.eq !== "bw" && kg == null) { kpOpen(i, k, "kg"); return toast("Type the weight first"); }
+  if (reps == null || reps <= 0) { kpOpen(i, k, "reps"); return toast("Type your reps"); }
   const pk = s.id + ":" + i + ":" + k, rir = !setOn("rirTrack") ? null : PENDRIR[pk] != null ? PENDRIR[pk] : r.rir; delete PENDRIR[pk]; delete DRAFT[pk];
-  addEvent("set.logged", { sessionId: s.id, exId: it.ex, item: i, idx: k, kg, reps: Math.round(reps), rir, tKg: r.kg, tReps: r.reps, tRir: r.rir, q: "clean" });
-  haptic();
+  addEvent("set.logged", { sessionId: s.id, exId: it.ex, item: i, idx: k, kg, reps: Math.round(reps), p: part, rir, tKg: r.kg, tReps: r.reps, tRir: r.rir, q: "clean" });
+  kpClose(true); haptic();
   // copied weights below this set give way to whatever Smart Progression picks next
   for (let k2 = k + 1; k2 < it.n; k2++) { const D2 = DRAFT[s.id + ":" + i + ":" + k2]; if (D2 && D2.prop) { delete D2.kg; D2.prop = false; } }
   const lab = ssLabels(s.items)[i], p = partnerIndex(s.items, i), rest = it.light ? 60 : (it.rest || ex.rest);
@@ -475,32 +481,18 @@ function fillSets(s, i) {
     let reps = numIn(dr.reps); if (reps == null) reps = r.reps != null ? r.reps : r.lo;
     if (ex.eq !== "bw" && kg == null) return;
     const rir = !setOn("rirTrack") ? null : PENDRIR[pk] != null ? PENDRIR[pk] : r.rir; delete PENDRIR[pk]; delete DRAFT[pk];
-    addEvent("set.logged", { sessionId: s.id, exId: it.ex, item: i, idx: k, kg, reps: Math.round(reps), rir, tKg: r.kg, tReps: r.reps, tRir: r.rir, q: "clean" }); n++;
+    addEvent("set.logged", { sessionId: s.id, exId: it.ex, item: i, idx: k, kg, reps: Math.round(reps), p: Math.max(0, Math.round(numIn(dr.p) || 0)), rir, tKg: r.kg, tReps: r.reps, tRir: r.rir, q: "clean" }); n++;
   });
   return n;
 }
-ACT.logAll = el => { const s = activeSession(), i = +el.dataset.i, n = fillSets(s, i); haptic(); if (!n) toast(exDone(s, i) ? "All sets are logged" : "Type the weight first"); else if (setOn("restOn")) startRest(s.items[i].rest || (getEx(s.items[i].ex) || {}).rest || 90); renderPage(true); };
+ACT.logAll = el => { if (KP) kpCommit(); const s = activeSession(), i = +el.dataset.i, n = fillSets(s, i); haptic(); if (!n) toast(exDone(s, i) ? "All sets are logged" : "Type the weight first"); else if (setOn("restOn")) startRest(s.items[i].rest || (getEx(s.items[i].ex) || {}).rest || 90); renderPage(true); };
 document.addEventListener("change", e => {
   const inp = e.target;
   if (inp.id === "wIn") return saveWeight(inp.value);
   if (inp.id === "entryDate") { if (inp.value) entrySheet(inp.value); return; }
-  const row = inp.closest && inp.closest(".tr.done"); if (!row) return;
-  const s = activeSession(); if (!s) return;
-  const i = +row.dataset.i, k = +row.dataset.k, st = loggedByIdx(s, s.items[i].ex)[k]; if (!st) return;
-  const v = numIn(inp.value); if (v == null) return;
-  addEvent("set.edited", inp.dataset.f === "kg" ? { ref: st.id, kg: v } : { ref: st.id, reps: Math.round(v) }); toast("Set updated");
 });
-document.addEventListener("keydown", e => {
-  if (e.key !== "Enter") return;
-  const inp = e.target; if (inp.id === "wIn" || inp.classList.contains("field")) { inp.blur(); return; }
-  const row = inp.closest && inp.closest(".tr"); if (!row) return;
-  e.preventDefault(); if (inp.dataset.f === "kg") { const r = $('input[data-f="reps"]', row); if (r) r.focus(); } else inp.blur();
-});
-ACT.rirPick = el => {
-  const s = activeSession(), i = +el.dataset.i, k = +el.dataset.k, R = rowsFor(s, i), st = R.logged[k], key = s.id + ":" + i + ":" + k;
-  const cur = st ? (st.rir != null ? st.rir : R.rows[k].rir) : (PENDRIR[key] != null ? PENDRIR[key] : R.rows[k].rir);
-  openSheet("Reps in Reserve", "Set " + (k + 1) + " · target " + R.rows[k].rir + " RIR", '<p class="hint">How many more good reps could you have done?</p><div class="rirpick">' + [0, 1, 2, 3, 4, 5, 6].map(v => '<button class="' + (v === Math.min(6, cur) ? "on" : "") + '" data-a="rirSet" data-i="' + i + '" data-k="' + k + '" data-v="' + v + '">' + (v === 6 ? "6+" : v) + "</button>").join("") + '</div><p class="hint" style="margin-top:14px">0 means you could not do another rep. Smart Progression uses this to set your next targets.</p>');
-};
+document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.tagName === "INPUT") e.target.blur(); });
+ACT.rirPick = el => kpOpen(+el.dataset.i, +el.dataset.k, "reps");
 ACT.rirSet = el => {
   const s = activeSession(), i = +el.dataset.i, k = +el.dataset.k, v = +el.dataset.v, st = rowsFor(s, i).logged[k];
   if (st) addEvent("set.rir", { ref: st.id, rir: v }); else PENDRIR[s.id + ":" + i + ":" + k] = v;
@@ -630,7 +622,7 @@ const optRow = (icon, title, sub, act, extra, cls) => '<button class="opt' + (cl
 ACT.logMenu = () => { const s = activeSession(), P = pauseOf(s); openSheet("Workout Options", "", optRow(P.at ? I.play : I.pause, P.at ? "Resume workout" : "Pause workout", "", "pauseToggle") + optRow(I.mini, "Minimize workout", "", "minimize") + optRow(I.flag, "Finish workout", "", "finish") + optRow(I.gear, "Workout settings", "", "wsettings", "", "chev") + optRow(I.plus, "Add exercise", "", "addEx") + optRow(I.trash, "Discard workout", "", "discard", "", "red")); };
 ACT.minimize = () => { closeSheet(); PAGE = null; STACK = []; renderPage(); render(); };
 ACT.finish = () => {
-  const s = activeSession(); if (!s) return; closeSheet();
+  const s = activeSession(); if (!s) return; if (KP) kpClose(); closeSheet();
   const tot = s.items.length, touched = s.items.filter((it, i) => Object.keys(loggedByIdx(s, it.ex)).length).length;
   if (tot && s.items.every((it, i) => exDone(s, i))) return finishNow();
   openDialog("Finish this workout?", "<p>You've logged " + touched + " of " + tot + " exercises. Log All Sets saves every set using the numbers on screen. Log Only Completed Sets keeps just the ones you ticked.</p>"
@@ -659,7 +651,7 @@ ACT.viewSession = (el, justDone) => {
   else h += '<button class="big" style="margin-top:20px" data-a="closeSheet">Done</button>';
   openSheet(justDone ? "Workout Complete" : s.name, justDone ? s.name + ". Go and eat." : niceDate(s.d), h, { tall: !justDone });
 };
-const setChip = x => "<span>" + (x.kg ? fmtKg(x.kg) + " × " : "") + x.reps + (x.rir != null ? ' <i class="rir r' + Math.min(6, x.rir) + '" style="font-style:normal">' + x.rir + "</i>" : "") + (x.q === "cheated" ? ' <b style="color:var(--red);font-size:11px">cheat</b>' : "") + "</span>";
+const setChip = x => "<span>" + (x.kg ? fmtKg(x.kg) + " × " : "") + x.reps + (x.p ? '<em class="pp">+' + x.p + "</em>" : "") + (x.rir != null ? ' <i class="rir r' + Math.min(6, x.rir) + '" style="font-style:normal">' + x.rir + "</i>" : "") + (x.q === "cheated" ? ' <b style="color:var(--red);font-size:11px">cheat</b>' : "") + "</span>";
 ACT.delSession = el => { if (el.dataset.sure !== "1") { el.dataset.sure = "1"; el.textContent = "Tap again to delete"; return; } addEvent("entity.deleted", { ref: el.dataset.id }); rebuild(); closeSheet(); render(); toast("Workout deleted"); };
 
 // info sheet
@@ -858,6 +850,102 @@ document.addEventListener("DOMContentLoaded", () => {
   $("#importIn").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { const n = await importExport(JSON.parse(await f.text())); toast(n + " entries loaded"); render(); } catch (er) { toast(er.message || "Could not read that file"); } e.target.value = ""; });
 });
 
+
+// ===== app keypad (no iPhone keyboard while logging) =====
+let KP = null;
+function cellBtn(i, k, f, val, ph) {
+  const has = val != null && val !== "", on = KP && KP.i === i && KP.k === k && (KP.f === f || (f === "reps" && (KP.f === "p" || KP.f === "rir")));
+  return '<button class="cellb' + (has ? "" : " ph") + (on ? " act" : "") + '" data-a="kpOpen" data-i="' + i + '" data-k="' + k + '" data-f="' + f + '">' + (has ? esc(String(val)) : esc(ph || "")) + "</button>";
+}
+const kpKey = () => activeSession().id + ":" + KP.i + ":" + KP.k;
+function kpCtx() { const s = activeSession(), R = rowsFor(s, KP.i); return { s, R, ex: R.ex, it: s.items[KP.i], st: R.logged[KP.k], r: R.rows[KP.k] }; }
+function kpOpen(i, k, f) {
+  if (KP) kpCommit();
+  const s = activeSession(); if (!s) return;
+  KP = { i, k, f: f === "kg" && (getEx(s.items[i].ex) || {}).eq === "bw" ? "reps" : f, buf: "", typed: false };
+  document.body.classList.add("kpon"); renderPage(true); paintKp();
+  const row = $('.tr[data-i="' + i + '"][data-k="' + k + '"]'); if (row) row.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+ACT.kpOpen = el => { haptic(); kpOpen(+el.dataset.i, +el.dataset.k, el.dataset.f); };
+function kpCommit() {
+  if (!KP || !KP.typed || KP.f === "rir") return;
+  const c = kpCtx(), v = KP.buf;
+  if (c.st) { const n = numIn(v); if (n == null) return; addEvent("set.edited", KP.f === "kg" ? { ref: c.st.id, kg: n } : KP.f === "reps" ? { ref: c.st.id, reps: Math.round(n) } : { ref: c.st.id, p: Math.round(n) }); return; }
+  const D = (DRAFT[kpKey()] = DRAFT[kpKey()] || {}); D[KP.f] = v; if (KP.f === "kg") D.prop = false;
+  if (KP.f === "kg" && setOn("propagate") && v !== "") for (let k2 = KP.k + 1; k2 < c.it.n; k2++) { if (c.R.logged[k2]) continue; const D2 = (DRAFT[activeSession().id + ":" + KP.i + ":" + k2] = DRAFT[activeSession().id + ":" + KP.i + ":" + k2] || {}); if (!D2.kg || D2.prop) { D2.kg = v; D2.prop = true; } }
+}
+function kpClose(silent) { if (!KP) return; if (!silent) kpCommit(); KP = null; document.body.classList.remove("kpon"); $("#kp").classList.remove("on"); if (!silent) renderPage(true); }
+ACT.kpHide = () => { haptic(); kpClose(); };
+function kpCur() {
+  const c = kpCtx(), D = DRAFT[kpKey()] || {};
+  if (KP.typed) return KP.buf;
+  if (KP.f === "kg") return c.st ? fmtKg(c.st.kg) : (D.kg != null && D.kg !== "" ? D.kg : (c.r.kg != null ? fmtKg(c.r.kg) : ""));
+  if (KP.f === "p") return c.st ? String(c.st.p || 0) : String(D.p || 0);
+  return c.st ? String(c.st.reps) : (D.reps != null && D.reps !== "" ? D.reps : String(c.r.reps != null ? c.r.reps : c.r.lo));
+}
+function kpShow() {
+  const cell = $('.tr[data-i="' + KP.i + '"][data-k="' + KP.k + '"] .cellb[data-f="' + (KP.f === "kg" ? "kg" : "reps") + '"]'); if (!cell) return;
+  const c = kpCtx(), D = DRAFT[kpKey()] || {};
+  if (KP.f === "kg") { cell.textContent = KP.typed ? KP.buf : ""; cell.classList.toggle("ph", false); }
+  else { const full = KP.f === "reps" ? (KP.typed ? KP.buf : "") : (c.st ? c.st.reps : (D.reps || (c.r.reps != null ? c.r.reps : c.r.lo))), pp = KP.f === "p" ? (KP.typed ? KP.buf : "") : (c.st ? c.st.p : D.p); cell.innerHTML = esc(String(full)) + (KP.f === "p" || +pp ? '<em class="pp">+' + esc(String(pp || "")) + "</em>" : ""); cell.classList.remove("ph"); }
+  cell.classList.add("act");
+}
+function paintKp() {
+  const el = $("#kp"); if (!KP) { el.classList.remove("on"); return; }
+  const c = kpCtx(), rirOn = setOn("rirTrack"), pk = kpKey(), rirCur = c.st ? c.st.rir : (PENDRIR[pk] != null ? PENDRIR[pk] : c.r.rir), isKg = KP.f === "kg";
+  let top = "";
+  if (isKg) {
+    const v = numIn(kpCur());
+    top = '<div class="kp-info">' + (c.ex.eq === "bb" && v ? (v >= 20 ? fmtKg((v - 20) / 2) + " kg each side + 20 kg bar" : "Lighter than the 20 kg bar") : c.ex.eq === "db" && v ? fmtKg(v) + " kg in each hand" : "Weights move in 2.5 kg steps") + "</div>";
+  } else if (rirOn) top = '<div class="kp-rir">' + [0, 1, 2, 3, 4, 5, 6].map(v => '<button class="rir r' + v + (rirCur === v || (v === 6 && rirCur >= 6) ? " sel" : "") + '" data-a="kpRir" data-v="' + v + '">' + (v === 6 ? "6+" : v) + "</button>").join("") + '<button class="rir rq' + (rirCur == null ? " sel" : "") + '" data-a="kpRir" data-v="">?</button></div>';
+  const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"];
+  let g = '<div class="kp-grid">';
+  keys.forEach((k, n) => {
+    g += '<button class="kk" data-a="kpKey" data-v="' + k + '">' + (k === "del" ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11v14H9l-6-7z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/></svg>' : k) + "</button>";
+    if (n % 3 === 2) {
+      const row = (n + 1) / 3;
+      if (row === 1) g += '<button class="ks" data-a="kpHide" aria-label="Hide keypad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="11" rx="2"/><path d="M7 8h.01M11 8h.01M15 8h.01M7 11h10M9 19l3 2 3-2"/></svg></button>';
+      if (row === 2) g += isKg ? '<button class="ks dim" disabled></button>' : '<button class="ks' + (KP.f === "rir" ? " on" : "") + '" data-a="kpMode" data-v="rir">RIR</button>';
+      if (row === 3) g += isKg ? '<div class="ks pm"><button data-a="kpStep" data-v="-1">−</button><button data-a="kpStep" data-v="1">+</button></div>' : '<div class="ks pm fp"><button class="' + (KP.f !== "p" ? "on" : "") + '" data-a="kpMode" data-v="reps">F</button><button class="' + (KP.f === "p" ? "on" : "") + '" data-a="kpMode" data-v="p">P</button></div>';
+      if (row === 4) g += '<button class="ks go" data-a="kpGo" aria-label="' + (isKg ? "Next" : "Log set") + '">' + (isKg ? I.next : I.tick) + "</button>";
+    }
+  });
+  g += "</div>";
+  el.innerHTML = '<div class="kp-top">' + top + "</div>" + g;
+  el.classList.add("on"); kpShow();
+}
+ACT.kpKey = el => {
+  if (!KP) return; const v = el.dataset.v; haptic();
+  if (KP.f === "rir") { if (v === "del" || v === ".") return; return ACT.kpRir({ dataset: { v: String(Math.min(6, +v)) } }); }
+  if (!KP.typed) { KP.buf = ""; KP.typed = true; }
+  if (v === "del") KP.buf = KP.buf.slice(0, -1);
+  else if (v === ".") { if (KP.f === "kg" && !KP.buf.includes(".")) KP.buf = (KP.buf || "0") + "."; }
+  else if (KP.buf.replace(".", "").length < 5) KP.buf = KP.buf === "0" ? v : KP.buf + v;
+  kpShow(); if (KP.f === "kg") paintKp();
+};
+ACT.kpStep = el => {
+  const c = kpCtx(), cur = numIn(kpCur()) || 0, step = KP.f === "kg" ? (c.ex.step || 2.5) : 1;
+  KP.buf = String(Math.max(0, Math.round((cur + step * +el.dataset.v) * 100) / 100)); KP.typed = true; haptic(); kpShow(); paintKp();
+};
+ACT.kpMode = el => {
+  kpCommit(); const v = el.dataset.v;
+  KP = { i: KP.i, k: KP.k, f: KP.f === v && v === "rir" ? "reps" : v, buf: "", typed: false };
+  if (KP.f === "p") toast("Now typing partial reps"); else if (KP.f === "rir") toast("Type reps in reserve, 0 to 6"); haptic(); paintKp();
+};
+ACT.kpRir = el => {
+  const c = kpCtx(), v = el.dataset.v === "" ? null : +el.dataset.v;
+  if (c.st) addEvent("set.rir", { ref: c.st.id, rir: v }); else if (v == null) PENDRIR[kpKey()] = null; else PENDRIR[kpKey()] = v;
+  haptic(); if (KP.f === "rir") KP.f = "reps";
+  const keep = { i: KP.i, k: KP.k, f: KP.f, buf: KP.buf, typed: KP.typed }; kpCommit(); KP = Object.assign(keep, { typed: false, buf: "" }); renderPage(true); paintKp();
+};
+ACT.kpGo = () => {
+  if (!KP) return; const c = kpCtx();
+  if (KP.f === "kg") { kpCommit(); KP = { i: KP.i, k: KP.k, f: "reps", buf: "", typed: false }; renderPage(true); paintKp(); return; }
+  kpCommit();
+  if (c.st) { kpClose(true); renderPage(true); return; }
+  const btn = $('.tr[data-i="' + KP.i + '"][data-k="' + KP.k + '"] [data-a="tick"]'); const i = KP.i, k = KP.k;
+  kpClose(true); ACT.tick(btn || { dataset: { i: String(i), k: String(k) }, closest: () => null });
+};
 
 // ===== pause, mini player, dialog =====
 const pauseKey = s => "nitfit:pause:" + s.id;
@@ -1058,6 +1146,9 @@ ACT.habitDay = el => {
   const dk = dayKeyFor(x); toast(dk ? DAYS[dk].name + (x > today() ? " is planned" : " was not logged") : "Rest day");
 };
 
+// iPhone keeps the page pushed up after its keyboard closes. Put it back.
+document.addEventListener("focusout", () => setTimeout(() => { const a = document.activeElement; if (!a || a.tagName !== "INPUT") { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; } }, 80));
+if (window.visualViewport) visualViewport.addEventListener("resize", () => { const a = document.activeElement; if (!a || a.tagName !== "INPUT") window.scrollTo(0, 0); });
 // ----- boot -----
 async function boot() {
   try { await coreBoot(); } catch (e) { $("#main").innerHTML = '<div class="head"><div class="title">NitFit</div></div><p class="hint" style="padding:20px">NitFit could not open its storage. Close it and open it again.</p>'; return; }
