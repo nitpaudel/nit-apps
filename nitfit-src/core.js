@@ -1,5 +1,5 @@
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "2.0";
+const APP_VERSION = "3.1";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -40,7 +40,7 @@ let storageBroken = "";
 function storageFail(e) { storageBroken = (e && e.name === "QuotaExceededError") ? "Your phone is out of space. Free some space now." : "Could not save to the phone. Close NitFit and open it again."; if (typeof render === "function") render(); }
 
 // ----- events and state -----
-const DEFAULT_SETTINGS = { theme: "dark", vol: 0.6, restOn: true };
+const DEFAULT_SETTINGS = { theme: "dark", vol: 0.6, restOn: true, smart: true, warmAuto: false, propagate: true, rirTrack: true, ssScroll: true, autoNext: true, keepAlive: true, showClock: true, dashHide: [] };
 let EV = []; const EVIDS = new Set(); let S = null;
 function freshState() {
   return { sessions: {}, sets: {}, bySession: {}, byEx: {}, weights: {}, waists: {}, measures: {}, settings: clone(DEFAULT_SETTINGS), program: {}, exo: {}, fixDone: {} };
@@ -106,7 +106,7 @@ function activeSession() {
 const weightList = () => Object.values(S.weights).sort((a, b) => a.d < b.d ? -1 : 1);
 // which program week: weeks 1 and 2 are easy (2 sets), 3 and 4 the planned sets, 5 on the full sets
 function programWeek(d) { const n = Math.floor(daysBetween(PROGRAM_START, d) / 7) + 1; return Math.max(1, n); }
-function setsFor(item, d) { const w = programWeek(d); return w <= 2 ? Math.min(2, item.sets) : w <= 4 ? item.sets : (item.p5 || item.sets); }
+function setsFor(item, d) { if (item.fixed) return item.sets; const w = programWeek(d); return w <= 2 ? Math.min(2, item.sets) : w <= 4 ? item.sets : (item.p5 || item.sets); }
 function planFor(dayKey) { return S.program[dayKey] || (DAYS[dayKey] ? DAYS[dayKey].items : []); }
 
 // ----- GitHub sync -----
