@@ -28,6 +28,11 @@ if bad:
 
 os.makedirs(os.path.join(out, "icons"), exist_ok=True)
 open(os.path.join(out, "index.html"), "w", encoding="utf-8").write(html)
+import shutil
+for f in os.listdir(os.path.join(src, "assets")):
+    p = os.path.join(src, "assets", f)
+    if os.path.isdir(p): shutil.copytree(p, os.path.join(out, f), dirs_exist_ok=True)
+    else: shutil.copyfile(p, os.path.join(out, f))
 for f in ["sw.js", "manifest.webmanifest"]:
     open(os.path.join(out, f), "w", encoding="utf-8").write(rd(f))
 print("built %s  (%.0f KB)" % (os.path.join(out, "index.html"), len(html.encode()) / 1024))

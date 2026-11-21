@@ -119,12 +119,8 @@ function lastFinishedBefore(d) { const l = sessionsSorted().filter(s => s.endTs 
 const doneOn = d => sessionsSorted().some(s => s.d === d && s.endTs && sessionSets(s.id).length);
 
 // thumbnails: the body map, cropped, with the exercise's muscles lit up
-function thumbFor(exId) {
-  const tags = tagsOf(exId), lv = {}; tags.forEach((m, i) => lv[m] = i === 0 ? 1 : 0.38);
-  const v = MUSCLE_VIEW[tags[0]] || ["front", "up"];
-  return bodySvg(v[0], lv, { crop: v[1] });
-}
-function muscleThumb(m) { const v = MUSCLE_VIEW[m] || ["front", "up"], lv = {}; lv[m] = 1; return bodySvg(v[0], lv, { crop: v[1] }); }
+function thumbFor(exId) { return '<img class="ti" loading="lazy" decoding="async" alt="" src="thumbs-v1/e-' + exId + '.webp">'; }
+function muscleThumb(m) { return '<img class="ti" loading="lazy" decoding="async" alt="" src="thumbs-v1/m-' + encodeURIComponent(m) + '.webp">'; }
 
 const shortName = id => { let n = ((getEx(id) || {}).n || "").split(",")[0].trim(); const t = n.replace(/^(Dumbbell|Barbell|Cable|Machine|Smith|Standing|Seated|One-arm|Chest-supported|Weighted|Single-arm)\s+/i, ""); if (t.split(" ").length >= 2) n = t; n = n.charAt(0).toUpperCase() + n.slice(1); return n.length > 13 ? n.slice(0, 12) + "…" : n; };
 function rirFor(ex, it, week, n) { const d = rirTargets(ex, it, week, n); if (it.rirs) for (let k = 0; k < n; k++) if (it.rirs[k] != null) d[k] = it.rirs[k]; return d; }
@@ -178,7 +174,7 @@ function render() {
   const m = $("#main");
   const keep = m.dataset.tab === TAB ? m.scrollTop : (SCROLL[TAB] || 0);
   m.innerHTML = TAB === "dashboard" ? vDash() : TAB === "workout" ? vWorkoutTab() : TAB === "levels" ? vLevels() : vMore();
-  m.dataset.tab = TAB; m.scrollTop = keep; LASTY = m.scrollTop; ACC = 0; FOLDLOCK = Date.now() + 400; if (keep < 60) document.body.classList.remove("compact");
+  m.dataset.tab = TAB; if (TAB === "levels") attachBody3d(); m.scrollTop = keep; LASTY = m.scrollTop; ACC = 0; FOLDLOCK = Date.now() + 400; if (keep < 60) document.body.classList.remove("compact");
   $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB));
   const pg = $("#pager"); if (pg) pg.addEventListener("scroll", () => { const i = Math.round(pg.scrollLeft / pg.clientWidth); $$(".pdots i").forEach((d, k) => d.classList.toggle("on", k === i)); }, { passive: true });
   renderPage();
@@ -483,7 +479,7 @@ function vLog() {
   setTimeout(paintRest, 0);
   return h + "</div>";
 }
-const tallThumb = id => thumbFor(id).replace("<svg ", '<svg preserveAspectRatio="xMidYMid slice" ');
+const tallThumb = id => thumbFor(id);
 function vFix(s, pre, title, sub, list) {
   const done = fixDone(s, pre, list.length);
   let h = '<div class="lg-name">' + title + '</div><div class="lg-sub">' + sub + " · " + done.filter(Boolean).length + " of " + list.length + "</div><div style='margin-top:10px'>";
@@ -761,7 +757,7 @@ ACT.infoSheet = el => {
   let h = '<div class="ptabs sheet-tabs">' + ["Instructions", "Details", "History"].map(t => '<button class="' + (t === INFOTAB ? "on" : "") + '" data-a="infoSheet" data-tab="' + t + '">' + t + "</button>").join("") + "</div>";
   if (INFOTAB === "Instructions") {
     const v = MUSCLE_VIEW[tags[0]] || ["front"], lv = {}; tags.forEach((m, k) => lv[m] = k ? 0.4 : 1);
-    h += '<div class="infobody">' + bodySvg(v[0], lv, { crop: "full" }) + "</div>";
+    h += '<div class="infobody"><img class="ti" alt="" src="thumbs-v1/e-' + id + '.webp"></div>';
     h += '<div class="cue" style="margin-top:14px"><b>How to:</b> ' + esc(e.cue) + "</div>";
     h += '<div class="kv"><span>Rep range</span><b>' + e.r[0] + "-" + e.r[1] + (e.t ? " sec" : " reps") + (e.each ? " each side" : "") + '</b></div><div class="kv"><span>Rest</span><b>' + fmtRest(e.rest) + "</b></div>";
   } else if (INFOTAB === "Details") {
@@ -883,17 +879,40 @@ ACT.measureSheet = () => {
 ACT.saveMeas = () => { gpClose(); const p = {}; MEAS.forEach(([k]) => { const v = numIn(GV["m:" + k]); if (v != null) p[k] = v; }); if (!Object.keys(p).length) return toast("Type at least one"); addEvent("measure.logged", p); closeSheet(); toast("Saved"); render(); };
 
 // ===== Levels =====
+function levelMap() { const mv = muscleSets(7 * LVRANGE, today()), lv = {}; ALL_MUSCLES.forEach(m => { const v = (mv[m] || 0) / LVRANGE; lv[m] = v > 0 ? Math.min(1, 0.15 + v / 18) : 0; }); return { mv, lv }; }
 function vLevels() {
-  const d = today(), mv = muscleSets(7 * LVRANGE, d), lv = {}, any = Object.keys(mv).length;
-  ALL_MUSCLES.forEach(m => { const v = (mv[m] || 0) / LVRANGE; lv[m] = v > 0 ? Math.min(1, 0.15 + v / 18) : 0; });
+  const { mv } = levelMap(), any = Object.keys(mv).length;
   let h = head("Levels") + "</div><div class='body-pad'>";
-  h += '<div class="bodywrap">' + bodySvg(FLIP, lv) + (any ? "" : '<div class="lvempty">Finish workouts to see your Set Levels</div>') + '<button class="ib rot" data-a="flip" aria-label="Turn around">' + I.rotate + "</button></div>";
+  h += '<div class="b3w"><div id="b3slot" class="b3slot"></div>' + (any ? "" : '<div class="lvempty2">Finish workouts to see your Set Levels</div>')
+    + '<button class="ib b3home" data-a="b3Home" aria-label="Reset view">' + I.rotate + '</button><div class="b3hint" id="b3hint">Drag to turn · pinch to zoom · tap a muscle</div><div class="b3card" id="b3card" hidden></div></div>';
   h += '<div class="legend"><i></i>Average weekly sets over <button data-a="lvRange">' + LVRANGE + "-week " + I.down + "</button></div>";
   ["Upper", "Lower"].forEach(g => {
     h += "<h2>" + g + ' Body Levels</h2><div class="card">' + MUSCLE_GROUPS[g].map(m => { const v = (mv[m] || 0) / LVRANGE; return '<button class="lvrow press" data-a="muscle" data-m="' + esc(m) + '"><div class="thumb">' + muscleThumb(m) + '</div><div class="m"><b>' + esc(m) + "</b><span>" + fmtKg(Math.round(v * 10) / 10) + " sets</span></div></button>"; }).join("") + "</div>";
   });
+  h += '<p class="hint credit">3D anatomy from BodyParts3D (© The Database Center for Life Science) and Z-Anatomy (Gauthier Kervyn), CC BY-SA.</p>';
   return h + "</div>";
 }
+// ---- the 3D body lives in one element that is moved into the Levels tab each time it is drawn ----
+let B3 = null, B3EL = null, B3LOAD = null;
+function attachBody3d() {
+  const slot = $("#b3slot"); if (!slot) return;
+  if (!B3EL) { B3EL = document.createElement("div"); B3EL.className = "b3"; B3EL.innerHTML = '<div class="b3load"><i></i>Loading 3D body...</div>'; }
+  slot.appendChild(B3EL);
+  if (B3) { B3.setLevels(levelMap().lv); return; }
+  if (B3LOAD) return;
+  B3LOAD = import("./anatomy-v1.js").then(mod => mod.mount(B3EL, { url: "body-v1.glb", levels: levelMap().lv, onPick: b3Pick })).then(v => {
+    B3 = v; const l = $(".b3load", B3EL); if (l) l.remove();
+  }).catch(err => { B3LOAD = null; B3EL.innerHTML = '<div class="b3load">3D body could not load. Check your internet and open Levels again.</div>'; console.error(err); });
+}
+function b3Pick(p) {
+  const c = $("#b3card"), hint = $("#b3hint"); if (!c) return; haptic();
+  if (!p || !p.group) { c.hidden = !p; if (p) c.innerHTML = '<div class="m"><b>' + esc(cap(p.part)) + '</b><span>Not tracked in your plan</span></div>'; if (hint) hint.hidden = !!p; return; }
+  const { mv } = levelMap(), v = (mv[p.group] || 0) / LVRANGE;
+  c.hidden = false; if (hint) hint.hidden = true;
+  c.innerHTML = '<div class="m"><b>' + esc(p.group) + "</b><span>" + esc(cap(p.part)) + " · " + fmtKg(Math.round(v * 10) / 10) + ' sets a week</span></div><button class="pill-btn" data-a="muscle" data-m="' + esc(p.group) + '">Open</button>';
+}
+const cap = t => t ? t.charAt(0).toUpperCase() + t.slice(1) : "";
+ACT.b3Home = () => { if (B3) { B3.home(); B3.select(null); } const c = $("#b3card"); if (c) c.hidden = true; const h = $("#b3hint"); if (h) h.hidden = false; };
 ACT.flip = () => { FLIP = FLIP === "front" ? "back" : "front"; SCROLL.levels = $("#main").scrollTop; render(); };
 ACT.lvRange = () => { LVRANGE = LVRANGE === 1 ? 4 : 1; SCROLL.levels = $("#main").scrollTop; render(); };
 // ===== More =====
