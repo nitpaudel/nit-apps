@@ -288,7 +288,7 @@ function ringsHtml() {
   const st = weekStats(RINGMODE), all = RINGMODE === "all";
   const one = (label, v, t, lw, size, big) => {
     const N = big ? 60 : 24, n = all ? N : t, litN = all ? Math.round(v / Math.max(1, lw, v) * N) : v, mid = all ? "this week" : "of " + t, foot = all ? lw + " last week" : Math.max(0, t - v) + " left";
-    return '<div class="d2r' + (big ? " lg" : "") + '"><div class="rv">' + tickRing(size, n, v, big) + '<div class="rc"><b>' + v + "</b><small>" + mid + "</small></div></div><div class=\"rl\">" + label + '</div><div class="rt">' + foot + "</div></div>";
+    return '<div class="d2r' + (big ? " lg" : "") + '"><div class="rv">' + tickRing(size, n, litN, big) + '<div class="rc"><b>' + v + "</b><small>" + mid + "</small></div></div><div class=\"rl\">" + label + '</div><div class="rt">' + foot + "</div></div>";
   };
   return one("Muscles", st.done.mus.size, st.plan.mus.size, st.last.mus.size, 96) + one("Sets", st.done.sets, st.plan.sets, st.last.sets, 156, 1) + one("Exercises", st.done.ex.size, st.plan.ex.size, st.last.ex.size, 96);
 }
