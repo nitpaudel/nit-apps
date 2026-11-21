@@ -1,6 +1,6 @@
 // Opens the newest NitFit when online, and the copy saved on the phone when offline.
-const CACHE = "nitfit-v16";
-const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icons/nf3-180.png", "./icons/nf3-192.png", "./icons/nf3-512.png", "./icons/launch-1170x2532.png"];
+const CACHE = "nitfit-v17";
+const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icons/nitfit-180.png", "./icons/nitfit-192.png", "./icons/nitfit-512.png", "./icons/launch-1170x2532.png"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: "reload" })))).then(() => self.skipWaiting()));
 });

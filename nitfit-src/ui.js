@@ -178,7 +178,7 @@ function render() {
   const m = $("#main");
   const keep = m.dataset.tab === TAB ? m.scrollTop : (SCROLL[TAB] || 0);
   m.innerHTML = TAB === "dashboard" ? vDash() : TAB === "workout" ? vWorkoutTab() : TAB === "levels" ? vLevels() : vMore();
-  m.dataset.tab = TAB; m.scrollTop = keep;
+  m.dataset.tab = TAB; m.scrollTop = keep; LASTY = keep; if (keep < 40) document.body.classList.remove("compact");
   $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB));
   const pg = $("#pager"); if (pg) pg.addEventListener("scroll", () => { const i = Math.round(pg.scrollLeft / pg.clientWidth); $$(".pdots i").forEach((d, k) => d.classList.toggle("on", k === i)); }, { passive: true });
   renderPage();
@@ -212,10 +212,21 @@ function head(title, eyebrow, icons) {
 
 // ===== Dashboard =====
 function weekStats(mode) {
-  const d0 = weekSun(today()), plan = { sets: 0, ex: new Set(), mus: new Set() }, done = { sets: 0, ex: new Set(), mus: new Set() };
+  const d0 = weekSun(today()), plan = { sets: 0, ex: new Set(), mus: new Set() }, done = { sets: 0, ex: new Set(), mus: new Set() }, last = { sets: 0, ex: new Set(), mus: new Set() };
   for (let i = 0; i < 7; i++) { const d = addDays(d0, i), dk = dayKeyFor(d); if (!dk) continue; itemsForDay(dk, d).forEach(it => { plan.sets += it.n; plan.ex.add(it.ex); plan.mus.add(tagsOf(it.ex)[0]); }); }
-  sessionsSorted().filter(s => s.d >= d0 && s.d <= addDays(d0, 6) && (mode === "all" || s.dayKey)).forEach(s => sessionSets(s.id).forEach(x => { done.sets++; done.ex.add(x.exId); done.mus.add(tagsOf(x.exId)[0]); }));
-  return { plan, done };
+  const add = (o, s) => sessionSets(s.id).forEach(x => { o.sets++; o.ex.add(x.exId); o.mus.add(tagsOf(x.exId)[0]); });
+  sessionsSorted().forEach(s => {
+    if (mode !== "all" && !s.dayKey) return;
+    if (s.d >= d0 && s.d <= addDays(d0, 6)) add(done, s); else if (s.d >= addDays(d0, -7) && s.d < d0) add(last, s);
+  });
+  return { plan, done, last };
+}
+function ringsHtml() {
+  const st = weekStats(RINGMODE), all = RINGMODE === "all";
+  const one = (label, v, t, lw, size, color, big) => all
+    ? '<div class="ring' + (big ? " bigr" : "") + '"><div class="rv">' + ringSvg(size, big ? 4 : 3.5, v / Math.max(1, lw, v), color) + "<div><b>" + v + "</b><small>this week</small></div></div>" + '<div class="rl">' + label + '</div><div class="rt">' + lw + " last week</div></div>"
+    : ring(label, v, t, size, color, big);
+  return one("Muscles", st.done.mus.size, st.plan.mus.size, st.last.mus.size, 84, "var(--blue)") + one("Sets", st.done.sets, st.plan.sets, st.last.sets, 150, "var(--orange)", 1) + one("Exercises", st.done.ex.size, st.plan.ex.size, st.last.ex.size, 84, "var(--teal)");
 }
 function ringSvg(size, stroke, frac, color) {
   const r = (size - stroke) / 2, c = 2 * Math.PI * r, f = Math.max(0, Math.min(1, frac));
@@ -233,8 +244,8 @@ function vDash() {
   const dt = new Date(), d = today();
   let h = head("Dashboard", "", '<button class="ib" data-a="dashCustom" aria-label="Customize">' + I.sliders + "</button>");
   const st = weekStats(RINGMODE);
-  h += '<div class="pager" id="pager"><div class="pg"><h2 class="hh">Weekly Workouts</h2><div class="rings">' + ring("Muscles", st.done.mus.size, st.plan.mus.size, 84, "var(--blue)") + ring("Sets", st.done.sets, st.plan.sets, 150, "var(--orange)", 1) + ring("Exercises", st.done.ex.size, st.plan.ex.size, 84, "var(--teal)") + "</div>"
-    + '<div class="seg"><button class="' + (RINGMODE === "program" ? "on" : "") + '" data-a="ringMode" data-v="program">Active Program</button><button class="' + (RINGMODE === "all" ? "on" : "") + '" data-a="ringMode" data-v="all">All Workouts</button></div></div>'
+  h += '<div class="pager" id="pager"><div class="pg"><h2 class="hh">Weekly Workouts</h2><div class="rings" id="rings">' + ringsHtml() + "</div>"
+    + '<div class="seg slide' + (RINGMODE === "all" ? " right" : "") + '"><i class="thumbx"></i><button class="' + (RINGMODE === "program" ? "on" : "") + '" data-a="ringMode" data-v="program">Active Program</button><button class="' + (RINGMODE === "all" ? "on" : "") + '" data-a="ringMode" data-v="all">All Workouts</button></div></div>'
     + '<div class="pg"><h2 class="hh">Recent Records</h2>' + recordsHtml() + "</div></div>"
     + '<div class="pdots"><i class="on"></i><i></i></div></div><div class="body-pad">';
   if (storageBroken) h += '<div class="banner">' + esc(storageBroken) + "</div>";
@@ -298,7 +309,11 @@ function muscleSets(days, d) {
   Object.values(S.sets).forEach(x => { if (x.w || x.d < from || x.d > d) return; tagsOf(x.exId).forEach((m, i) => { out[m] = (out[m] || 0) + (i === 0 ? 1 : 0.5); }); });
   return out;
 }
-ACT.ringMode = el => { RINGMODE = el.dataset.v; SCROLL.dashboard = $("#main").scrollTop; render(); };
+ACT.ringMode = el => {
+  if (RINGMODE === el.dataset.v) return; RINGMODE = el.dataset.v; haptic();
+  const seg = el.closest(".seg"); seg.classList.toggle("right", RINGMODE === "all"); $$("button", seg).forEach(b => b.classList.toggle("on", b === el));
+  const r = $("#rings"); r.classList.add("swap"); setTimeout(() => { r.innerHTML = ringsHtml(); r.classList.remove("swap"); }, 160);
+};
 ACT.tabTo = el => { SCROLL[TAB] = $("#main").scrollTop; TAB = el.dataset.tab; render(); if (el.dataset.sub === "history") ACT.history(); };
 
 // ===== Workout tab =====
@@ -871,7 +886,7 @@ function lineChart(pts) {
 }
 
 // ----- tabs and taps -----
-ACT.tab = el => { if (document.body.classList.contains("compact") && el.classList.contains("on")) { document.body.classList.remove("compact"); return; } document.body.classList.remove("compact"); const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; if (t === TAB) { $("#main").scrollTo({ top: 0, behavior: "smooth" }); return; } TAB = t; haptic(); render(); };
+ACT.tab = el => { if (document.body.classList.contains("compact")) { setFold(false); if (el.classList.contains("on")) return; } const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; if (t === TAB) { $("#main").scrollTo({ top: 0, behavior: "smooth" }); return; } TAB = t; haptic(); render(); };
 document.addEventListener("click", e => { const el = e.target.closest("[data-a]"); if (!el) return; const f = ACT[el.dataset.a]; if (f) { e.preventDefault(); f(el, e); } });
 document.addEventListener("DOMContentLoaded", () => {
   $("#importIn").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { const n = await importExport(JSON.parse(await f.text())); toast(n + " entries loaded"); render(); } catch (er) { toast(er.message || "Could not read that file"); } e.target.value = ""; });
@@ -1233,19 +1248,30 @@ function healViewport(force) {
 document.addEventListener("focusout", e => { if (e.target && e.target.tagName === "INPUT") { setTimeout(healViewport, 150); setTimeout(healViewport, 600); } });
 if (window.visualViewport) visualViewport.addEventListener("resize", () => setTimeout(healViewport, 120));
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") setTimeout(() => healViewport(true), 200); });
-// Apple Music style: scroll down and the tab bar folds into one round button with the workout player beside it
-let LASTY = 0;
+// Apple Music style: scroll down and the tab bar folds into one round button with the workout player beside it.
+// Everything moves with transforms only, so it stays smooth, and it needs a real swipe (not a jitter) to switch.
+let LASTY = 0, ACC = 0, FOLDLOCK = 0;
+function measureTabs() {
+  const t = $("#tabs"); if (!t) return; const W = t.clientWidth, R = t.getBoundingClientRect();
+  t.style.setProperty("--cw", Math.max(0, W - 64) + "px");
+  $$("#tabs > button").forEach(b => { const r = b.getBoundingClientRect(), c = r.left - R.left + r.width / 2; b.style.setProperty("--dxl", (32 - c) + "px"); b.style.setProperty("--dxr", (W - 32 - c) + "px"); });
+}
+function setFold(on) {
+  if (document.body.classList.contains("compact") === on) return;
+  if (on) measureTabs(); document.body.classList.toggle("compact", on); FOLDLOCK = Date.now() + 420;
+}
 function bindCompact() {
   const m = $("#main");
   m.addEventListener("scroll", () => {
-    const y = m.scrollTop, dy = y - LASTY;
-    if (y < 30) document.body.classList.remove("compact");
-    else if (dy > 6) document.body.classList.add("compact");
-    else if (dy < -10) document.body.classList.remove("compact");
-    LASTY = y;
+    const y = m.scrollTop, dy = y - LASTY; LASTY = y;
+    if (y < 40) { ACC = 0; return setFold(false); }
+    ACC = (ACC > 0) === (dy > 0) ? ACC + dy : dy;
+    if (Date.now() < FOLDLOCK) return;
+    if (ACC > 36) setFold(true); else if (ACC < -48) setFold(false);
   }, { passive: true });
+  window.addEventListener("resize", () => { if (document.body.classList.contains("compact")) measureTabs(); });
 }
-ACT.expandTabs = () => { document.body.classList.remove("compact"); };
+ACT.expandTabs = () => setFold(false);
 // ----- boot -----
 async function boot() {
   try { await coreBoot(); } catch (e) { $("#main").innerHTML = '<div class="head"><div class="title">NitFit</div></div><p class="hint" style="padding:20px">NitFit could not open its storage. Close it and open it again.</p>'; return; }
