@@ -779,7 +779,7 @@ html[data-theme="light"] .tutc .pv{background:#cfc4ff}
 body.compact #mini .mth{display:none}
 
 /* ===== v4.0: 3D body ===== */
-.b3w{position:relative;height:min(64vh,560px);margin:4px -16px 0;border-radius:0;overflow:hidden;background:radial-gradient(120% 80% at 50% 40%,#232327 0%,var(--bg) 70%)}
+.b3w{position:relative;height:min(72vh,620px);margin:4px -16px 0;border-radius:0;overflow:hidden;background:radial-gradient(120% 80% at 50% 40%,#232327 0%,var(--bg) 70%)}
 html[data-theme="light"] .b3w{background:radial-gradient(120% 80% at 50% 40%,#3a3a40 0%,#1d1d20 75%)}
 .b3slot,.b3{position:absolute;inset:0}
 .b3 canvas{display:block;width:100%!important;height:100%!important;touch-action:none}
@@ -800,3 +800,17 @@ html[data-theme="light"] .b3w{background:radial-gradient(120% 80% at 50% 40%,#3a
 .infobody img.ti{height:100%;width:auto;margin:0 auto;object-fit:contain}
 .lvempty2{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:2;font-size:13px;color:#d8d8dc;background:rgba(40,40,42,.7);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:8px 14px;border-radius:16px;white-space:nowrap}
 .thumb{background:#2b2626}
+/* v4.1 body: 4 painted views */
+.b2{position:absolute;inset:0;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.b2.zoomed{touch-action:none}
+.b2stage{position:absolute;transform-origin:50% 50%;will-change:transform}
+.b2v{position:absolute;inset:0;will-change:opacity,transform}
+.b2v img,.b2v canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;-webkit-user-drag:none}
+.b2base{filter:saturate(.5) brightness(.45)}
+.b2hi,.b2pick{-webkit-mask-image:linear-gradient(transparent,transparent);mask-image:linear-gradient(transparent,transparent);-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.b2pick{opacity:0;filter:brightness(1.12) saturate(1.1);transition:opacity .2s}
+.b2line{opacity:.95}
+.b2dots{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);z-index:1;display:flex;gap:6px;pointer-events:none}
+.b2dots i{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.28);transition:width .25s,background .25s}
+.b2dots i.on{width:16px;background:#fff}
+.b2 .b3load{z-index:1}
