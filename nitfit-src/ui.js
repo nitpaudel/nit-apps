@@ -879,6 +879,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 // ===== app keypad (no iPhone keyboard while logging) =====
+// one layout for every keypad:  1 2 3 [hide] / 4 5 6 [delete] / 7 8 9 [extra] / [corner] 0 0 [go]
+function padGrid(act, hideAct, extra, corner, go) {
+  const k = v => '<button class="kk" data-a="' + act + '" data-v="' + v + '">' + v + "</button>";
+  return '<div class="kp-grid">' + k(1) + k(2) + k(3) + '<button class="ks" data-a="' + hideAct + '" aria-label="Hide keypad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="11" rx="2"/><path d="M7 8h.01M11 8h.01M15 8h.01M7 11h10M9 19l3 2 3-2"/></svg></button>'
+    + k(4) + k(5) + k(6) + '<button class="ks del" data-a="' + act + '" data-v="del" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11v14H9l-6-7z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/></svg></button>'
+    + k(7) + k(8) + k(9) + extra
+    + corner + '<button class="kk zero" data-a="' + act + '" data-v="0">0</button>' + go + "</div>";
+}
+
 let KP = null;
 function cellBtn(i, k, f, val, ph) {
   const has = val != null && val !== "", on = KP && KP.i === i && KP.k === k && (KP.f === f || (f === "reps" && (KP.f === "p" || KP.f === "rir")));
@@ -919,7 +928,8 @@ function kpCur() {
 function kpShow() {
   const cell = $('.tr[data-i="' + KP.i + '"][data-k="' + KP.k + '"] .cellb[data-f="' + (KP.f === "kg" ? "kg" : "reps") + '"]'); if (!cell) return;
   const c = kpCtx(), D = DRAFT[kpKey()] || {};
-  if (KP.f === "kg") { cell.textContent = KP.typed ? KP.buf : ""; cell.classList.toggle("ph", false); }
+  if (!KP.typed && KP.f !== "p") { cell.textContent = kpCur(); cell.classList.add("ph", "act"); return; }
+  if (KP.f === "kg") { cell.textContent = KP.buf; cell.classList.toggle("ph", false); }
   else { const full = KP.f === "reps" ? (KP.typed ? KP.buf : "") : (c.st ? c.st.reps : (D.reps || (c.r.reps != null ? c.r.reps : c.r.lo))), pp = KP.f === "p" ? (KP.typed ? KP.buf : "") : (c.st ? c.st.p : D.p); cell.innerHTML = esc(String(full)) + (KP.f === "p" || +pp ? '<em class="pp">+' + esc(String(pp || "")) + "</em>" : ""); cell.classList.remove("ph"); }
   cell.classList.add("act");
 }
@@ -931,19 +941,10 @@ function paintKp() {
     const v = numIn(kpCur());
     top = '<div class="kp-info">' + (c.ex.eq === "bb" && v ? (v >= 20 ? fmtKg((v - 20) / 2) + " kg each side + 20 kg bar" : "Lighter than the 20 kg bar") : c.ex.eq === "db" && v ? fmtKg(v) + " kg in each hand" : "Weights move in 2.5 kg steps") + "</div>";
   } else if (rirOn) top = '<div class="kp-rir">' + [0, 1, 2, 3, 4, 5, 6].map(v => '<button class="rir r' + v + (rirCur === v || (v === 6 && rirCur >= 6) ? " sel" : "") + '" data-a="kpRir" data-v="' + v + '">' + (v === 6 ? "6+" : v) + "</button>").join("") + '<button class="rir rq' + (rirCur == null ? " sel" : "") + '" data-a="kpRir" data-v="">?</button></div>';
-  const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"];
-  let g = '<div class="kp-grid">';
-  keys.forEach((k, n) => {
-    g += '<button class="kk" data-a="kpKey" data-v="' + k + '">' + (k === "del" ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11v14H9l-6-7z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/></svg>' : k) + "</button>";
-    if (n % 3 === 2) {
-      const row = (n + 1) / 3;
-      if (row === 1) g += '<button class="ks" data-a="kpHide" aria-label="Hide keypad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="11" rx="2"/><path d="M7 8h.01M11 8h.01M15 8h.01M7 11h10M9 19l3 2 3-2"/></svg></button>';
-      if (row === 2) g += isKg ? '<button class="ks dim" disabled></button>' : '<button class="ks' + (KP.f === "rir" ? " on" : "") + '" data-a="kpMode" data-v="rir">RIR</button>';
-      if (row === 3) g += isKg ? '<div class="ks pm"><button data-a="kpStep" data-v="-1">−</button><button data-a="kpStep" data-v="1">+</button></div>' : '<div class="ks pm fp"><button class="' + (KP.f !== "p" ? "on" : "") + '" data-a="kpMode" data-v="reps">F</button><button class="' + (KP.f === "p" ? "on" : "") + '" data-a="kpMode" data-v="p">P</button></div>';
-      if (row === 4) g += '<button class="ks go" data-a="kpGo" aria-label="' + (isKg ? "Next" : "Log set") + '">' + (isKg ? I.next : I.tick) + "</button>";
-    }
-  });
-  g += "</div>";
+  const extra = isKg ? '<div class="ks pm"><button data-a="kpStep" data-v="-1">−</button><button data-a="kpStep" data-v="1">+</button></div>' : '<div class="ks pm fp"><button class="' + (KP.f !== "p" ? "on" : "") + '" data-a="kpMode" data-v="reps">Full</button><button class="' + (KP.f === "p" ? "on" : "") + '" data-a="kpMode" data-v="p">Partial</button></div>';
+  const corner = isKg ? '<button class="kk" data-a="kpKey" data-v=".">.</button>' : '<button class="ks' + (KP.f === "rir" ? " on" : "") + '" data-a="kpMode" data-v="rir">RIR</button>';
+  const go = '<button class="ks go" data-a="kpGo" aria-label="' + (isKg ? "Next" : "Log set") + '">' + (isKg ? I.next : I.tick) + "</button>";
+  let g = padGrid("kpKey", "kpHide", extra, corner, go);
   el.innerHTML = '<div class="kp-top">' + top + "</div>" + g;
   el.classList.add("on"); kpShow();
 }
@@ -1003,11 +1004,8 @@ function gpClose() { if (!GP) return; gpCommit(); const k = GP.k; GP = null; doc
 function paintGp() {
   const el = $("#kp"), cur = GP.typed ? GP.buf : (GV[GP.k] || "");
   let g = '<div class="kp-top"><div class="kp-info"><b>' + esc(GP.label) + "</b>" + (GP.unit ? " in " + (GP.unit === "kg" ? "kilograms" : GP.unit === "in" ? "inches" : GP.unit) : "") + '</div></div><div class="kp-grid">';
-  ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"].forEach((k, n) => {
-    g += '<button class="kk"' + (k === "." && GP.int ? " disabled" : "") + ' data-a="gpKey" data-v="' + k + '">' + (k === "del" ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11v14H9l-6-7z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/></svg>' : k === "." && GP.int ? "" : k) + "</button>";
-    if (n % 3 === 2) { const row = (n + 1) / 3; g += row === 1 ? '<button class="ks" data-a="gpDone" aria-label="Hide keypad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="11" rx="2"/><path d="M7 8h.01M11 8h.01M15 8h.01M7 11h10M9 19l3 2 3-2"/></svg></button>' : row === 2 ? '<button class="ks dim" disabled></button>' : row === 3 ? '<div class="ks pm"><button data-a="gpStep" data-v="-1">−</button><button data-a="gpStep" data-v="1">+</button></div>' : '<button class="ks go" data-a="gpDone" aria-label="Done">' + I.tick + "</button>"; }
-  });
-  el.innerHTML = g + "</div>"; el.classList.add("on", "gp"); gpShow();
+  g += padGrid("gpKey", "gpDone", '<div class="ks pm"><button data-a="gpStep" data-v="-1">−</button><button data-a="gpStep" data-v="1">+</button></div>', GP.int ? '<span class="kk"></span>' : '<button class="kk" data-a="gpKey" data-v=".">.</button>', '<button class="ks go" data-a="gpDone" aria-label="Done">' + I.tick + "</button>").replace('<div class="kp-grid">', "");
+  el.innerHTML = g; el.classList.add("on", "gp"); gpShow();
 }
 ACT.gpKey = el => {
   if (!GP) return; const v = el.dataset.v; haptic();

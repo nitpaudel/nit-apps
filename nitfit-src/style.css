@@ -619,3 +619,25 @@ body.gpon #main{padding-bottom:420px}
 .fixrow .cb{width:26px;height:26px}
 .st.done .thumb.word{color:transparent}
 .auto{white-space:nowrap}
+
+/* ===== v3.5: roomy keypad, closed panels removed completely ===== */
+.kp{padding:12px 10px calc(var(--sab) + 10px)}
+.kp-top{min-height:48px;padding:0 6px 10px}
+.kp-grid{grid-template-columns:repeat(3,1fr) 1.15fr;gap:8px}
+.kp-grid .kk{height:56px;border-radius:12px;background:var(--card2);font-size:26px}
+.kp-grid .kk:active{background:var(--chip)}
+.kp-grid span.kk{background:transparent}
+.kp-grid .kk.zero{grid-column:span 2}
+.kp-grid .ks{height:56px;border-radius:12px}
+.kp-grid .ks.del svg{width:28px;height:28px}
+.kp-grid .ks.fp button{font-size:14px}
+.kp-rir .rir{width:38px;height:38px;font-size:16px}
+html[data-theme="light"] .kp-grid .kk{background:#ececf0}
+body.kpon #page{padding-bottom:420px}
+/* a closed pop-up is not drawn at all, so nothing can peek at the bottom */
+.dlg:not(.on){display:none}
+.dlg.on .dc{animation:dcIn .32s var(--ease)}
+@keyframes dcIn{from{transform:translateY(110%)}to{transform:none}}
+.kp:not(.on){display:none}
+.kp.on{animation:kpIn .26s var(--ease)}
+@keyframes kpIn{from{transform:translateY(100%)}to{transform:none}}
