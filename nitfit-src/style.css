@@ -641,3 +641,32 @@ body.kpon #page{padding-bottom:420px}
 .kp:not(.on){display:none}
 .kp.on{animation:kpIn .26s var(--ease)}
 @keyframes kpIn{from{transform:translateY(100%)}to{transform:none}}
+
+/* ===== v3.6: floating glass bars like Apple Music ===== */
+:root{--glass:rgba(40,40,42,.72);--glassline:rgba(255,255,255,.09);--barb:max(10px, calc(var(--sab) - 8px))}
+html[data-theme="light"]{--glass:rgba(250,250,250,.78);--glassline:rgba(0,0,0,.08)}
+#tabs{display:flex;justify-content:space-around;align-items:center;left:12px;right:12px;bottom:var(--barb);height:64px;padding:0 6px;border-radius:32px;
+  background:var(--glass);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
+  box-shadow:inset 0 0 0 1px var(--glassline),0 8px 30px rgba(0,0,0,.35);transition:left .38s var(--ease),right .38s var(--ease),background .3s,box-shadow .3s}
+#tabs button{flex:1;height:56px;justify-content:center;border-radius:28px;transition:flex .38s var(--ease),opacity .2s,background .3s}
+#tabs button.on:not(.plus){background:rgba(255,255,255,.07)}
+html[data-theme="light"] #tabs button.on:not(.plus){background:rgba(0,0,0,.05)}
+#tabs .plus{flex:none;width:48px;height:48px;margin:0 4px}
+#mini{left:12px;right:12px;bottom:calc(var(--barb) + 72px);height:56px;border-radius:28px;padding:6px 6px 6px 18px;
+  background:var(--glass);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
+  box-shadow:inset 0 0 0 1px var(--glassline),0 8px 30px rgba(0,0,0,.35);transition:left .38s var(--ease),right .38s var(--ease),bottom .38s var(--ease)}
+#mini .mb{width:44px;height:44px;background:transparent}
+#mini .thumb{width:30px;height:38px}
+#main{padding-bottom:calc(var(--barb) + 96px)}
+body.hasmini #main{padding-bottom:calc(var(--barb) + 170px)}
+/* folded: active tab becomes a round button on the left, + stays on the right, player slides between them */
+body.compact #tabs{left:12px;right:12px;background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;justify-content:space-between;pointer-events:none}
+body.compact #tabs button{pointer-events:auto}
+body.compact #tabs button:not(.on):not(.plus){flex:0 0 0;width:0;opacity:0;overflow:hidden;pointer-events:none;padding:0}
+body.compact #tabs button.on:not(.plus){flex:0 0 56px;width:56px;font-size:0;gap:0;background:var(--glass);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);box-shadow:inset 0 0 0 1px var(--glassline),0 8px 30px rgba(0,0,0,.35)}
+body.compact #tabs .plus{width:56px;height:56px;margin:0}
+body.compact #mini{left:80px;right:80px;bottom:calc(var(--barb) + 4px);padding-left:14px}
+body.compact #mini .mth{display:none}
+body.compact #tabs{justify-content:flex-start}
+body.compact #tabs button.on:not(.plus){order:1}
+body.compact #tabs .plus{order:9;margin-left:auto}

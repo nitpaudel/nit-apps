@@ -871,7 +871,7 @@ function lineChart(pts) {
 }
 
 // ----- tabs and taps -----
-ACT.tab = el => { const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; if (t === TAB) { $("#main").scrollTo({ top: 0, behavior: "smooth" }); return; } TAB = t; haptic(); render(); };
+ACT.tab = el => { if (document.body.classList.contains("compact") && el.classList.contains("on")) { document.body.classList.remove("compact"); return; } document.body.classList.remove("compact"); const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; if (t === TAB) { $("#main").scrollTo({ top: 0, behavior: "smooth" }); return; } TAB = t; haptic(); render(); };
 document.addEventListener("click", e => { const el = e.target.closest("[data-a]"); if (!el) return; const f = ACT[el.dataset.a]; if (f) { e.preventDefault(); f(el, e); } });
 document.addEventListener("DOMContentLoaded", () => {
   $("#importIn").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { const n = await importExport(JSON.parse(await f.text())); toast(n + " entries loaded"); render(); } catch (er) { toast(er.message || "Could not read that file"); } e.target.value = ""; });
@@ -951,7 +951,8 @@ function paintKp() {
 ACT.kpKey = el => {
   if (!KP) return; const v = el.dataset.v; haptic();
   if (KP.f === "rir") { if (v === "del" || v === ".") return; return ACT.kpRir({ dataset: { v: String(Math.min(6, +v)) } }); }
-  if (!KP.typed) { KP.buf = ""; KP.typed = true; }
+  // a digit replaces the planned number; delete takes off only the last digit of what is shown
+  if (!KP.typed) { KP.buf = v === "del" ? String(kpCur() || "") : ""; KP.typed = true; }
   if (v === "del") KP.buf = KP.buf.slice(0, -1);
   else if (v === ".") { if (KP.f === "kg" && !KP.buf.includes(".")) KP.buf = (KP.buf || "0") + "."; }
   else if (KP.buf.replace(".", "").length < 5) KP.buf = KP.buf === "0" ? v : KP.buf + v;
@@ -1009,7 +1010,7 @@ function paintGp() {
 }
 ACT.gpKey = el => {
   if (!GP) return; const v = el.dataset.v; haptic();
-  if (!GP.typed) { GP.buf = ""; GP.typed = true; }
+  if (!GP.typed) { GP.buf = v === "del" ? String(GV[GP.k] || "") : ""; GP.typed = true; }
   if (v === "del") GP.buf = GP.buf.slice(0, -1);
   else if (v === ".") { if (!GP.int && !GP.buf.includes(".")) GP.buf = (GP.buf || "0") + "."; }
   else if (GP.buf.replace(".", "").length < 5) GP.buf = GP.buf === "0" ? v : GP.buf + v;
@@ -1232,10 +1233,23 @@ function healViewport(force) {
 document.addEventListener("focusout", e => { if (e.target && e.target.tagName === "INPUT") { setTimeout(healViewport, 150); setTimeout(healViewport, 600); } });
 if (window.visualViewport) visualViewport.addEventListener("resize", () => setTimeout(healViewport, 120));
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") setTimeout(() => healViewport(true), 200); });
+// Apple Music style: scroll down and the tab bar folds into one round button with the workout player beside it
+let LASTY = 0;
+function bindCompact() {
+  const m = $("#main");
+  m.addEventListener("scroll", () => {
+    const y = m.scrollTop, dy = y - LASTY;
+    if (y < 30) document.body.classList.remove("compact");
+    else if (dy > 6) document.body.classList.add("compact");
+    else if (dy < -10) document.body.classList.remove("compact");
+    LASTY = y;
+  }, { passive: true });
+}
+ACT.expandTabs = () => { document.body.classList.remove("compact"); };
 // ----- boot -----
 async function boot() {
   try { await coreBoot(); } catch (e) { $("#main").innerHTML = '<div class="head"><div class="title">NitFit</div></div><p class="hint" style="padding:20px">NitFit could not open its storage. Close it and open it again.</p>'; return; }
-  applyTheme(); render();
+  applyTheme(); render(); bindCompact();
   try { const r = JSON.parse(localStorage.getItem("nitfit:rest") || "null"); if (r && r.end > Date.now()) { REST = r; restIv = setInterval(paintRest, 250); } } catch (_) {}
   if (activeSession()) { PAGE = { kind: "log" }; renderPage(); }
   try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => { if (S.settings.theme === "system") { applyTheme(); render(); } }); } catch (_) {}
