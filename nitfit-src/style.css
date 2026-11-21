@@ -802,6 +802,13 @@ html[data-theme="light"] .b3w{background:radial-gradient(120% 80% at 50% 40%,#3a
 .thumb{background:#2b2626}
 /* v4.3 body: 3D, built from the 4 paintings */
 #main[data-tab="levels"] .b3w{height:min(80vh,700px);margin:calc(var(--sat,0px) + 6px) -16px 0;background:radial-gradient(110% 70% at 50% 42%,#26262a 0%,var(--bg) 72%)}
-.b3 canvas{touch-action:pan-y}
+.b2{position:absolute;inset:0;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.b2.zoomed{touch-action:none}
+.b2stage{position:absolute;transform-origin:50% 50%}
+.b2v{position:absolute;inset:0;will-change:transform,opacity;transform-origin:50% 50%}
+.b2v img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;-webkit-user-drag:none}
+.b2pick{opacity:0;transition:opacity .18s;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.b2pick.on{opacity:1}
+.b2 .b3load{z-index:3}
 .b2name{position:absolute;left:16px;top:12px;z-index:2;display:flex;align-items:center;gap:6px;height:32px;padding:0 12px 0 14px;border-radius:16px;font-size:15px;font-weight:600;color:#fff;background:rgba(40,40,44,.6);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 .b2name .chev{width:7px;height:12px;opacity:.7}
