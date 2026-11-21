@@ -597,3 +597,25 @@ body::before{display:none}
 body.gpon .sheet .sbody{padding-bottom:350px}
 body.gpon #main{padding-bottom:420px}
 .kp-info b{color:var(--text);font-weight:600}
+
+/* ===== v3.4 ===== */
+/* hidden panels sit fully off screen and are invisible (no peeking at the bottom) */
+.dlg .dc{transform:translateY(calc(100% + var(--sab) + 80px))}
+.dlg:not(.on) .dc{visibility:hidden;transition:transform .35s var(--ease),visibility 0s .35s}
+.kp{transform:translateY(calc(100% + 60px))}
+.kp:not(.on){visibility:hidden;transition:transform .28s var(--ease),visibility 0s .28s}
+.sheet{transform:translateY(calc(100% + 60px))}
+.sheet:not(.on){visibility:hidden;transition:transform .42s var(--ease),visibility 0s .42s}
+/* header same colour as the status bar: no second band at the top */
+.head{background:var(--bg)}
+/* tab bar sits lower, like the real app */
+#tabs{padding:6px 6px max(6px, calc(var(--sab) - 16px))}
+#mini{bottom:calc(max(6px, var(--sab) - 16px) + 74px)}
+#main{padding-bottom:calc(var(--sab) + 100px)}
+#page .body-pad{padding-bottom:calc(var(--sab) + 40px)}
+/* ticks centred in every box */
+.fixrow .cb,.wrow .cb,span.cb{display:grid!important;place-items:center;margin-top:0;padding:0}
+.cb svg{display:block}
+.fixrow .cb{width:26px;height:26px}
+.st.done .thumb.word{color:transparent}
+.auto{white-space:nowrap}

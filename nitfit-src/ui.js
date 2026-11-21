@@ -128,6 +128,13 @@ function muscleThumb(m) { const v = MUSCLE_VIEW[m] || ["front", "up"], lv = {}; 
 
 const shortName = id => { let n = ((getEx(id) || {}).n || "").split(",")[0].trim(); const t = n.replace(/^(Dumbbell|Barbell|Cable|Machine|Smith|Standing|Seated|One-arm|Chest-supported|Weighted|Single-arm)\s+/i, ""); if (t.split(" ").length >= 2) n = t; n = n.charAt(0).toUpperCase() + n.slice(1); return n.length > 13 ? n.slice(0, 12) + "…" : n; };
 function rirFor(ex, it, week, n) { const d = rirTargets(ex, it, week, n); if (it.rirs) for (let k = 0; k < n; k++) if (it.rirs[k] != null) d[k] = it.rirs[k]; return d; }
+// first-time starting weights (kg; dumbbells are per hand). Light on purpose: week 1 and 2 stop with 3 reps left.
+const START = { squat: 40, smith_squat: 30, leg_press: 60, leg_press_high: 50, bulgarian: 8, leg_ext: 25, leg_curl: 25, rdl: 40, good_morning: 20, hip_thrust: 40, abductor: 30, calf_standing: 30, calf_seated: 20, lunge: 8, neck_flex: 5, neck_side: 2.5,
+  inc_smith_press: 30, inc_db_press: 14, flat_db_press: 16, mach_inc_press: 30, mach_inc_fly: 25, cable_fly_low: 7.5, pec_deck: 25, flat_smith: 35, preacher_curl: 8, incline_curl: 7.5, db_curl: 10, rope_hammer: 15, cable_curl: 15, hammer_curl: 10,
+  tri_overhead: 15, tri_pushdown: 20, rope_pushdown: 17.5, skullcrusher: 8, reverse_curl: 6, wrist_curl: 8, pulldown: 40, pulldown_close: 40, rope_pullover: 15, chest_sup_row: 14, cable_row: 40, db_row: 18, straight_arm: 15, y_raise: 2.5, shrug: 16,
+  cable_ohp_1arm: 7.5, bb_ohp: 25, db_ohp: 12, cable_lat_raise: 5, db_lat_raise: 6, rev_pec_deck: 20, face_pull: 15, cable_crunch: 25 };
+// how many reps you can do at kg, leaving rir in the tank, from a set you already did (Epley)
+function repsAt(kg, ref, refRir, rir) { if (!kg || !ref.kg) return null; const e1 = ref.kg * (1 + (ref.reps + refRir) / 30); return Math.floor(30 * (e1 / kg - 1) + 0.25) - rir; }
 // ----- targets for the live workout -----
 const TGT = {};
 function rowsFor(sess, i) {
@@ -136,17 +143,32 @@ function rowsFor(sess, i) {
   const week = programWeek(sess.d), rirT = rirFor(ex, it, week, it.n);
   if (!TGT[key]) {
     const prev = lastFinishedBefore(sess.d), gap = prev ? daysBetween(prev.d, sess.d) : 0;
-    TGT[key] = smartTarget(ex, histFor(it.ex, sess.id), { sets: it.n, gap, easy: week <= 2, light: !!it.light });
+    let b = smartTarget(ex, histFor(it.ex, sess.id), { sets: it.n, gap, easy: week <= 2, light: !!it.light });
+    if (b.kg == null && ex.eq !== "bw" && START[it.ex]) b = Object.assign({}, b, { kg: START[it.ex], guess: true, reason: "First time on this one. Start at " + fmtKg(START[it.ex]) + " kg" + (ex.eq === "db" ? " in each hand" : "") + ". If that is clearly too light or too heavy, type what you really used and the next sets fix themselves." });
+    TGT[key] = b;
   }
   const base = TGT[key], logged = loggedByIdx(sess, it.ex);
   const live = liveRows(ex, base, logged, rirT);
   if (!setOn("smart")) { live.rows.forEach(r => { if (!r.done) { r.kg = base.kg; r.adjusted = false; } }); live.events = []; }
   if (it.rr) live.rows.forEach((r, k) => { if (it.rr[k]) { r.lo = it.rr[k][0]; r.hi = it.rr[k][1]; } });
+  // exact reps for every set still to do
+  const done = Object.values(logged).filter(x => x.reps > 0).sort((a, b) => a.idx - b.idx), ref = done[done.length - 1];
+  live.rows.forEach((r, k) => {
+    if (r.done) { const st = logged[k]; if (st && st.tReps != null) { r.reps = st.tReps; if (st.tKg != null) r.kg = st.tKg; } return; }
+    let n = null;
+    if (ref) {
+      const refRir = ref.rir != null ? ref.rir : (rirT[ref.idx] != null ? rirT[ref.idx] : 2), extra = Math.floor(Math.max(0, k - ref.idx - 1) / 2);
+      n = ex.eq === "bw" || !r.kg ? ref.reps + (refRir - r.rir) - extra : repsAt(r.kg, ref, refRir, r.rir);
+      if (n != null) n -= ex.eq === "bw" || !r.kg ? 0 : extra;
+    } else if (r.reps != null) n = r.reps;
+    if (n == null) n = Math.round((r.lo + r.hi) / 2);
+    r.reps = Math.max(r.lo, Math.min(r.hi, n));
+  });
   return { ex, base, rirT, logged, rows: live.rows, events: live.events };
 }
 function loggedByIdx(sess, exId) { const out = {}; sessionSets(sess.id).filter(x => x.exId === exId).forEach(x => { out[x.idx] = x; }); return out; }
 function warmLogged(sess, exId) { const out = {}; sessionAllSets(sess.id).filter(x => x.exId === exId && x.w).forEach(x => { out[x.idx] = x; }); return out; }
-const autoTxt = (r, ex) => { const rr = r.lo === r.hi ? r.lo : r.lo + "-" + r.hi; return r.kg ? fmtKg(r.kg) + " kg × " + rr : rr + (ex.t ? " sec" : " reps"); };
+const autoTxt = (r, ex) => (r.kg ? fmtKg(r.kg) + " kg × " : "") + (r.reps != null ? r.reps : (r.lo === r.hi ? r.lo : r.lo + "-" + r.hi)) + (r.kg ? "" : ex.t ? " sec" : " reps");
 
 // ===== render =====
 function blurAll() { const a = document.activeElement; if (a && a !== document.body && a.blur && !(a.closest && a.closest("#sheet"))) a.blur(); }
@@ -419,7 +441,6 @@ function vExPage(s, i) {
     + '<button class="pl" data-a="swapEx" data-i="' + i + '">' + I.swap + "Swap</button>"
     + '<button class="pl" data-a="exOpts" data-i="' + i + '">' + I.kebab + "</button></div>";
   const allDone = nLogged >= it.n;
-  h += tip("logging", "How to log a set", "Grey numbers are what the app wants you to do. Tap kg or reps to type something different. Tap the coloured badge for reps in reserve. Tick the box when the set is done and the rest timer starts.");
   h += '<div class="tbl"><div class="th"><span>Set</span><span>Auto ' + I.swap + "</span><span>" + (bw ? "" : "kg") + "</span><span>" + (ex.t ? "Sec" : "Reps") + '</span><button class="cb hcb' + (allDone ? " on" : "") + '" data-a="logAll" data-i="' + i + '" aria-label="Log all sets">' + I.tick + "</button></div>";
   if (warm) wsets.forEach((w, k) => {
     const st = wl[k];
@@ -471,8 +492,7 @@ ACT.tick = el => {
     LOGI = n < 0 ? s.items.length : n; toast(n < 0 ? "All exercises done. Cool down next." : "Next: " + (getEx(s.items[n].ex) || {}).n);
     $("#page").scrollTop = 0; renderPage(); return;
   }
-  renderPage(true);
-  const R2 = rowsFor(s, i), ev = R2.events[R2.events.length - 1]; if (ev && ev.k === k) toast(ev.to > ev.from ? "Too easy, next sets go up" : "Too hard, next sets go down");
+  renderPage(true); nextToast(s, i, k);
 };
 function fillSets(s, i) {
   const R = rowsFor(s, i); if (!R) return 0; const it = s.items[i], ex = R.ex; let n = 0;
@@ -485,6 +505,11 @@ function fillSets(s, i) {
     addEvent("set.logged", { sessionId: s.id, exId: it.ex, item: i, idx: k, kg, reps: Math.round(reps), p: Math.max(0, Math.round(numIn(dr.p) || 0)), rir, tKg: r.kg, tReps: r.reps, tRir: r.rir, q: "clean" }); n++;
   });
   return n;
+}
+function nextToast(s, i, k) {
+  const R2 = rowsFor(s, i), nx = R2.rows.find(r => !r.done), ev = R2.events[R2.events.length - 1]; if (!nx) return;
+  const what = (nx.kg ? fmtKg(nx.kg) + " kg × " : "") + nx.reps + (nx.kg ? "" : " reps") + ", " + nx.rir + " left in the tank";
+  toast(ev && ev.k === k ? (ev.to > ev.from ? "Too easy. Next set: " : "Too hard. Next set: ") + what : "Next set: " + what);
 }
 ACT.logAll = el => { if (KP) kpCommit(); const s = activeSession(), i = +el.dataset.i, n = fillSets(s, i); haptic(); if (!n) toast(exDone(s, i) ? "All sets are logged" : "Type the weight first"); else if (setOn("restOn")) startRest(s.items[i].rest || (getEx(s.items[i].ex) || {}).rest || 90); renderPage(true); };
 document.addEventListener("change", e => {
@@ -865,10 +890,16 @@ function kpOpen(i, k, f) {
   if (KP) kpCommit();
   const s = activeSession(); if (!s) return;
   KP = { i, k, f: f === "kg" && (getEx(s.items[i].ex) || {}).eq === "bw" ? "reps" : f, buf: "", typed: false };
-  document.body.classList.add("kpon"); renderPage(true); paintKp();
-  const row = $('.tr[data-i="' + i + '"][data-k="' + k + '"]'); if (row) row.scrollIntoView({ block: "center", behavior: "smooth" });
+  document.body.classList.add("kpon"); renderPage(true); paintKp(); kpReveal();
 }
 ACT.kpOpen = el => { haptic(); kpOpen(+el.dataset.i, +el.dataset.k, el.dataset.f); };
+function kpReveal() {
+  requestAnimationFrame(() => setTimeout(() => {
+    if (!KP) return; const row = $('.tr[data-i="' + KP.i + '"][data-k="' + KP.k + '"]'), pg = $("#page"), kp = $("#kp"), top = $(".lg-top"); if (!row) return;
+    const rb = row.getBoundingClientRect(), limit = window.innerHeight - kp.offsetHeight - 12, head = top ? top.getBoundingClientRect().bottom + 8 : 0;
+    if (rb.bottom > limit) pg.scrollTo({ top: pg.scrollTop + rb.bottom - limit, behavior: "smooth" }); else if (rb.top < head) pg.scrollTo({ top: pg.scrollTop - (head - rb.top), behavior: "smooth" });
+  }, 60));
+}
 function kpCommit() {
   if (!KP || !KP.typed || KP.f === "rir") return;
   const c = kpCtx(), v = KP.buf;
@@ -942,7 +973,7 @@ ACT.kpRir = el => {
 };
 ACT.kpGo = () => {
   if (!KP) return; const c = kpCtx();
-  if (KP.f === "kg") { kpCommit(); KP = { i: KP.i, k: KP.k, f: "reps", buf: "", typed: false }; renderPage(true); paintKp(); return; }
+  if (KP.f === "kg") { kpCommit(); KP = { i: KP.i, k: KP.k, f: "reps", buf: "", typed: false }; renderPage(true); paintKp(); kpReveal(); return; }
   kpCommit();
   if (c.st) { kpClose(true); renderPage(true); return; }
   const btn = $('.tr[data-i="' + KP.i + '"][data-k="' + KP.k + '"] [data-a="tick"]'); const i = KP.i, k = KP.k;
