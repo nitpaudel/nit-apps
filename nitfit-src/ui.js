@@ -119,8 +119,8 @@ function lastFinishedBefore(d) { const l = sessionsSorted().filter(s => s.endTs 
 const doneOn = d => sessionsSorted().some(s => s.d === d && s.endTs && sessionSets(s.id).length);
 
 // thumbnails: the body map, cropped, with the exercise's muscles lit up
-function thumbFor(exId) { return '<img class="ti" loading="lazy" decoding="async" alt="" src="thumbs-v2/e-' + exId + '.webp">'; }
-function muscleThumb(m) { return '<img class="ti" loading="lazy" decoding="async" alt="" src="thumbs-v2/m-' + encodeURIComponent(m) + '.webp">'; }
+function thumbFor(exId) { return '<img class="ti" loading="lazy" decoding="async" alt="" src="thumbs-v3/e-' + exId + '.webp">'; }
+function muscleThumb(m) { return '<img class="ti" loading="lazy" decoding="async" alt="" src="thumbs-v3/m-' + encodeURIComponent(m) + '.webp">'; }
 
 const shortName = id => { let n = ((getEx(id) || {}).n || "").split(",")[0].trim(); const t = n.replace(/^(Dumbbell|Barbell|Cable|Machine|Smith|Standing|Seated|One-arm|Chest-supported|Weighted|Single-arm)\s+/i, ""); if (t.split(" ").length >= 2) n = t; n = n.charAt(0).toUpperCase() + n.slice(1); return n.length > 13 ? n.slice(0, 12) + "…" : n; };
 function rirFor(ex, it, week, n) { const d = rirTargets(ex, it, week, n); if (it.rirs) for (let k = 0; k < n; k++) if (it.rirs[k] != null) d[k] = it.rirs[k]; return d; }
@@ -757,7 +757,7 @@ ACT.infoSheet = el => {
   let h = '<div class="ptabs sheet-tabs">' + ["Instructions", "Details", "History"].map(t => '<button class="' + (t === INFOTAB ? "on" : "") + '" data-a="infoSheet" data-tab="' + t + '">' + t + "</button>").join("") + "</div>";
   if (INFOTAB === "Instructions") {
     const v = MUSCLE_VIEW[tags[0]] || ["front"], lv = {}; tags.forEach((m, k) => lv[m] = k ? 0.4 : 1);
-    h += '<div class="infobody"><img class="ti" alt="" src="thumbs-v2/e-' + id + '.webp"></div>';
+    h += '<div class="infobody"><img class="ti" alt="" src="thumbs-v3/e-' + id + '.webp"></div>';
     h += '<div class="cue" style="margin-top:14px"><b>How to:</b> ' + esc(e.cue) + "</div>";
     h += '<div class="kv"><span>Rep range</span><b>' + e.r[0] + "-" + e.r[1] + (e.t ? " sec" : " reps") + (e.each ? " each side" : "") + '</b></div><div class="kv"><span>Rest</span><b>' + fmtRest(e.rest) + "</b></div>";
   } else if (INFOTAB === "Details") {
@@ -883,86 +883,73 @@ function levelMap() { const mv = muscleSets(7 * LVRANGE, today()), lv = {}; ALL_
 function vLevels() {
   const { mv } = levelMap(), any = Object.keys(mv).length;
   let h = head("Levels") + "</div><div class='body-pad'>";
-  h += '<div class="b3w"><div id="b3slot" class="b3slot"></div>' + (any ? "" : '<div class="lvempty2">Finish workouts to see your Set Levels</div>')
-    + '<button class="ib b3home" data-a="b3Home" aria-label="Reset view">' + I.rotate + '</button><div class="b3hint" id="b3hint">Swipe to turn · pinch to zoom · tap a muscle</div><div class="b3card" id="b3card" hidden></div></div>';
+  h += '<div class="b3w"><div id="b3slot" class="b3slot"></div><button class="ib b3home" data-a="b3Home" aria-label="Reset view">' + I.rotate + "</button></div>";
   h += '<div class="legend"><i></i>Average weekly sets over <button data-a="lvRange">' + LVRANGE + "-week " + I.down + "</button></div>";
   ["Upper", "Lower"].forEach(g => {
     h += "<h2>" + g + ' Body Levels</h2><div class="card">' + MUSCLE_GROUPS[g].map(m => { const v = (mv[m] || 0) / LVRANGE; return '<button class="lvrow press" data-a="muscle" data-m="' + esc(m) + '"><div class="thumb">' + muscleThumb(m) + '</div><div class="m"><b>' + esc(m) + "</b><span>" + fmtKg(Math.round(v * 10) / 10) + " sets</span></div></button>"; }).join("") + "</div>";
   });
   return h + "</div>";
 }
-// ---- the body: 4 painted views (front, side, back, side). One element, moved into the Levels tab each time it is drawn ----
-const BV = ["front", "faceleft", "back", "faceright"], BMW = 750, BMH = 1536, BCOL = ["Chest", "Upper Back", "Lats", "Traps", "Front Delts", "Side Delts", "Rear Delts", "Biceps", "Triceps", "Forearms", "Neck", "Abs", "Obliques", "Lower Back", "Glutes", "Quads", "Hamstrings", "Adductors", "Calves"];
-const B2 = { el: null, maps: {}, pos: 0, z: 1, px: 0, py: 0, sel: null, lv: {}, urls: {}, ready: false, anim: 0 };
+// ---- the body: 4 painted views (front, side, back, side). Red by default; the tapped muscle turns blue.
+// No canvas pixel reads anywhere (iPhone adds noise to those): tap maps come as small run-length files, masks as PNGs.
+const BV = ["front", "faceleft", "back", "faceright"], BMW = 750, BMH = 1536, BDIR = "body-v3/";
+const BOPEN = { "Upper Chest": "Chest", "Mid Chest": "Chest", "Lower Chest": "Chest", "Outer Calf": "Calves", "Inner Calf": "Calves", Abductors: "Glutes" };
+const B2 = { el: null, maps: {}, G: null, pos: 0, z: 1, px: 0, py: 0, sel: null, anim: 0, live: false };
 function attachBody2d() {
   const slot = $("#b3slot"); if (!slot) return;
   if (!B2.el) b2Build();
-  slot.appendChild(B2.el); B2.lv = levelMap().lv; b2Layout(); b2Paint(); if (B2.ready) BV.forEach(b2Mask);
+  slot.appendChild(B2.el); b2Layout(); b2Name();
 }
 function b2Build() {
   const el = B2.el = document.createElement("div"); el.className = "b2";
-  el.innerHTML = '<div class="b3load"><i></i>Loading body...</div><div class="b2stage">' + BV.map(v => '<div class="b2v" data-v="' + v + '"><img class="b2base" alt="" draggable="false" src="body-v2/' + v + '.webp"><img class="b2hi" alt="" draggable="false" src="body-v2/' + v + '.webp"><img class="b2pick" alt="" draggable="false" src="body-v2/' + v + '.webp"><canvas class="b2line" width="' + BMW + '" height="' + BMH + '"></canvas></div>').join("") + '</div><div class="b2dots">' + BV.map(() => "<i></i>").join("") + "</div>";
-  const first = $(".b2v[data-v=front] .b2base", el);
-  first.decode ? first.decode().then(() => { const l = $(".b3load", el); if (l) l.remove(); }).catch(() => {}) : 0;
-  first.addEventListener("load", () => { const l = $(".b3load", el); if (l) l.remove(); });
-  Promise.all(BV.map(v => new Promise((ok, no) => { const im = new Image(); im.onload = () => {
-    const c = document.createElement("canvas"); c.width = BMW; c.height = BMH; const x = c.getContext("2d"); x.drawImage(im, 0, 0);
-    const d = x.getImageData(0, 0, BMW, BMH).data, L = new Uint8Array(BMW * BMH); for (let i = 0; i < L.length; i++) L[i] = d[i * 4];
-    B2.maps[v] = L; ok();
-  }; im.onerror = no; im.src = "body-v2/" + v + "-map.png"; }))).then(() => { B2.ready = true; BV.forEach(b2Mask); if (B2.sel) b2Select(B2.sel, true); }).catch(e => console.error(e));
+  el.innerHTML = '<div class="b3load"><i></i>Loading body...</div><div class="b2stage">' + BV.map(v => '<div class="b2v" data-v="' + v + '"><img class="b2base" alt="" draggable="false" src="' + BDIR + v + '.webp"><img class="b2pick" alt="" draggable="false" src="' + BDIR + v + '-blue.webp"></div>').join("") + '</div><div class="b2dots">' + BV.map(() => "<i></i>").join("") + '</div><button class="b2name" data-a="b2Open" hidden></button>';
+  const first = $(".b2v[data-v=front] .b2base", el), done = () => { const l = $(".b3load", el); if (l) l.remove(); };
+  if (first.complete) done(); else first.addEventListener("load", done);
+  fetch(BDIR + "info.json").then(r => r.json()).then(info => {
+    B2.G = info.G;
+    return Promise.all(BV.map(v => fetch(BDIR + v + ".bin").then(r => r.arrayBuffer()).then(buf => {
+      const b = new Uint8Array(buf), L = new Uint8Array(BMW * BMH); let p = 0;
+      for (let i = 0; i + 2 < b.length; i += 3) { const lab = b[i], n = b[i + 1] | (b[i + 2] << 8); if (lab) L.fill(lab, p, p + n); p += n; }
+      B2.maps[v] = L;
+    })));
+  }).catch(e => console.error(e));
   b2Gestures(el);
   new ResizeObserver(() => b2Layout()).observe(el);
 }
-// size the stage so the whole body fits, centred
 function b2Layout() {
   const el = B2.el; if (!el || !el.isConnected) return; const W = el.clientWidth, H = el.clientHeight; if (!W || !H) return;
-  const T = 62, Bt = 58, h = H - T - Bt, w = h * 1500 / 3072, st = $(".b2stage", el);
-  st.style.width = w + "px"; st.style.height = h + "px"; st.style.left = (W - w) / 2 + "px"; st.style.top = T + "px";
-  B2.W = W; B2.H = H; B2.bw = w; B2.bh = h; b2Paint();
+  const T = 20, Bt = 46; B2.W = W; B2.H = H; B2.bh = H - T - Bt; B2.bw = B2.bh * 1500 / 3072; B2.T = T; b2Paint();
 }
-// draw the current turn position, zoom and pan
+// while a finger is on the screen the stage is scaled with a transform (fast); when it lifts, the real size is set so the picture redraws sharp
 function b2Paint() {
-  const el = B2.el; if (!el) return; const n = BV.length, p = ((B2.pos % n) + n) % n, i0 = Math.floor(p), f = p - i0, i1 = (i0 + 1) % n;
+  const el = B2.el; if (!el || !B2.W) return; const n = BV.length, p = ((B2.pos % n) + n) % n, i0 = Math.floor(p), f = p - i0, i1 = (i0 + 1) % n;
+  const sm = t => t * t * (3 - 2 * t);
   $$(".b2v", el).forEach((v, i) => {
     let o = 0, dx = 0, sx = 1;
-    const sm = t => t * t * (3 - 2 * t);
     if (i === i0) { o = sm(Math.max(0, Math.min(1, (1 - f) * 1.6 - 0.3))); dx = -f * 30; sx = 1 - f * 0.1; } else if (i === i1 && f > 0) { o = sm(Math.max(0, Math.min(1, f * 1.6 - 0.3))); dx = (1 - f) * 30; sx = 1 - (1 - f) * 0.1; }
-    v.style.opacity = o; v.style.visibility = o > 0.001 ? "visible" : "hidden"; v.style.transform = "translateX(" + dx + "px) scaleX(" + sx + ")";
+    v.style.opacity = o; v.style.visibility = o > 0.001 ? "visible" : "hidden"; v.style.transform = dx || sx !== 1 ? "translateX(" + dx + "px) scaleX(" + sx + ")" : "";
   });
-  $(".b2stage", el).style.transform = "translate(" + B2.px + "px," + B2.py + "px) scale(" + B2.z + ")";
+  const st = $(".b2stage", el), cx = B2.W / 2 + B2.px, cy = B2.T + B2.bh / 2 + B2.py;
+  if (B2.live) { st.style.width = B2.bw + "px"; st.style.height = B2.bh + "px"; st.style.left = (B2.W - B2.bw) / 2 + "px"; st.style.top = B2.T + "px"; st.style.transform = "translate(" + B2.px + "px," + B2.py + "px) scale(" + B2.z + ")"; }
+  else { const w = B2.bw * B2.z, h = B2.bh * B2.z; st.style.transform = ""; st.style.width = w + "px"; st.style.height = h + "px"; st.style.left = cx - w / 2 + "px"; st.style.top = cy - h / 2 + "px"; }
   const cur = Math.round(p) % n; $$(".b2dots i", el).forEach((d, i) => d.classList.toggle("on", i === cur));
   el.classList.toggle("zoomed", B2.z > 1.01);
 }
-// trained muscles show in full colour, the rest stays dim
-function b2Mask(v) {
-  const L = B2.maps[v]; if (!L) return; const c = document.createElement("canvas"); c.width = BMW; c.height = BMH; const x = c.getContext("2d"), img = x.createImageData(BMW, BMH), d = img.data;
-  const a = BCOL.map(m => { const l = B2.lv[m] || 0; return l > 0 ? Math.round((0.5 + 0.5 * l) * 255) : 0; });
-  for (let i = 0; i < L.length; i++) { const g = L[i]; if (g) { const k = i * 4; d[k] = d[k + 1] = d[k + 2] = 255; d[k + 3] = a[g - 1]; } }
-  x.putImageData(img, 0, 0);
-  c.toBlob(b => { const u = URL.createObjectURL(b), hi = $('.b2v[data-v="' + v + '"] .b2hi', B2.el); if (B2.urls[v]) URL.revokeObjectURL(B2.urls[v]); B2.urls[v] = u; hi.style.webkitMaskImage = hi.style.maskImage = "url(" + u + ")"; });
-}
-// the tapped muscle: full colour, a touch brighter, with a blue outline
-function b2Select(g, quiet) {
-  B2.sel = g; const gi = g ? BCOL.indexOf(g) + 1 : 0;
+function b2Select(g) {
+  B2.sel = g; const G = B2.G || [], gi = g ? G.indexOf(g) + 1 : 0;
   BV.forEach(v => {
-    const box = $('.b2v[data-v="' + v + '"]', B2.el), pk = $(".b2pick", box), ln = $(".b2line", box), x = ln.getContext("2d"); x.clearRect(0, 0, BMW, BMH);
-    const L = B2.maps[v]; if (!gi || !L) { pk.style.opacity = 0; return; }
-    const m = document.createElement("canvas"); m.width = BMW; m.height = BMH; const mx = m.getContext("2d"), mi = mx.createImageData(BMW, BMH), md = mi.data;
-    const li = x.createImageData(BMW, BMH), ld = li.data, R = 3;
-    for (let y = 0; y < BMH; y++) for (let xx = 0; xx < BMW; xx++) {
-      const i = y * BMW + xx; if (L[i] !== gi) continue; md[i * 4 + 3] = 255;
-      if (xx < R || y < R || xx >= BMW - R || y >= BMH - R || L[i - R] !== gi || L[i + R] !== gi || L[i - R * BMW] !== gi || L[i + R * BMW] !== gi) { const k = i * 4; ld[k] = 110; ld[k + 1] = 170; ld[k + 2] = 255; ld[k + 3] = 255; }
-    }
-    mx.putImageData(mi, 0, 0); x.putImageData(li, 0, 0);
-    m.toBlob(b => { const u = URL.createObjectURL(b); if (pk._u) URL.revokeObjectURL(pk._u); pk._u = u; pk.style.webkitMaskImage = pk.style.maskImage = "url(" + u + ")"; pk.style.opacity = 1; });
+    const pk = $('.b2v[data-v="' + v + '"] .b2pick', B2.el), has = gi && B2.maps[v] && B2.maps[v].indexOf(gi) >= 0;
+    if (!has) { pk.classList.remove("on"); return; }
+    const u = "url(" + BDIR + "m/" + v + "-" + gi + ".png)"; pk.style.webkitMaskImage = pk.style.maskImage = u; pk.classList.add("on");
   });
-  if (!quiet) b3Pick(g ? { group: g } : null);
+  b2Name();
 }
+function b2Name() { const b = B2.el && $(".b2name", B2.el); if (!b) return; b.hidden = !B2.sel; if (B2.sel) b.innerHTML = esc(B2.sel) + I.chev; }
 function b2Hit(cx, cy) {
-  const n = BV.length, v = BV[Math.round(((B2.pos % n) + n) % n) % n], L = B2.maps[v]; if (!L) return null;
+  const n = BV.length, v = BV[Math.round(((B2.pos % n) + n) % n) % n], L = B2.maps[v]; if (!L || !B2.G) return null;
   const r = $('.b2v[data-v="' + v + '"]', B2.el).getBoundingClientRect(), X = Math.floor((cx - r.left) / r.width * BMW), Y = Math.floor((cy - r.top) / r.height * BMH);
-  for (let rad = 0; rad <= 14; rad += 2) for (let dy = -rad; dy <= rad; dy += 2) for (let dx = -rad; dx <= rad; dx += 2) {
-    const x = X + dx, y = Y + dy; if (x < 0 || y < 0 || x >= BMW || y >= BMH) continue; const g = L[y * BMW + x]; if (g) return BCOL[g - 1];
+  for (let rad = 0; rad <= 10; rad += 2) for (let dy = -rad; dy <= rad; dy += 2) for (let dx = -rad; dx <= rad; dx += 2) {
+    const x = X + dx, y = Y + dy; if (x < 0 || y < 0 || x >= BMW || y >= BMH) continue; const g = L[y * BMW + x]; if (g) return B2.G[g - 1];
   }
   return null;
 }
@@ -972,22 +959,22 @@ function b2Clamp() {
   if (B2.z <= 1.001) { B2.px = 0; B2.py = 0; } else { B2.px = Math.max(-mx, Math.min(mx, B2.px)); B2.py = Math.max(-my, Math.min(my, B2.py)); }
 }
 function b2Animate(to, ms) {
-  cancelAnimationFrame(B2.anim); const from = { pos: B2.pos, z: B2.z, px: B2.px, py: B2.py }, t0 = performance.now(), e = t => 1 - Math.pow(1 - t, 3);
-  const step = now => { const t = Math.min(1, (now - t0) / ms), k = e(t); for (const key in to) B2[key] = from[key] + (to[key] - from[key]) * k; b2Paint(); if (t < 1) B2.anim = requestAnimationFrame(step); else { B2.pos = ((Math.round(B2.pos) % 4) + 4) % 4; b2Paint(); } };
+  cancelAnimationFrame(B2.anim); B2.live = true; const from = { pos: B2.pos, z: B2.z, px: B2.px, py: B2.py }, t0 = performance.now(), e = t => 1 - Math.pow(1 - t, 3);
+  const step = now => { const t = Math.min(1, (now - t0) / ms), k = e(t); for (const key in to) B2[key] = from[key] + (to[key] - from[key]) * k; b2Paint(); if (t < 1) B2.anim = requestAnimationFrame(step); else { B2.pos = ((Math.round(B2.pos) % 4) + 4) % 4; B2.live = false; b2Paint(); } };
   B2.anim = requestAnimationFrame(step);
 }
-// zoom so the point under the finger stays put
 function b2ZoomAt(cx, cy, z) {
-  const r = B2.el.getBoundingClientRect(), ox = cx - r.left - B2.W / 2, oy = cy - r.top - (62 + B2.bh / 2), k = z / B2.z;
+  const r = B2.el.getBoundingClientRect(), ox = cx - r.left - B2.W / 2, oy = cy - r.top - (B2.T + B2.bh / 2), k = z / B2.z;
   B2.px = ox - (ox - B2.px) * k; B2.py = oy - (oy - B2.py) * k; B2.z = z;
 }
 function b2Gestures(el) {
-  const P = new Map(); let mode = null, sx = 0, sy = 0, st = 0, spos = 0, lastX = 0, lastT = 0, vel = 0, pinch = null, lastTap = 0, tapX = 0, tapY = 0;
+  const P = new Map(); let mode = null, sx = 0, sy = 0, st = 0, spos = 0, lastX = 0, lastY = 0, lastT = 0, vel = 0, pinch = null, lastTap = 0, tapX = 0, tapY = 0;
+  const settle = () => { B2.live = false; b2Paint(); };
   el.addEventListener("pointerdown", e => {
     if (e.target.closest("button")) return; cancelAnimationFrame(B2.anim);
     P.set(e.pointerId, { x: e.clientX, y: e.clientY }); try { el.setPointerCapture(e.pointerId); } catch (_) {}
-    if (P.size === 1) { mode = "maybe"; sx = lastX = e.clientX; sy = e.clientY; st = lastT = performance.now(); spos = B2.pos; vel = 0; }
-    else if (P.size === 2) { const [a, b] = [...P.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), z: B2.z, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 }; mode = "pinch"; if (Math.abs(B2.pos - Math.round(B2.pos)) > 0.001) { B2.pos = Math.round(B2.pos) % 4; b2Paint(); } }
+    if (P.size === 1) { mode = "maybe"; sx = lastX = e.clientX; sy = lastY = e.clientY; st = lastT = performance.now(); spos = B2.pos; vel = 0; }
+    else if (P.size === 2) { const [a, b] = [...P.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), z: B2.z, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 }; mode = "pinch"; B2.live = true; if (Math.abs(B2.pos - Math.round(B2.pos)) > 0.001) B2.pos = Math.round(B2.pos) % 4; b2Paint(); }
   });
   el.addEventListener("pointermove", e => {
     if (!P.has(e.pointerId)) return; P.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -997,36 +984,32 @@ function b2Gestures(el) {
       b2ZoomAt(mx, my, Math.max(0.85, Math.min(4.5, pinch.z * d / pinch.d))); b2Paint(); e.preventDefault(); return;
     }
     const dx = e.clientX - sx, dy = e.clientY - sy;
-    if (mode === "maybe" && Math.hypot(dx, dy) > 8) mode = B2.z > 1.01 ? "pan" : Math.abs(dx) > Math.abs(dy) ? "turn" : "scroll";
+    if (mode === "maybe" && Math.hypot(dx, dy) > 8) { mode = B2.z > 1.01 ? "pan" : Math.abs(dx) > Math.abs(dy) ? "turn" : "scroll"; if (mode !== "scroll") B2.live = true; }
     const now = performance.now();
     if (mode === "turn") { B2.pos = spos - dx / (B2.W * 0.55); if (now > lastT) vel = (e.clientX - lastX) / (now - lastT); lastX = e.clientX; lastT = now; b2Paint(); e.preventDefault(); }
-    else if (mode === "pan") { B2.px += e.clientX - lastX; B2.py += e.clientY - (B2._ly || sy); lastX = e.clientX; B2._ly = e.clientY; b2Clamp(); b2Paint(); e.preventDefault(); }
+    else if (mode === "pan") { B2.px += e.clientX - lastX; B2.py += e.clientY - lastY; lastX = e.clientX; lastY = e.clientY; b2Clamp(); b2Paint(); e.preventDefault(); }
   });
   const end = e => {
     if (!P.has(e.pointerId)) return; P.delete(e.pointerId); const was = mode;
-    if (was === "pinch") { if (P.size === 1) { const [a] = [...P.values()]; mode = "pan"; lastX = a.x; B2._ly = a.y; sx = a.x; sy = a.y; return; } if (B2.z < 1.05) b2Animate({ z: 1, px: 0, py: 0 }, 220); else { const z = Math.min(4, B2.z); b2Clamp(); B2.z = z; b2Paint(); } mode = null; return; }
-    if (P.size) return; mode = null; B2._ly = 0;
+    if (was === "pinch") { if (P.size === 1) { const [a] = [...P.values()]; mode = "pan"; lastX = a.x; lastY = a.y; return; } if (B2.z < 1.05) b2Animate({ z: 1, px: 0, py: 0 }, 220); else { b2Clamp(); settle(); } mode = null; return; }
+    if (P.size) return; mode = null;
     if (was === "turn") { let tgt = Math.round(B2.pos); if (Math.abs(vel) > 0.35) tgt = vel < 0 ? Math.floor(B2.pos) + 1 : Math.ceil(B2.pos) - 1; if (Math.abs(tgt - spos) > 1) tgt = spos + Math.sign(tgt - spos); b2Animate({ pos: tgt }, 260); haptic(); return; }
+    if (was === "pan") { settle(); return; }
     if (was === "maybe" && e.type === "pointerup" && performance.now() - st < 400) {
       const now = performance.now();
-      if (now - lastTap < 320 && Math.hypot(e.clientX - tapX, e.clientY - tapY) < 30) { lastTap = 0; if (B2.z > 1.01) b2Animate({ z: 1, px: 0, py: 0 }, 260); else { const z0 = B2.z, px0 = B2.px, py0 = B2.py; b2ZoomAt(e.clientX, e.clientY, 2.4); b2Clamp(); const to = { z: B2.z, px: B2.px, py: B2.py }; B2.z = z0; B2.px = px0; B2.py = py0; b2Animate(to, 260); } return; }
+      if (now - lastTap < 300 && Math.hypot(e.clientX - tapX, e.clientY - tapY) < 30) { lastTap = 0; if (B2.z > 1.01) b2Animate({ z: 1, px: 0, py: 0 }, 260); else { const z0 = B2.z, px0 = B2.px, py0 = B2.py; b2ZoomAt(e.clientX, e.clientY, 2.4); b2Clamp(); const to = { z: B2.z, px: B2.px, py: B2.py }; B2.z = z0; B2.px = px0; B2.py = py0; b2Animate(to, 260); } return; }
       lastTap = now; tapX = e.clientX; tapY = e.clientY;
-      const g = b2Hit(e.clientX, e.clientY); b2Select(g === B2.sel ? null : g);
+      const g = b2Hit(e.clientX, e.clientY);
+      if (g && g === B2.sel) { ACT.b2Open(); return; }  // second tap on the blue muscle opens it
+      if (g) haptic(); b2Select(g);
     }
   };
   el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
-  // keep iPhone from zooming the whole page when pinching the body
   ["gesturestart", "gesturechange"].forEach(t => el.addEventListener(t, e => e.preventDefault()));
   el.addEventListener("touchmove", e => { if (e.touches.length > 1 || B2.z > 1.01) e.preventDefault(); }, { passive: false });
 }
-function b3Pick(p) {
-  const c = $("#b3card"), hint = $("#b3hint"); if (!c) return; if (p) haptic();
-  if (!p || !p.group) { c.hidden = true; if (hint) hint.hidden = false; return; }
-  const { mv } = levelMap(), v = (mv[p.group] || 0) / LVRANGE;
-  c.hidden = false; if (hint) hint.hidden = true;
-  c.innerHTML = '<div class="m"><b>' + esc(p.group) + "</b><span>" + fmtKg(Math.round(v * 10) / 10) + ' sets a week</span></div><button class="pill-btn" data-a="muscle" data-m="' + esc(p.group) + '">Open</button>';
-}
-ACT.b3Home = () => { b2Select(null, true); b2Animate({ pos: Math.round(B2.pos / 4) * 4, z: 1, px: 0, py: 0 }, 300); const c = $("#b3card"); if (c) c.hidden = true; const h = $("#b3hint"); if (h) h.hidden = false; };
+ACT.b2Open = () => { if (!B2.sel) return; const m = BOPEN[B2.sel] || B2.sel; ACT.muscle({ dataset: { m } }); };
+ACT.b3Home = () => { b2Select(null); b2Animate({ pos: Math.round(B2.pos / 4) * 4, z: 1, px: 0, py: 0 }, 300); };
 ACT.flip = () => { FLIP = FLIP === "front" ? "back" : "front"; SCROLL.levels = $("#main").scrollTop; render(); };
 ACT.lvRange = () => { LVRANGE = LVRANGE === 1 ? 4 : 1; SCROLL.levels = $("#main").scrollTop; render(); };
 // ===== More =====
