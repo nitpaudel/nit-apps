@@ -217,13 +217,6 @@ function weekStats(mode) {
   });
   return { plan, done, last };
 }
-function ringsHtml() {
-  const st = weekStats(RINGMODE), all = RINGMODE === "all";
-  const one = (label, v, t, lw, size, color, big) => all
-    ? '<div class="ring' + (big ? " bigr" : "") + '"><div class="rv">' + ringSvg(size, big ? 4 : 3.5, v / Math.max(1, lw, v), color) + "<div><b>" + v + "</b><small>this week</small></div></div>" + '<div class="rl">' + label + '</div><div class="rt">' + lw + " last week</div></div>"
-    : ring(label, v, t, size, color, big);
-  return one("Muscles", st.done.mus.size, st.plan.mus.size, st.last.mus.size, 84, "var(--blue)") + one("Sets", st.done.sets, st.plan.sets, st.last.sets, 150, "var(--orange)", 1) + one("Exercises", st.done.ex.size, st.plan.ex.size, st.last.ex.size, 84, "var(--teal)");
-}
 function ringSvg(size, stroke, frac, color) {
   const r = (size - stroke) / 2, c = 2 * Math.PI * r, f = Math.max(0, Math.min(1, frac));
   return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + " " + size + '"><circle cx="' + size / 2 + '" cy="' + size / 2 + '" r="' + r + '" fill="none" stroke="var(--chip)" stroke-width="' + stroke + '"/>'
@@ -275,20 +268,114 @@ function tileHtml(id) {
 const DASH_SECS = [["insights", "Insights & Analytics"], ["habits", "Habits"], ["body", "Body Metrics"], ["muscles", "Muscle Groups"], ["exercises", "Exercises"]];
 const dashOn = k => !(S.settings.dashHide || []).includes(k);
 const card2 = (act, extra, title, sub, viz, val, unit) => '<button class="ic press" data-a="' + act + '"' + (extra || "") + "><b>" + esc(title) + '</b><span class="p">' + sub + '</span><div class="viz">' + viz + '</div><div class="v">' + val + "<small>" + unit + "</small></div>" + I.chev + "</button>";
+// ===== Dashboard (Apple style) =====
+const D2N = { insights: "Insights & analytics", habits: "Habits", body: "Body metrics", muscles: "Muscle groups", exercises: "Exercises" };
+const D2T = id => ({ workouts: "Workouts", wtrend: "Weight trend", weighin: "Weigh-in", wohabit: "Workouts", scale: "Scale weight", waist: "Waist", bf: "Body fat" })[id] || TILE_NAME(id);
+const D2A = "var(--dacc)", D2OFF = "#3A3A3C";
+const d2num = (v, unit) => '<div class="d2n">' + v + (unit ? "<small>" + unit + "</small>" : "") + "</div>";
+const d2sign = v => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(1);
+// a ring of separate little dashes, one per target item, lit when done
+function tickRing(size, n, lit, big) {
+  const N = n > 0 ? n : 60, c = size / 2, ro = c - 2, len = big ? 11 : 8, w = N > 80 ? 2.2 : N > 40 ? 2.6 : 3;
+  let s = '<svg class="tr" width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + " " + size + '">';
+  for (let i = 0; i < N; i++) {
+    const a = (i / N) * 2 * Math.PI - Math.PI / 2, ca = Math.cos(a), sa = Math.sin(a);
+    s += '<line x1="' + (c + ca * (ro - len)).toFixed(2) + '" y1="' + (c + sa * (ro - len)).toFixed(2) + '" x2="' + (c + ca * ro).toFixed(2) + '" y2="' + (c + sa * ro).toFixed(2) + '" stroke="' + (n > 0 && i < lit ? D2A : D2OFF) + '" stroke-width="' + w + '" stroke-linecap="round"/>';
+  }
+  return s + "</svg>";
+}
+function ringsHtml() {
+  const st = weekStats(RINGMODE), all = RINGMODE === "all";
+  const one = (label, v, t, lw, size, big) => {
+    const N = big ? 60 : 24, n = all ? N : t, litN = all ? Math.round(v / Math.max(1, lw, v) * N) : v, mid = all ? "this week" : "of " + t, foot = all ? lw + " last week" : Math.max(0, t - v) + " left";
+    return '<div class="d2r' + (big ? " lg" : "") + '"><div class="rv">' + tickRing(size, n, v, big) + '<div class="rc"><b>' + v + "</b><small>" + mid + "</small></div></div><div class=\"rl\">" + label + '</div><div class="rt">' + foot + "</div></div>";
+  };
+  return one("Muscles", st.done.mus.size, st.plan.mus.size, st.last.mus.size, 96) + one("Sets", st.done.sets, st.plan.sets, st.last.sets, 156, 1) + one("Exercises", st.done.ex.size, st.plan.ex.size, st.last.ex.size, 96);
+}
+// smooth line through points (Catmull-Rom turned into curves)
+function d2path(P) {
+  if (P.length < 2) return "";
+  let d = "M" + P[0][0].toFixed(1) + " " + P[0][1].toFixed(1);
+  for (let i = 0; i < P.length - 1; i++) {
+    const p0 = P[i - 1] || P[i], p1 = P[i], p2 = P[i + 1], p3 = P[i + 2] || p2, k = 1 / 6;
+    d += " C" + (p1[0] + (p2[0] - p0[0]) * k).toFixed(1) + " " + (p1[1] + (p2[1] - p0[1]) * k).toFixed(1) + " " + (p2[0] - (p3[0] - p1[0]) * k).toFixed(1) + " " + (p2[1] - (p3[1] - p1[1]) * k).toFixed(1) + " " + p2[0].toFixed(1) + " " + p2[1].toFixed(1);
+  }
+  return d;
+}
+let D2G = 0;
+function d2chart(vals, W, H, o) {
+  o = o || {}; const pts = vals.map((v, i) => [i, v]).filter(p => p[1] != null);
+  if (!pts.length) return '<svg class="d2v" width="' + W + '" height="' + H + '"><line x1="2" y1="' + (H - 2) + '" x2="' + (W - 2) + '" y2="' + (H - 2) + '" stroke="' + D2OFF + '" stroke-width="1.5" stroke-dasharray="2 4" stroke-linecap="round"/></svg>';
+  const lo = Math.min(...pts.map(p => p[1])), hi = Math.max(...pts.map(p => p[1])), sp = hi - lo || 1, n = Math.max(vals.length - 1, 1), pad = o.dots ? 4 : 2;
+  const P = pts.map(p => [pad + p[0] / n * (W - pad * 2), hi === lo ? H / 2 : pad + (1 - (p[1] - lo) / sp) * (H - pad * 2 - (o.fill ? 6 : 0))]);
+  const line = d2path(P), id = "d2g" + (++D2G), col = o.color || "#fff";
+  let s = '<svg class="d2v" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + " " + H + '">';
+  if (o.fill && P.length > 1) s += '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + col + '" stop-opacity=".28"/><stop offset="1" stop-color="' + col + '" stop-opacity="0"/></linearGradient></defs><path d="' + line + " L" + P[P.length - 1][0].toFixed(1) + " " + H + " L" + P[0][0].toFixed(1) + " " + H + ' Z" fill="url(#' + id + ')"/>';
+  if (P.length > 1) s += '<path d="' + line + '" fill="none" stroke="' + col + '" stroke-width="' + (o.w || 2) + '" stroke-linecap="round" stroke-linejoin="round"/>';
+  if (o.dots) s += P.map((p, i) => '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (i === P.length - 1 ? 3.6 : 2.2) + '" fill="' + (i === P.length - 1 ? col : "rgba(255,255,255,.55)") + '"/>').join("");
+  else { const L = P[P.length - 1]; s += '<circle cx="' + L[0].toFixed(1) + '" cy="' + L[1].toFixed(1) + '" r="3" fill="' + col + '"/>'; }
+  return s + "</svg>";
+}
+function d2bars(vals, W, H) {
+  const n = Math.max(vals.length, 1), mx = Math.max(1, ...vals), bw = 7, gap = (W - n * bw) / Math.max(n - 1, 1);
+  return '<svg class="d2v" width="' + W + '" height="' + H + '">' + (vals.length ? vals.map((v, i) => { const h = Math.max(6, v / mx * H); return '<rect x="' + (i * (bw + Math.min(gap, 9))).toFixed(1) + '" y="' + (H - h).toFixed(1) + '" width="' + bw + '" height="' + h.toFixed(1) + '" rx="3.5" fill="' + (i === vals.length - 1 ? D2A : "rgba(255,255,255,.88)") + '"/>'; }).join("")
+    : Array.from({ length: 7 }, (_, i) => '<rect x="' + i * 14 + '" y="' + (H - 6) + '" width="7" height="6" rx="3" fill="' + D2OFF + '"/>').join("")) + "</svg>";
+}
+// change over the last 7 days: newest entry minus the newest entry on or before 7 days ago
+function d2delta(list, key, d) {
+  if (!list.length) return null; const last = list[list.length - 1], cut = addDays(d, -7), old = list.filter(x => x.d <= cut).pop();
+  return old ? last[key] - old[key] : null;
+}
+const d2card = (act, extra, title, sub, body, foot) => '<button class="d2c press" data-a="' + act + '"' + (extra || "") + '><div class="d2h"><b>' + esc(title) + "</b>" + I.chev + '</div><span class="d2s">' + sub + '</span><div class="d2b">' + body + '</div><div class="d2f">' + foot + "</div></button>";
+function d2tile(id) {
+  const d = today(), wk0 = weekSun(d);
+  if (id === "workouts") {
+    const fin = sessionsSorted().filter(s2 => s2.endTs && sessionSets(s2.id).length), sv = fin.slice(-7).map(s2 => sessionSets(s2.id).length);
+    const done = fin.filter(s2 => s2.d >= wk0).length; let plan = 0; for (let i = 0; i < 7; i++) { const x = addDays(wk0, i), dk = dayKeyFor(x); if (dk && planFor(dk).length) plan++; }
+    return d2card("openPage", ' data-k="workouts"', "Workouts", "This week", '<div class="d2row">' + d2num(done) + d2bars(sv, 70, 44) + "</div>", "of " + plan + " this week");
+  }
+  if (id === "wtrend") {
+    const tr = trendSeries(weightList()), l = tr.slice(-14), last = tr[tr.length - 1], ch = d2delta(tr.map(x => ({ d: x.d, v: x.trend })), "v", d);
+    return d2card("openPage", ' data-k="wtrend"', "Weight trend", "Last 14 days", (last ? d2num(last.trend.toFixed(1), "kg") : d2num("--")) + d2chart(l.map(x => x.trend), 140, 46, { fill: 1, color: D2A, w: 2.2 }), ch == null ? (last ? "No change yet" : "No entries yet") : d2sign(ch) + " kg this week");
+  }
+  if (id === "weighin") {
+    const days = Array.from({ length: 30 }, (_, i) => addDays(d, i - 29)), ws = days.map(x => S.weights[x] ? S.weights[x].kg : null), have = ws.filter(v => v != null);
+    const lo = Math.min(...have), hi = Math.max(...have), sp = hi - lo || 1, W = 142, H = 46, dx = (W - 6) / 29;
+    let svg = '<svg class="d2v" width="' + W + '" height="' + H + '">';
+    ws.forEach((v, i) => { const x = 3 + i * dx; svg += v == null ? '<circle cx="' + x.toFixed(1) + '" cy="' + (H - 3) + '" r="1.9" fill="none" stroke="#48484A" stroke-width="1.1"/>' : '<circle cx="' + x.toFixed(1) + '" cy="' + (3 + (hi === lo ? 0.5 : 1 - (v - lo) / sp) * (H - 14)).toFixed(1) + '" r="2.4" fill="' + D2A + '"/>'; });
+    const n = Object.keys(S.weights).filter(x => x >= wk0 && x <= d).length;
+    return d2card("openPage", ' data-k="weighin"', "Weigh-in", "Last 30 days", svg + "</svg>", "<em>" + n + "</em> of 7 this week");
+  }
+  if (id === "wohabit") {
+    const mon = x => addDays(x, -((dow(x) + 6) % 7)), start = addDays(mon(d), -21);
+    let g = '<div class="d2cal">' + ["M", "T", "W", "T", "F", "S", "S"].map(x => "<span>" + x + "</span>").join("");
+    for (let i = 0; i < 28; i++) { const x = addDays(start, i); g += '<i class="' + (x > d ? "fut" : doneOn(x) ? "on" : "") + (x === d ? " today" : "") + '"></i>'; }
+    const n = sessionsSorted().filter(s2 => s2.d >= mon(d) && s2.d <= d && s2.endTs && sessionSets(s2.id).length).length;
+    return d2card("openPage", ' data-k="wohabit"', "Workouts", "Last 4 weeks", g + "</div>", "<em>" + n + "</em> this week");
+  }
+  if (id === "scale" || id === "bf" || id === "waist") {
+    const isW = id === "waist", list = isW ? Object.values(S.waists).sort((a, b) => a.d < b.d ? -1 : 1).map(x => ({ d: x.d, v: +x.inch })) : weightList().filter(x => id === "scale" || x.bf != null).map(x => ({ d: x.d, v: id === "scale" ? x.kg : x.bf }));
+    const unit = isW ? "in" : id === "bf" ? "%" : "kg", last = list[list.length - 1], ch = d2delta(list, "v", d);
+    return d2card("openPage", ' data-k="' + (isW ? "waist" : "scale") + '"', D2T(id), "Last 7 entries", '<div class="d2row">' + d2num(last ? (+last.v).toFixed(1) : "--", last ? unit : "") + d2chart(list.slice(-7).map(x => x.v), 56, 30, { color: "#fff", w: 1.8 }) + "</div>", ch == null ? (last ? "No change yet" : "No entries yet") : d2sign(ch) + " this week");
+  }
+  if (id.startsWith("m:")) { const m = id.slice(2), v = muscleSets(7, d)[m]; return d2card("muscle", ' data-m="' + esc(m) + '"', m, "Last 7 days", '<div class="d2pic">' + muscleThumb(m) + "</div>", "<em>" + (v ? fmtKg(v) : 0) + "</em> " + (v === 1 ? "set" : "sets")); }
+  const ex = id.slice(2), hs = histFor(ex).slice(-7), v = hs.map(x => Math.max(...x.sets.map(s2 => e1rm(s2.kg || 0, s2.reps)))), last = v[v.length - 1];
+  return d2card("openEx", ' data-ex="' + ex + '"', D2T(id), "Last 7 workouts", '<div class="d2row">' + d2num(last ? fmtKg(Math.round(last * 2) / 2) : "--", last ? "kg" : "") + d2chart(v, 56, 30, { color: "#fff", w: 1.8 }) + "</div>", last ? "Estimated 1-RM" : "No sets yet");
+}
 function vDash() {
   const d = today(), L = dashLayout();
-  let h = head("Dashboard", "", '<button class="ib" data-a="dashCustom" aria-label="Customize">' + I.sliders + "</button>");
-  const pg = { rings: '<div class="pg"><h2 class="hh">Weekly Workouts</h2><div class="rings" id="rings">' + ringsHtml() + "</div>"
-      + '<div class="seg slide' + (RINGMODE === "all" ? " right" : "") + '"><i class="thumbx"></i><button class="' + (RINGMODE === "program" ? "on" : "") + '" data-a="ringMode" data-v="program">Active Program</button><button class="' + (RINGMODE === "all" ? "on" : "") + '" data-a="ringMode" data-v="all">All Workouts</button></div></div>',
-    records: '<div class="pg"><h2 class="hh">Recent Records</h2>' + recordsHtml() + "</div>" };
+  let h = '<div class="d2">' + head("Dashboard", "", '<button class="ib" data-a="dashCustom" aria-label="Customize">' + I.sliders + "</button>");
+  const pg = { rings: '<div class="pg"><h2 class="d2h2">Weekly workouts</h2><div class="d2rings" id="rings">' + ringsHtml() + "</div>"
+      + '<div class="seg slide d2seg' + (RINGMODE === "all" ? " right" : "") + '"><i class="thumbx"></i><button class="' + (RINGMODE === "program" ? "on" : "") + '" data-a="ringMode" data-v="program">Active program</button><button class="' + (RINGMODE === "all" ? "on" : "") + '" data-a="ringMode" data-v="all">All workouts</button></div></div>',
+    records: '<div class="pg"><h2 class="d2h2">Recent records</h2>' + recordsHtml() + "</div>" };
   h += '<div class="pager" id="pager">' + L.pages.map(p => pg[p]).join("") + '</div><div class="pdots"><i class="on"></i><i></i></div></div><div class="body-pad">';
-  if (storageBroken) h += '<div class="banner">' + esc(storageBroken) + "</div>";
-  else if (!KV.token) h += '<div class="banner">Not backed up yet<button data-a="backup">Set up</button></div>';
-  if (activeSession()) h += '<button class="prompt press" data-a="resume" style="width:100%;text-align:left"><div class="m"><b>' + esc(activeSession().name) + '</b><span class="small">Workout in progress</span></div><span class="ul">Resume</span></button>';
-  if (!S.weights[d]) h += '<button class="prompt press" data-a="weightSheet" style="width:100%;text-align:left"><div class="m"><b>Morning weigh-in</b><span class="small">After you pee, before food</span></div><span class="wbox">kg</span></button>';
-  const see = { body: '<button class="ul" data-a="openPage" data-k="scale">See All</button>', muscles: '<button class="ul" data-a="tabTo" data-tab="levels">See All</button>', exercises: '<button class="ul" data-a="openPage" data-k="exlist">See All</button>' };
-  L.secs.forEach(sec => { if (!sec.tiles.length) return; h += '<div class="sec"><h2>' + esc(DPOOL[sec.k].n) + "</h2>" + (see[sec.k] || "") + '</div><div class="grid2">' + sec.tiles.map(tileHtml).join("") + "</div>"; });
-  return h + "</div>";
+  if (storageBroken) h += '<div class="d2bk"><i></i>' + esc(storageBroken) + "</div>";
+  else if (!KV.token) h += '<button class="d2bk press" data-a="backup"><i></i>Not backed up yet<span>Set up</span></button>';
+  if (activeSession()) h += '<button class="d2p press" data-a="resume"><div class="m"><b>' + esc(activeSession().name) + "</b><span>Workout in progress</span></div><em>Resume</em></button>";
+  if (!S.weights[d]) h += '<button class="d2p press" data-a="weightSheet"><div class="m"><b>Morning weigh-in</b><span>After you pee, before food</span></div><span class="wbox">kg</span></button>';
+  const see = { body: '<button class="d2see" data-a="openPage" data-k="scale">See all</button>', muscles: '<button class="d2see" data-a="tabTo" data-tab="levels">See all</button>', exercises: '<button class="d2see" data-a="openPage" data-k="exlist">See all</button>' };
+  L.secs.forEach(sec => { if (!sec.tiles.length) return; h += '<div class="d2sec"><h2>' + esc(D2N[sec.k] || DPOOL[sec.k].n) + "</h2>" + (see[sec.k] || "") + '</div><div class="d2grid">' + sec.tiles.map(d2tile).join("") + "</div>"; });
+  return h + "</div></div>";
 }
 function topExercises() { const c = {}; Object.values(S.sets).forEach(x => { if (!x.w) c[x.exId] = (c[x.exId] || 0) + 1; }); const l = Object.keys(c).sort((a, b) => c[b] - c[a]); ["pullup", "inc_smith_press"].forEach(x => { if (!l.includes(x)) l.push(x); }); return l.slice(0, 2); }
 function recordsHtml() {
