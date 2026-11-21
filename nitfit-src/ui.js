@@ -174,7 +174,7 @@ function render() {
   const m = $("#main");
   const keep = m.dataset.tab === TAB ? m.scrollTop : (SCROLL[TAB] || 0);
   m.innerHTML = TAB === "dashboard" ? vDash() : TAB === "workout" ? vWorkoutTab() : TAB === "levels" ? vLevels() : vMore();
-  m.dataset.tab = TAB; if (TAB === "levels") attachBody2d(); m.scrollTop = keep; LASTY = m.scrollTop; ACC = 0; FOLDLOCK = Date.now() + 400; if (keep < 60) document.body.classList.remove("compact");
+  m.dataset.tab = TAB; if (TAB === "levels") attachBody3d(); m.scrollTop = keep; LASTY = m.scrollTop; ACC = 0; FOLDLOCK = Date.now() + 400; if (keep < 60) document.body.classList.remove("compact");
   $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB));
   const pg = $("#pager"); if (pg) pg.addEventListener("scroll", () => { const i = Math.round(pg.scrollLeft / pg.clientWidth); $$(".pdots i").forEach((d, k) => d.classList.toggle("on", k === i)); }, { passive: true });
   renderPage();
@@ -881,135 +881,35 @@ ACT.saveMeas = () => { gpClose(); const p = {}; MEAS.forEach(([k]) => { const v 
 // ===== Levels =====
 function levelMap() { const mv = muscleSets(7 * LVRANGE, today()), lv = {}; ALL_MUSCLES.forEach(m => { const v = (mv[m] || 0) / LVRANGE; lv[m] = v > 0 ? Math.min(1, 0.15 + v / 18) : 0; }); return { mv, lv }; }
 function vLevels() {
-  const { mv } = levelMap(), any = Object.keys(mv).length;
-  let h = head("Levels") + "</div><div class='body-pad'>";
-  h += '<div class="b3w"><div id="b3slot" class="b3slot"></div><button class="ib b3home" data-a="b3Home" aria-label="Reset view">' + I.rotate + "</button></div>";
+  const { mv } = levelMap();
+  let h = "<div class='body-pad'>";
+  h += '<div class="b3w"><div id="b3slot" class="b3slot"></div><button class="b2name" id="b3name" data-a="b3Open" hidden></button><button class="ib b3home" data-a="b3Home" aria-label="Reset view">' + I.rotate + "</button></div>";
   h += '<div class="legend"><i></i>Average weekly sets over <button data-a="lvRange">' + LVRANGE + "-week " + I.down + "</button></div>";
   ["Upper", "Lower"].forEach(g => {
     h += "<h2>" + g + ' Body Levels</h2><div class="card">' + MUSCLE_GROUPS[g].map(m => { const v = (mv[m] || 0) / LVRANGE; return '<button class="lvrow press" data-a="muscle" data-m="' + esc(m) + '"><div class="thumb">' + muscleThumb(m) + '</div><div class="m"><b>' + esc(m) + "</b><span>" + fmtKg(Math.round(v * 10) / 10) + " sets</span></div></button>"; }).join("") + "</div>";
   });
   return h + "</div>";
 }
-// ---- the body: 4 painted views (front, side, back, side). Red by default; the tapped muscle turns blue.
-// No canvas pixel reads anywhere (iPhone adds noise to those): tap maps come as small run-length files, masks as PNGs.
-const BV = ["front", "faceleft", "back", "faceright"], BMW = 750, BMH = 1536, BDIR = "body-v3/";
-const BOPEN = { "Upper Chest": "Chest", "Mid Chest": "Chest", "Lower Chest": "Chest", "Outer Calf": "Calves", "Inner Calf": "Calves", Abductors: "Glutes" };
-const B2 = { el: null, maps: {}, G: null, pos: 0, z: 1, px: 0, py: 0, sel: null, anim: 0, live: false };
-function attachBody2d() {
+// ---- the 3D body: built from Nit's 4 paintings. Red by default; the tapped muscle turns blue. One element, moved into the Levels tab each time it is drawn ----
+const B3D = "body3d-v1/", BOPEN = { "Upper Chest": "Chest", "Mid Chest": "Chest", "Lower Chest": "Chest", "Outer Calf": "Calves", "Inner Calf": "Calves", Abductors: "Glutes" };
+let B3 = null, B3EL = null, B3LOAD = null, B3SEL = null;
+function attachBody3d() {
   const slot = $("#b3slot"); if (!slot) return;
-  if (!B2.el) b2Build();
-  slot.appendChild(B2.el); b2Layout(); b2Name();
+  if (!B3EL) { B3EL = document.createElement("div"); B3EL.className = "b3"; B3EL.innerHTML = '<div class="b3load"><i></i>Loading body...</div>'; }
+  slot.appendChild(B3EL); b3Name();
+  if (B3) { B3.redraw(); return; }
+  if (B3LOAD) return;
+  B3LOAD = import("./body3d-v1.js").then(mod => mod.mount(B3EL, { base: B3D, onTap: b3Tap })).then(v => {
+    B3 = v; const l = $(".b3load", B3EL); if (l) l.remove();
+  }).catch(err => { B3LOAD = null; B3EL.innerHTML = '<div class="b3load">The body could not load. Check your internet and open Levels again.</div>'; console.error(err); });
 }
-function b2Build() {
-  const el = B2.el = document.createElement("div"); el.className = "b2";
-  el.innerHTML = '<div class="b3load"><i></i>Loading body...</div><div class="b2stage">' + BV.map(v => '<div class="b2v" data-v="' + v + '"><img class="b2base" alt="" draggable="false" src="' + BDIR + v + '.webp"><img class="b2pick" alt="" draggable="false" src="' + BDIR + v + '-blue.webp"></div>').join("") + '</div><div class="b2dots">' + BV.map(() => "<i></i>").join("") + '</div><button class="b2name" data-a="b2Open" hidden></button>';
-  const first = $(".b2v[data-v=front] .b2base", el), done = () => { const l = $(".b3load", el); if (l) l.remove(); };
-  if (first.complete) done(); else first.addEventListener("load", done);
-  fetch(BDIR + "info.json").then(r => r.json()).then(info => {
-    B2.G = info.G;
-    return Promise.all(BV.map(v => fetch(BDIR + v + ".bin").then(r => r.arrayBuffer()).then(buf => {
-      const b = new Uint8Array(buf), L = new Uint8Array(BMW * BMH); let p = 0;
-      for (let i = 0; i + 2 < b.length; i += 3) { const lab = b[i], n = b[i + 1] | (b[i + 2] << 8); if (lab) L.fill(lab, p, p + n); p += n; }
-      B2.maps[v] = L;
-    })));
-  }).catch(e => console.error(e));
-  b2Gestures(el);
-  new ResizeObserver(() => b2Layout()).observe(el);
+function b3Tap(g) {
+  if (g && g === B3SEL) { ACT.b3Open(); return; }   // second tap on the blue muscle opens it
+  B3SEL = g; if (g) haptic(); if (B3) B3.select(g); b3Name();
 }
-function b2Layout() {
-  const el = B2.el; if (!el || !el.isConnected) return; const W = el.clientWidth, H = el.clientHeight; if (!W || !H) return;
-  const T = 20, Bt = 46; B2.W = W; B2.H = H; B2.bh = H - T - Bt; B2.bw = B2.bh * 1500 / 3072; B2.T = T; b2Paint();
-}
-// while a finger is on the screen the stage is scaled with a transform (fast); when it lifts, the real size is set so the picture redraws sharp
-function b2Paint() {
-  const el = B2.el; if (!el || !B2.W) return; const n = BV.length, p = ((B2.pos % n) + n) % n, i0 = Math.floor(p), f = p - i0, i1 = (i0 + 1) % n;
-  const sm = t => t * t * (3 - 2 * t);
-  $$(".b2v", el).forEach((v, i) => {
-    let o = 0, dx = 0, sx = 1;
-    if (i === i0) { o = sm(Math.max(0, Math.min(1, (1 - f) * 1.6 - 0.3))); dx = -f * 30; sx = 1 - f * 0.1; } else if (i === i1 && f > 0) { o = sm(Math.max(0, Math.min(1, f * 1.6 - 0.3))); dx = (1 - f) * 30; sx = 1 - (1 - f) * 0.1; }
-    v.style.opacity = o; v.style.visibility = o > 0.001 ? "visible" : "hidden"; v.style.transform = dx || sx !== 1 ? "translateX(" + dx + "px) scaleX(" + sx + ")" : "";
-  });
-  const st = $(".b2stage", el), cx = B2.W / 2 + B2.px, cy = B2.T + B2.bh / 2 + B2.py;
-  if (B2.live) { st.style.width = B2.bw + "px"; st.style.height = B2.bh + "px"; st.style.left = (B2.W - B2.bw) / 2 + "px"; st.style.top = B2.T + "px"; st.style.transform = "translate(" + B2.px + "px," + B2.py + "px) scale(" + B2.z + ")"; }
-  else { const w = B2.bw * B2.z, h = B2.bh * B2.z; st.style.transform = ""; st.style.width = w + "px"; st.style.height = h + "px"; st.style.left = cx - w / 2 + "px"; st.style.top = cy - h / 2 + "px"; }
-  const cur = Math.round(p) % n; $$(".b2dots i", el).forEach((d, i) => d.classList.toggle("on", i === cur));
-  el.classList.toggle("zoomed", B2.z > 1.01);
-}
-function b2Select(g) {
-  B2.sel = g; const G = B2.G || [], gi = g ? G.indexOf(g) + 1 : 0;
-  BV.forEach(v => {
-    const pk = $('.b2v[data-v="' + v + '"] .b2pick', B2.el), has = gi && B2.maps[v] && B2.maps[v].indexOf(gi) >= 0;
-    if (!has) { pk.classList.remove("on"); return; }
-    const u = "url(" + BDIR + "m/" + v + "-" + gi + ".png)"; pk.style.webkitMaskImage = pk.style.maskImage = u; pk.classList.add("on");
-  });
-  b2Name();
-}
-function b2Name() { const b = B2.el && $(".b2name", B2.el); if (!b) return; b.hidden = !B2.sel; if (B2.sel) b.innerHTML = esc(B2.sel) + I.chev; }
-function b2Hit(cx, cy) {
-  const n = BV.length, v = BV[Math.round(((B2.pos % n) + n) % n) % n], L = B2.maps[v]; if (!L || !B2.G) return null;
-  const r = $('.b2v[data-v="' + v + '"]', B2.el).getBoundingClientRect(), X = Math.floor((cx - r.left) / r.width * BMW), Y = Math.floor((cy - r.top) / r.height * BMH);
-  for (let rad = 0; rad <= 10; rad += 2) for (let dy = -rad; dy <= rad; dy += 2) for (let dx = -rad; dx <= rad; dx += 2) {
-    const x = X + dx, y = Y + dy; if (x < 0 || y < 0 || x >= BMW || y >= BMH) continue; const g = L[y * BMW + x]; if (g) return B2.G[g - 1];
-  }
-  return null;
-}
-function b2Clamp() {
-  B2.z = Math.max(1, Math.min(4, B2.z));
-  const mx = Math.max(0, (B2.bw * B2.z - B2.W) / 2 + 40), my = Math.max(0, (B2.bh * B2.z - B2.H) / 2 + 40);
-  if (B2.z <= 1.001) { B2.px = 0; B2.py = 0; } else { B2.px = Math.max(-mx, Math.min(mx, B2.px)); B2.py = Math.max(-my, Math.min(my, B2.py)); }
-}
-function b2Animate(to, ms) {
-  cancelAnimationFrame(B2.anim); B2.live = true; const from = { pos: B2.pos, z: B2.z, px: B2.px, py: B2.py }, t0 = performance.now(), e = t => 1 - Math.pow(1 - t, 3);
-  const step = now => { const t = Math.min(1, (now - t0) / ms), k = e(t); for (const key in to) B2[key] = from[key] + (to[key] - from[key]) * k; b2Paint(); if (t < 1) B2.anim = requestAnimationFrame(step); else { B2.pos = ((Math.round(B2.pos) % 4) + 4) % 4; B2.live = false; b2Paint(); } };
-  B2.anim = requestAnimationFrame(step);
-}
-function b2ZoomAt(cx, cy, z) {
-  const r = B2.el.getBoundingClientRect(), ox = cx - r.left - B2.W / 2, oy = cy - r.top - (B2.T + B2.bh / 2), k = z / B2.z;
-  B2.px = ox - (ox - B2.px) * k; B2.py = oy - (oy - B2.py) * k; B2.z = z;
-}
-function b2Gestures(el) {
-  const P = new Map(); let mode = null, sx = 0, sy = 0, st = 0, spos = 0, lastX = 0, lastY = 0, lastT = 0, vel = 0, pinch = null, lastTap = 0, tapX = 0, tapY = 0;
-  const settle = () => { B2.live = false; b2Paint(); };
-  el.addEventListener("pointerdown", e => {
-    if (e.target.closest("button")) return; cancelAnimationFrame(B2.anim);
-    P.set(e.pointerId, { x: e.clientX, y: e.clientY }); try { el.setPointerCapture(e.pointerId); } catch (_) {}
-    if (P.size === 1) { mode = "maybe"; sx = lastX = e.clientX; sy = lastY = e.clientY; st = lastT = performance.now(); spos = B2.pos; vel = 0; }
-    else if (P.size === 2) { const [a, b] = [...P.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), z: B2.z, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 }; mode = "pinch"; B2.live = true; if (Math.abs(B2.pos - Math.round(B2.pos)) > 0.001) B2.pos = Math.round(B2.pos) % 4; b2Paint(); }
-  });
-  el.addEventListener("pointermove", e => {
-    if (!P.has(e.pointerId)) return; P.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (mode === "pinch" && P.size >= 2) {
-      const [a, b] = [...P.values()], mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, d = Math.hypot(a.x - b.x, a.y - b.y);
-      B2.px += mx - pinch.mx; B2.py += my - pinch.my; pinch.mx = mx; pinch.my = my;
-      b2ZoomAt(mx, my, Math.max(0.85, Math.min(4.5, pinch.z * d / pinch.d))); b2Paint(); e.preventDefault(); return;
-    }
-    const dx = e.clientX - sx, dy = e.clientY - sy;
-    if (mode === "maybe" && Math.hypot(dx, dy) > 8) { mode = B2.z > 1.01 ? "pan" : Math.abs(dx) > Math.abs(dy) ? "turn" : "scroll"; if (mode !== "scroll") B2.live = true; }
-    const now = performance.now();
-    if (mode === "turn") { B2.pos = spos - dx / (B2.W * 0.55); if (now > lastT) vel = (e.clientX - lastX) / (now - lastT); lastX = e.clientX; lastT = now; b2Paint(); e.preventDefault(); }
-    else if (mode === "pan") { B2.px += e.clientX - lastX; B2.py += e.clientY - lastY; lastX = e.clientX; lastY = e.clientY; b2Clamp(); b2Paint(); e.preventDefault(); }
-  });
-  const end = e => {
-    if (!P.has(e.pointerId)) return; P.delete(e.pointerId); const was = mode;
-    if (was === "pinch") { if (P.size === 1) { const [a] = [...P.values()]; mode = "pan"; lastX = a.x; lastY = a.y; return; } if (B2.z < 1.05) b2Animate({ z: 1, px: 0, py: 0 }, 220); else { b2Clamp(); settle(); } mode = null; return; }
-    if (P.size) return; mode = null;
-    if (was === "turn") { let tgt = Math.round(B2.pos); if (Math.abs(vel) > 0.35) tgt = vel < 0 ? Math.floor(B2.pos) + 1 : Math.ceil(B2.pos) - 1; if (Math.abs(tgt - spos) > 1) tgt = spos + Math.sign(tgt - spos); b2Animate({ pos: tgt }, 260); haptic(); return; }
-    if (was === "pan") { settle(); return; }
-    if (was === "maybe" && e.type === "pointerup" && performance.now() - st < 400) {
-      const now = performance.now();
-      if (now - lastTap < 300 && Math.hypot(e.clientX - tapX, e.clientY - tapY) < 30) { lastTap = 0; if (B2.z > 1.01) b2Animate({ z: 1, px: 0, py: 0 }, 260); else { const z0 = B2.z, px0 = B2.px, py0 = B2.py; b2ZoomAt(e.clientX, e.clientY, 2.4); b2Clamp(); const to = { z: B2.z, px: B2.px, py: B2.py }; B2.z = z0; B2.px = px0; B2.py = py0; b2Animate(to, 260); } return; }
-      lastTap = now; tapX = e.clientX; tapY = e.clientY;
-      const g = b2Hit(e.clientX, e.clientY);
-      if (g && g === B2.sel) { ACT.b2Open(); return; }  // second tap on the blue muscle opens it
-      if (g) haptic(); b2Select(g);
-    }
-  };
-  el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
-  ["gesturestart", "gesturechange"].forEach(t => el.addEventListener(t, e => e.preventDefault()));
-  el.addEventListener("touchmove", e => { if (e.touches.length > 1 || B2.z > 1.01) e.preventDefault(); }, { passive: false });
-}
-ACT.b2Open = () => { if (!B2.sel) return; const m = BOPEN[B2.sel] || B2.sel; ACT.muscle({ dataset: { m } }); };
-ACT.b3Home = () => { b2Select(null); b2Animate({ pos: Math.round(B2.pos / 4) * 4, z: 1, px: 0, py: 0 }, 300); };
+function b3Name() { const b = $("#b3name"); if (!b) return; b.hidden = !B3SEL; if (B3SEL) b.innerHTML = esc(B3SEL) + I.chev; }
+ACT.b3Open = () => { if (B3SEL) ACT.muscle({ dataset: { m: BOPEN[B3SEL] || B3SEL } }); };
+ACT.b3Home = () => { B3SEL = null; if (B3) { B3.select(null); B3.home(); } b3Name(); };
 ACT.flip = () => { FLIP = FLIP === "front" ? "back" : "front"; SCROLL.levels = $("#main").scrollTop; render(); };
 ACT.lvRange = () => { LVRANGE = LVRANGE === 1 ? 4 : 1; SCROLL.levels = $("#main").scrollTop; render(); };
 // ===== More =====

@@ -800,17 +800,8 @@ html[data-theme="light"] .b3w{background:radial-gradient(120% 80% at 50% 40%,#3a
 .infobody img.ti{height:100%;width:auto;margin:0 auto;object-fit:contain}
 .lvempty2{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:2;font-size:13px;color:#d8d8dc;background:rgba(40,40,42,.7);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:8px 14px;border-radius:16px;white-space:nowrap}
 .thumb{background:#2b2626}
-/* v4.2 body: red by default, tapped muscle turns blue */
-.b2{position:absolute;inset:0;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
-.b2.zoomed{touch-action:none}
-.b2stage{position:absolute;transform-origin:50% 50%}
-.b2v{position:absolute;inset:0}
-.b2v img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;-webkit-user-drag:none}
-.b2pick{opacity:0;transition:opacity .18s;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
-.b2pick.on{opacity:1}
-.b2dots{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:1;display:flex;gap:6px;pointer-events:none}
-.b2dots i{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.28);transition:width .25s,background .25s}
-.b2dots i.on{width:16px;background:#fff}
-.b2 .b3load{z-index:1}
+/* v4.3 body: 3D, built from the 4 paintings */
+#main[data-tab="levels"] .b3w{height:min(80vh,700px);margin:calc(var(--sat,0px) + 6px) -16px 0;background:radial-gradient(110% 70% at 50% 42%,#26262a 0%,var(--bg) 72%)}
+.b3 canvas{touch-action:pan-y}
 .b2name{position:absolute;left:16px;top:12px;z-index:2;display:flex;align-items:center;gap:6px;height:32px;padding:0 12px 0 14px;border-radius:16px;font-size:15px;font-weight:600;color:#fff;background:rgba(40,40,44,.6);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 .b2name .chev{width:7px;height:12px;opacity:.7}

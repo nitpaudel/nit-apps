@@ -1,5 +1,5 @@
 // Opens the newest NitFit when online, and the copy saved on the phone when offline.
-const CACHE = "nitfit-v21";
+const CACHE = "nitfit-v22";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icons/nitfit-180.png", "./icons/nitfit-192.png", "./icons/nitfit-512.png", "./icons/launch-1170x2532.png"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: "reload" })))).then(() => self.skipWaiting()));
@@ -33,7 +33,7 @@ self.addEventListener("fetch", e => {
   e.respondWith(caches.open(CACHE).then(async c => {
     const hit = await c.match(e.request, { ignoreSearch: true }); if (hit) return hit;
     const res = await fetch(e.request);
-    if (res.ok && /(anatomy|body|thumbs)-v\d/.test(e.request.url)) c.put(e.request, res.clone());
+    if (res.ok && /(anatomy|body|body3d|thumbs)-v\d/.test(e.request.url)) c.put(e.request, res.clone());
     return res;
   }));
 });
