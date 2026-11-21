@@ -708,6 +708,93 @@ body.compact #mini .mth{opacity:0}
 .seg.slide .thumbx{top:3px;bottom:3px;left:3px;width:calc(50% - 3px)}
 .seg.slide button{text-align:center;justify-content:center;display:flex;align-items:center}
 
+/* ===== v3.8 ===== */
+/* keypad like the reference: plain number keys, side column of actions, RIR chips with a + */
+.kp-grid{grid-template-columns:repeat(3,1fr) 1.2fr;gap:6px}
+.kp-grid .kk{background:transparent!important;height:54px;font-size:28px;font-weight:400}
+.kp-grid .kk:active{background:var(--chip)!important}
+.kp-grid .kk.zero{grid-column:auto}
+.kp-grid .kk.del svg{width:30px;height:30px}
+.kp-grid .ks{height:54px}
+.kp-grid .ks.fp button{font-size:22px;font-weight:400}
+.kp-grid .ks.fp button.on{background:var(--inv);color:var(--invtext);border-radius:10px;margin:4px}
+.kp-rir{gap:4px}
+.kp-rir .rir{width:36px;height:36px}
+.kp-rir .rir.rplus{background:#2f6bff;color:#fff;font-size:22px;font-weight:500}
+.kp-top{border-bottom:1px solid var(--line);margin:0 -10px 8px;padding:0 14px 10px}
+.setnote{grid-column:1/-1;margin:-4px 0 8px 46px;font-size:13px;color:var(--text2);font-style:italic}
+textarea.field.note{height:auto;min-height:110px;padding:12px 14px;resize:none;line-height:1.4;font:inherit}
+/* iPhone style number pad for weigh-in, waist, targets, measurements */
+.kp.gp{background:#2a2a2c;padding:8px 6px calc(var(--sab) + 6px);border-radius:0}
+.ipad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.ipad .ik{height:50px;border-radius:9px;background:#5b5b5e;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.ipad .ik b{font-size:26px;font-weight:400}
+.ipad .ik i{font-style:normal;font-size:10px;font-weight:600;letter-spacing:.18em;margin-top:2px}
+.ipad .ik.blank{background:transparent;font-size:28px}
+.ipad .ik.blank svg{width:28px;height:28px}
+.ipad .ik:active{background:#7a7a7e}
+.ipad .ik.blank:active{background:#3a3a3c}
+html[data-theme="light"] .kp.gp{background:#d1d3d9}
+html[data-theme="light"] .ipad .ik{background:#fff;color:#000}
+html[data-theme="light"] .ipad .ik.blank{background:transparent;color:#000}
+body.gpon .sheet.on{transform:translateY(calc(-1 * var(--kph, 0px)))!important;transition:transform .3s cubic-bezier(.32,.72,0,1)}
+body.gpon .sheet .sbody{padding-bottom:20px}
+.ef.wbf{grid-template-columns:1.6fr 1fr}
+.ef.one{grid-template-columns:1fr}
+.fin.gfield.act{box-shadow:inset 0 0 0 2px var(--text)!important;background:transparent}
+/* monday-first habit calendar */
+.hcal{margin-top:18px}
+.hcalh{margin-top:10px}
+.hnav2{display:flex;align-items:center;gap:10px;margin-top:18px}
+.hnav2 .pair{display:flex;background:var(--chip);border-radius:24px;height:46px;align-items:center;padding:0 6px}
+.hnav2 .pair button{width:40px;height:40px;display:grid;place-items:center}
+.hnav2 .pair svg{width:20px;height:20px}
+.selp{position:relative;height:46px;border-radius:24px;background:var(--chip);display:flex;align-items:center;justify-content:center;gap:6px;padding:0 18px;font-weight:500}
+.selp.wide{flex:1}
+.selp select{position:absolute;inset:0;opacity:0;width:100%;font-size:16px}
+/* range pills in one capsule, averaging pill beside it */
+.rngw{display:flex;gap:8px;align-items:center;margin-top:14px}
+.rngw .rng{flex:1;margin:0;background:var(--chip);border-radius:24px;padding:4px;gap:0}
+.rngw .rng button{height:38px;border-radius:19px}
+.rngw .avg{height:46px;border-radius:24px;padding:0 16px;background:var(--chip);color:var(--text);display:flex;align-items:center;gap:6px;font-weight:500}
+.ptabs.ic2 button{display:flex;align-items:center;justify-content:center;gap:8px}
+.ptabs.ic2 button svg{width:18px;height:18px}
+/* tutorial card */
+.tutc{margin-top:14px;padding:16px;border-radius:16px;background:#2f2550;color:#fff}
+.tutc b{display:flex;gap:10px;align-items:center;font-weight:600;font-size:17px}
+.tutc b svg{width:20px;height:20px}
+.tutc p{font-size:15px;line-height:1.45;margin-top:8px;opacity:.9}
+.tutc .tb{display:flex;align-items:center;gap:8px;margin-top:12px}
+.tutc .tb span{flex:1}
+.tutc .dis{font-weight:600;font-size:15px}
+.tutc .pv{height:40px;padding:0 16px;border-radius:20px;background:#4a35a8;font-weight:600}
+html[data-theme="light"] .tutc{background:#e9e4ff;color:#2b2250}
+html[data-theme="light"] .tutc .pv{background:#cfc4ff}
+/* customize dashboard */
+.navtxt{font-size:17px;font-weight:500;padding:0 6px;height:44px}
+.dctop{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:6px 16px 18px;background:var(--top)}
+.dcp{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dbox{width:100%;aspect-ratio:16/10;border:2px solid var(--text);border-radius:12px;display:grid;place-items:center;overflow:hidden}
+.dbox svg{width:100%;height:100%}
+.dcp .ib svg{width:22px;height:22px}
+.dch{display:flex;align-items:center;gap:4px;margin:26px 4px 10px}
+.dch h2{flex:1;margin:0}
+.dch .ib[disabled]{opacity:.25}
+.dch .ib svg{width:22px;height:22px}
+.dcl{padding-bottom:12px}
+.dcr{display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--card);position:relative;transition:transform .18s ease}
+.dcr.drag{z-index:3;transition:none;box-shadow:0 10px 30px rgba(0,0,0,.45);border-radius:12px}
+.dcr b{flex:1;font-weight:500;font-size:17px}
+.dci{width:52px;height:40px;border-radius:8px;background:var(--card2);display:grid;place-items:center;overflow:hidden;flex:none}
+.dci svg{width:100%;height:100%}
+.hdl{width:44px;height:40px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;touch-action:none;cursor:grab}
+.hdl i{width:22px;height:2px;border-radius:1px;background:var(--text)}
+.addrm{display:block;width:calc(100% - 32px);margin:14px 16px 0;height:50px;border-radius:12px;background:var(--chip);font-weight:500;font-size:16px;text-align:center}
+.opt.dct{gap:14px}
+.prompt .wbox{display:grid;place-items:center}
+/* compact bar: player shows just the clock and buttons */
+body.compact #mini .mth{display:none}
+
 </style>
 </head>
 <body>
@@ -1226,7 +1313,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "3.7";
+const APP_VERSION = "3.8";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -1290,13 +1377,14 @@ function applyEvent(e) {
     case "session.started": if (!p.v2) break; S.sessions[e.id] = { id: e.id, d: e.d, startTs: e.ts, endTs: null, dayKey: p.dayKey, name: p.name || "", items: p.items || [] }; S.bySession[e.id] = S.bySession[e.id] || []; break;
     case "session.edited": if (S.sessions[p.sessionId]) S.sessions[p.sessionId].items = p.items; break;
     case "session.finished": if (S.sessions[p.sessionId]) S.sessions[p.sessionId].endTs = p.endTs || e.ts; break;
-    case "set.logged": if (!S.sessions[p.sessionId]) break; S.sets[e.id] = { id: e.id, d: e.d, ts: e.ts, sessionId: p.sessionId, exId: p.exId, idx: p.idx, kg: p.kg || 0, reps: p.reps, p: p.p || 0, rir: p.rir == null ? null : p.rir, w: !!p.w, q: p.q || "clean", tKg: p.tKg, tReps: p.tReps, tRir: p.tRir };
+    case "set.logged": if (!S.sessions[p.sessionId]) break; S.sets[e.id] = { id: e.id, d: e.d, ts: e.ts, sessionId: p.sessionId, exId: p.exId, idx: p.idx, kg: p.kg || 0, reps: p.reps, p: p.p || 0, note: p.note || "", rir: p.rir == null ? null : p.rir, w: !!p.w, q: p.q || "clean", tKg: p.tKg, tReps: p.tReps, tRir: p.tRir };
       (S.bySession[p.sessionId] = S.bySession[p.sessionId] || []).push(e.id); (S.byEx[p.exId] = S.byEx[p.exId] || []).push(e.id); break;
     case "set.q": if (S.sets[p.ref]) S.sets[p.ref].q = p.q; break;
     case "set.rir": if (S.sets[p.ref]) S.sets[p.ref].rir = p.rir; break;
+    case "set.note": if (S.sets[p.ref]) S.sets[p.ref].note = p.note || ""; break;
     case "set.edited": if (S.sets[p.ref]) { if (p.p != null) S.sets[p.ref].p = p.p; if (p.kg != null) S.sets[p.ref].kg = p.kg; if (p.reps != null) S.sets[p.ref].reps = p.reps; } break;
     case "entity.deleted": removeRef(p.ref); break;
-    case "weight.logged": S.weights[e.d] = { id: e.id, d: e.d, kg: p.kg }; break;
+    case "weight.logged": S.weights[e.d] = { id: e.id, d: e.d, kg: p.kg, bf: p.bf == null ? null : p.bf }; break;
     case "waist.logged": S.waists[e.d] = { id: e.id, d: e.d, inch: p.inch }; break;
     case "measure.logged": S.measures[e.d] = Object.assign({ id: e.id, d: e.d }, p); break;
     case "settings.upserted": Object.assign(S.settings, p); break;
@@ -1617,7 +1705,7 @@ function render() {
   const m = $("#main");
   const keep = m.dataset.tab === TAB ? m.scrollTop : (SCROLL[TAB] || 0);
   m.innerHTML = TAB === "dashboard" ? vDash() : TAB === "workout" ? vWorkoutTab() : TAB === "levels" ? vLevels() : vMore();
-  m.dataset.tab = TAB; m.scrollTop = keep; LASTY = keep; if (keep < 40) document.body.classList.remove("compact");
+  m.dataset.tab = TAB; m.scrollTop = keep; LASTY = m.scrollTop; ACC = 0; FOLDLOCK = Date.now() + 400; if (keep < 60) document.body.classList.remove("compact");
   $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB));
   const pg = $("#pager"); if (pg) pg.addEventListener("scroll", () => { const i = Math.round(pg.scrollLeft / pg.clientWidth); $$(".pdots i").forEach((d, k) => d.classList.toggle("on", k === i)); }, { passive: true });
   renderPage();
@@ -1632,7 +1720,7 @@ function renderPage(keepScroll) {
   pg.innerHTML = K === "preview" ? vPreview(PAGE.dayKey) : K === "log" ? vLog() : K === "history" ? vHistory() : K === "wset" ? vWset()
     : K === "workouts" ? vWorkouts() : K === "muscle" ? vMuscle(PAGE.m) : K === "exercise" ? vExercise(PAGE.ex) : K === "wtrend" ? vWTrend()
     : K === "scale" ? vScale("weights") : K === "waist" ? vScale("waists") : K === "weighin" ? vHabit("weights") : K === "wohabit" ? vHabit("workouts")
-    : K === "exlist" ? vExList() : "";
+    : K === "exlist" ? vExList() : K === "dashcust" ? vDashCust() : "";
   pg.classList.add("on"); $("#tabs").hidden = true; paintMini();
   if (keepScroll) pg.scrollTop = y;
   const on = $("#strip .st.on"); if (on) { const st = $("#strip"); st.scrollLeft = Math.max(0, on.offsetLeft - st.clientWidth / 2 + on.clientWidth / 2); }
@@ -1676,45 +1764,61 @@ function ring(label, val, tgt, size, color, big) {
   return '<div class="ring' + (big ? " bigr" : "") + '"><div class="rv">' + ringSvg(size, big ? 4 : 3.5, tgt ? val / tgt : 0, color) + "<div><b>" + val + "</b><small>" + Math.max(0, tgt - val) + " left</small></div></div>"
     + '<div class="rl">' + label + '</div><div class="rt">' + tgt + " target</div></div>";
 }
+const DPOOL = {
+  insights: { n: "Insights & Analytics", short: "Insights", tiles: ["workouts", "wtrend"] },
+  habits: { n: "Habits", short: "Habits", tiles: ["weighin", "wohabit"] },
+  body: { n: "Body Metrics", short: "Body Metrics", tiles: ["scale", "waist", "bf"] },
+  muscles: { n: "Muscle Groups", short: "Muscle Groups", tiles: () => ALL_MUSCLES.map(m => "m:" + m) },
+  exercises: { n: "Exercises", short: "Exercises", tiles: () => EXERCISES.map(e => "e:" + e.id) } };
+const poolOf = k => typeof DPOOL[k].tiles === "function" ? DPOOL[k].tiles() : DPOOL[k].tiles;
+function dashLayout() {
+  const L = S.settings.dash;
+  if (L && L.secs) return clone(L);
+  const hide = S.settings.dashHide || [];
+  return { pages: ["rings", "records"], secs: [["insights", ["workouts", "wtrend"]], ["habits", ["weighin", "wohabit"]], ["body", ["scale", "waist"]], ["muscles", ["m:Side Delts", "m:Lats"]], ["exercises", topExercises().map(x => "e:" + x)]]
+    .map(([k, t]) => ({ k, tiles: hide.includes(k) ? [] : t })) };
+}
+const TILE_NAME = id => ({ workouts: "Workouts", wtrend: "Weight Trend", weighin: "Weigh-In", wohabit: "Workouts", scale: "Scale Weight", waist: "Waist", bf: "Body Fat" })[id] || (id.startsWith("m:") ? id.slice(2) : (getEx(id.slice(2)) || {}).n || id);
+function tileIcon(id) {
+  const sv = b => '<svg viewBox="0 0 32 24">' + b + "</svg>";
+  if (id === "workouts") return sv('<rect x="4" y="9" width="6" height="11" rx="1" fill="var(--orange)"/><rect x="13" y="4" width="6" height="16" rx="1" fill="var(--orange)"/><rect x="22" y="15" width="6" height="5" rx="1" fill="var(--orange)"/>');
+  if (id === "wtrend") return sv('<path d="M3 13l7 6L29 4" fill="none" stroke="var(--purple)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>');
+  if (id === "weighin" || id === "wohabit") { const c = id === "weighin" ? "var(--green)" : "var(--orange)"; return sv('<rect x="3" y="9" width="7" height="7" rx="1.5" fill="' + c + '"/><rect x="12.5" y="9" width="7" height="7" rx="1.5" fill="' + c + '"/><rect x="22" y="9" width="7" height="7" rx="1.5" fill="' + c + '"/>'); }
+  if (id === "scale" || id === "waist" || id === "bf") return sv('<path d="M3 16l7-5 6 3 13-9" fill="none" stroke="var(--green)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>');
+  if (id.startsWith("m:")) return muscleThumb(id.slice(2));
+  return thumbFor(id.slice(2));
+}
+function tileHtml(id) {
+  const d = today();
+  if (id === "workouts") { const sv = sessionsSorted().filter(s2 => s2.endTs).slice(-7).map(s2 => sessionSets(s2.id).length); return card2("openPage", ' data-k="workouts"', "Workouts", "Last 7 Workouts", barsSvg(sv, "var(--orange)"), sv.length ? sv[sv.length - 1] : "--", "sets"); }
+  if (id === "wtrend") { const tr = trendSeries(weightList()), l7 = tr.filter(x => x.d >= addDays(d, -6)); return card2("openPage", ' data-k="wtrend"', "Weight Trend", "Last 7 Days", dotLine(l7.map(x => x.trend), "var(--purple)"), tr.length ? tr[tr.length - 1].trend.toFixed(1) : "--", "kg"); }
+  if (id === "weighin" || id === "wohabit") {
+    const w = id === "weighin", days30 = Array.from({ length: 30 }, (_, i) => addDays(d, i - 29)), wk0 = weekSun(d);
+    const n = w ? Object.keys(S.weights).filter(x => x >= wk0).length : sessionsSorted().filter(s2 => s2.d >= wk0 && s2.endTs && sessionSets(s2.id).length).length;
+    return card2("openPage", ' data-k="' + id + '"', w ? "Weigh-In" : "Workouts", "Last 30 Days", '<div class="dots">' + days30.map(x => "<i" + ((w ? S.weights[x] : doneOn(x)) ? (w ? ' class="g"' : ' class="o"') : "") + "></i>").join("") + "</div>", w ? n + "/7" : n, "this week");
+  }
+  if (id === "scale" || id === "bf") { const wl = weightList().filter(x => id === "scale" || x.bf != null).slice(-7), v = x => id === "scale" ? x.kg : x.bf; return card2("openPage", ' data-k="scale"', TILE_NAME(id), "Last 7 Entries", dotLine(wl.map(v), "var(--green)"), wl.length ? v(wl[wl.length - 1]).toFixed(1) : "--", id === "scale" ? "kg" : "%"); }
+  if (id === "waist") { const ws = Object.values(S.waists).sort((a, b) => a.d < b.d ? -1 : 1).slice(-7); return card2("openPage", ' data-k="waist"', "Waist", "Last 7 Entries", dotLine(ws.map(x => x.inch), "var(--green)"), ws.length ? ws[ws.length - 1].inch : "--", "in"); }
+  if (id.startsWith("m:")) { const m = id.slice(2), v = muscleSets(7, d)[m]; return card2("muscle", ' data-m="' + esc(m) + '"', m, "Last 7 Days", '<div class="thumb mthumb">' + muscleThumb(m) + "</div>", v ? fmtKg(v) : "--", v === 1 ? "set" : "sets"); }
+  const ex = id.slice(2), hs = histFor(ex).slice(-7), v = hs.map(x => Math.max(...x.sets.map(s2 => e1rm(s2.kg || 0, s2.reps))));
+  return card2("openEx", ' data-ex="' + ex + '"', TILE_NAME(id), "Last 7 Workouts", barsSvg(v.map(Math.round), "var(--blue)"), v.length ? fmtKg(Math.round(v[v.length - 1] * 2) / 2) : "--", "kg 1-RM");
+}
 const DASH_SECS = [["insights", "Insights & Analytics"], ["habits", "Habits"], ["body", "Body Metrics"], ["muscles", "Muscle Groups"], ["exercises", "Exercises"]];
 const dashOn = k => !(S.settings.dashHide || []).includes(k);
 const card2 = (act, extra, title, sub, viz, val, unit) => '<button class="ic press" data-a="' + act + '"' + (extra || "") + "><b>" + esc(title) + '</b><span class="p">' + sub + '</span><div class="viz">' + viz + '</div><div class="v">' + val + "<small>" + unit + "</small></div>" + I.chev + "</button>";
 function vDash() {
-  const dt = new Date(), d = today();
+  const d = today(), L = dashLayout();
   let h = head("Dashboard", "", '<button class="ib" data-a="dashCustom" aria-label="Customize">' + I.sliders + "</button>");
-  const st = weekStats(RINGMODE);
-  h += '<div class="pager" id="pager"><div class="pg"><h2 class="hh">Weekly Workouts</h2><div class="rings" id="rings">' + ringsHtml() + "</div>"
-    + '<div class="seg slide' + (RINGMODE === "all" ? " right" : "") + '"><i class="thumbx"></i><button class="' + (RINGMODE === "program" ? "on" : "") + '" data-a="ringMode" data-v="program">Active Program</button><button class="' + (RINGMODE === "all" ? "on" : "") + '" data-a="ringMode" data-v="all">All Workouts</button></div></div>'
-    + '<div class="pg"><h2 class="hh">Recent Records</h2>' + recordsHtml() + "</div></div>"
-    + '<div class="pdots"><i class="on"></i><i></i></div></div><div class="body-pad">';
+  const pg = { rings: '<div class="pg"><h2 class="hh">Weekly Workouts</h2><div class="rings" id="rings">' + ringsHtml() + "</div>"
+      + '<div class="seg slide' + (RINGMODE === "all" ? " right" : "") + '"><i class="thumbx"></i><button class="' + (RINGMODE === "program" ? "on" : "") + '" data-a="ringMode" data-v="program">Active Program</button><button class="' + (RINGMODE === "all" ? "on" : "") + '" data-a="ringMode" data-v="all">All Workouts</button></div></div>',
+    records: '<div class="pg"><h2 class="hh">Recent Records</h2>' + recordsHtml() + "</div>" };
+  h += '<div class="pager" id="pager">' + L.pages.map(p => pg[p]).join("") + '</div><div class="pdots"><i class="on"></i><i></i></div></div><div class="body-pad">';
   if (storageBroken) h += '<div class="banner">' + esc(storageBroken) + "</div>";
   else if (!KV.token) h += '<div class="banner">Not backed up yet<button data-a="backup">Set up</button></div>';
   if (activeSession()) h += '<button class="prompt press" data-a="resume" style="width:100%;text-align:left"><div class="m"><b>' + esc(activeSession().name) + '</b><span class="small">Workout in progress</span></div><span class="ul">Resume</span></button>';
-  if (!S.weights[d]) h += '<div class="prompt"><div class="m"><b>Morning weigh-in</b><span class="small">After you pee, before food</span></div><button class="gfield wbox" data-a="gpOpen" data-k="wIn" data-label="Morning weight" data-unit="kg" data-step="0.1">kg</button></div>';
-  if (dashOn("insights")) {
-    const past = sessionsSorted().filter(s2 => s2.endTs).slice(-7), sv = past.map(s2 => sessionSets(s2.id).length);
-    const tr = trendSeries(weightList()), last7 = tr.filter(x => x.d >= addDays(d, -6));
-    h += "<h2>Insights &amp; Analytics</h2><div class='grid2'>" + card2("openPage", ' data-k="workouts"', "Workouts", "Last 7 Workouts", barsSvg(sv, "var(--orange)"), sv.length ? sv[sv.length - 1] : "---", "sets")
-      + card2("openPage", ' data-k="wtrend"', "Weight Trend", "Last 7 Days", dotLine(last7.map(x => x.trend), "var(--purple)"), tr.length ? tr[tr.length - 1].trend.toFixed(1) : "--", "kg") + "</div>";
-  }
-  if (dashOn("habits")) {
-    const days30 = Array.from({ length: 30 }, (_, i) => addDays(d, i - 29)), wk0 = weekSun(d);
-    const thisWeekW = Object.keys(S.weights).filter(x => x >= wk0).length, thisWeekT = sessionsSorted().filter(s2 => s2.d >= wk0 && s2.endTs && sessionSets(s2.id).length).length;
-    h += "<h2>Habits</h2><div class='grid2'>" + card2("openPage", ' data-k="weighin"', "Weigh-In", "Last 30 Days", '<div class="dots">' + days30.map(x => "<i" + (S.weights[x] ? ' class="g"' : "") + "></i>").join("") + "</div>", thisWeekW + "/7", "this week")
-      + card2("openPage", ' data-k="wohabit"', "Workouts", "Last 30 Days", '<div class="dots">' + days30.map(x => "<i" + (doneOn(x) ? ' class="o"' : "") + "></i>").join("") + "</div>", thisWeekT, "this week") + "</div>";
-  }
-  if (dashOn("body")) {
-    const wl = weightList().slice(-7), ws = Object.values(S.waists).sort((a, b) => a.d < b.d ? -1 : 1).slice(-7);
-    h += '<div class="sec"><h2>Body Metrics</h2><button class="ul" data-a="metricsAll">See All</button></div><div class="grid2">' + card2("openPage", ' data-k="scale"', "Scale Weight", "Last 7 Entries", dotLine(wl.map(x => x.kg), "var(--green)"), wl.length ? wl[wl.length - 1].kg.toFixed(1) : "--", "kg")
-      + card2("openPage", ' data-k="waist"', "Waist", "Last 7 Entries", dotLine(ws.map(x => x.inch), "var(--green)"), ws.length ? ws[ws.length - 1].inch : "--", "in") + "</div>";
-  }
-  if (dashOn("muscles")) {
-    const mv = muscleSets(7, d);
-    h += '<div class="sec"><h2>Muscle Groups</h2><button class="ul" data-a="tabTo" data-tab="levels">See All</button></div><div class="grid2">' + ["Side Delts", "Lats"].map(m => card2("muscle", ' data-m="' + m + '"', m, "Last 7 Days", '<div class="thumb mthumb">' + muscleThumb(m) + "</div>", mv[m] ? fmtKg(mv[m]) : "--", mv[m] === 1 ? "set" : "sets")).join("") + "</div>";
-  }
-  if (dashOn("exercises")) {
-    h += '<div class="sec"><h2>Exercises</h2><button class="ul" data-a="openPage" data-k="exlist">See All</button></div><div class="grid2">' + topExercises().map(id => { const hs = histFor(id).slice(-7), v = hs.map(x => Math.max(...x.sets.map(s2 => e1rm(s2.kg || 0, s2.reps)))); return card2("openEx", ' data-ex="' + id + '"', (getEx(id) || {}).n, "Last 7 Workouts", barsSvg(v.map(Math.round), "var(--blue)"), v.length ? fmtKg(Math.round(v[v.length - 1] * 2) / 2) : "--", "kg 1-RM"); }).join("") + "</div>";
-  }
+  if (!S.weights[d]) h += '<button class="prompt press" data-a="weightSheet" style="width:100%;text-align:left"><div class="m"><b>Morning weigh-in</b><span class="small">After you pee, before food</span></div><span class="wbox">kg</span></button>';
+  const see = { body: '<button class="ul" data-a="openPage" data-k="scale">See All</button>', muscles: '<button class="ul" data-a="tabTo" data-tab="levels">See All</button>', exercises: '<button class="ul" data-a="openPage" data-k="exlist">See All</button>' };
+  L.secs.forEach(sec => { if (!sec.tiles.length) return; h += '<div class="sec"><h2>' + esc(DPOOL[sec.k].n) + "</h2>" + (see[sec.k] || "") + '</div><div class="grid2">' + sec.tiles.map(tileHtml).join("") + "</div>"; });
   return h + "</div>";
 }
 function topExercises() { const c = {}; Object.values(S.sets).forEach(x => { if (!x.w) c[x.exId] = (c[x.exId] || 0) + 1; }); const l = Object.keys(c).sort((a, b) => c[b] - c[a]); ["pullup", "inc_smith_press"].forEach(x => { if (!l.includes(x)) l.push(x); }); return l.slice(0, 2); }
@@ -1724,8 +1828,48 @@ function recordsHtml() {
   if (!l.length) return '<div class="recs empty"><p class="small">Your best lifts show up here once you log workouts.</p></div>';
   return '<div class="recs">' + l.map(b => '<button class="rec" data-a="openEx" data-ex="' + b.x.exId + '"><b>' + esc((getEx(b.x.exId) || {}).n) + "</b><span>" + fmtKg(b.x.kg) + " kg × " + b.x.reps + " · " + dShort(b.x.d) + "</span></button>").join("") + "</div>";
 }
-ACT.dashCustom = () => openSheet("Dashboard", "Choose what shows", DASH_SECS.map(([k, n]) => '<div class="trest"><div class="m"><b>' + n + '</b></div><button class="sw' + (dashOn(k) ? " on" : "") + '" data-a="dashTog" data-k="' + k + '"><i></i></button></div>').join(""), { name: "dash" });
-ACT.dashTog = el => { const k = el.dataset.k, l = (S.settings.dashHide || []).slice(), i = l.indexOf(k); if (i >= 0) l.splice(i, 1); else l.push(k); addEvent("settings.upserted", { dashHide: l }); ACT.dashCustom(); render(); };
+let DC = null;
+ACT.dashCustom = () => { DC = dashLayout(); openPage({ kind: "dashcust" }); };
+function vDashCust() {
+  const prev = { rings: '<svg viewBox="0 0 160 90"><circle cx="40" cy="38" r="17" fill="none" stroke="var(--blue)" stroke-width="3"/><circle cx="80" cy="38" r="22" fill="none" stroke="var(--orange)" stroke-width="3"/><circle cx="120" cy="38" r="17" fill="none" stroke="var(--teal)" stroke-width="3"/><rect x="26" y="70" width="28" height="6" rx="3" fill="var(--chip)"/><rect x="66" y="70" width="28" height="6" rx="3" fill="var(--chip)"/><rect x="106" y="70" width="28" height="6" rx="3" fill="var(--chip)"/></svg>',
+    records: '<svg viewBox="0 0 160 90">' + [0, 1, 2, 3, 4, 5].map(i => '<rect x="18" y="' + (10 + i * 12) + '" width="14" height="6" rx="3" fill="var(--chip)"/><rect x="40" y="' + (10 + i * 12) + '" width="' + (84 - i * 7) + '" height="6" rx="2" fill="var(--gold)"/><rect x="' + (130 - i * 7) + '" y="' + (10 + i * 12) + '" width="14" height="6" rx="3" fill="var(--chip)"/>').join("") + "</svg>" };
+  let h = nav("Customize Dashboard", '<button class="navtxt" data-a="dcSave">Save</button>') + '<div class="dctop">' + DC.pages.map((p, i) => '<div class="dcp"><div class="dbox">' + prev[p] + '</div><button class="ib plain" data-a="dcPage" aria-label="Move">' + (i ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>') + "</button></div>").join("") + '</div><div class="body-pad">';
+  DC.secs.forEach((sec, si) => {
+    const up = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>';
+    h += '<div class="dch"><h2>' + esc(DPOOL[sec.k].n) + '</h2><button class="ib plain"' + (si ? "" : " disabled") + ' data-a="dcMove" data-i="' + si + '" data-v="-1" aria-label="Move up">' + up + '</button><button class="ib plain"' + (si < DC.secs.length - 1 ? "" : " disabled") + ' data-a="dcMove" data-i="' + si + '" data-v="1" aria-label="Move down" style="transform:scaleY(-1)">' + up + "</button></div>";
+    h += '<div class="card dcl" data-sec="' + si + '">' + sec.tiles.map((t, ti) => '<div class="dcr" data-t="' + ti + '"><span class="dci">' + tileIcon(t) + "</span><b>" + esc(TILE_NAME(t)) + '</b><span class="hdl" aria-label="Drag to reorder"><i></i><i></i></span></div>').join("")
+      + '<button class="addrm" data-a="dcAdd" data-i="' + si + '">Add or Remove ' + esc(DPOOL[sec.k].short) + "</button></div>";
+  });
+  return h + "</div>";
+}
+ACT.dcPage = () => { DC.pages.reverse(); haptic(); renderPage(true); };
+ACT.dcMove = el => { const i = +el.dataset.i, j = i + +el.dataset.v; if (j < 0 || j >= DC.secs.length) return; const t = DC.secs[i]; DC.secs[i] = DC.secs[j]; DC.secs[j] = t; haptic(); renderPage(true); };
+ACT.dcAdd = el => { DCSEC = +el.dataset.i; paintDcAdd(); };
+let DCSEC = 0;
+function paintDcAdd() {
+  const sec = DC.secs[DCSEC], pool = poolOf(sec.k);
+  openSheet(DPOOL[sec.k].n, "Add or remove tiles", pool.map(t => '<button class="opt dct" data-a="dcTog" data-t="' + esc(t) + '"><span class="dci">' + tileIcon(t) + '</span><div class="m"><b>' + esc(TILE_NAME(t)) + '</b></div><span class="sw' + (sec.tiles.includes(t) ? " on" : "") + '"><i></i></span></button>').join("") + '<button class="big" style="margin-top:16px" data-a="dcDone">Done</button>', { name: "dcadd", keep: true, tall: pool.length > 6 });
+}
+ACT.dcTog = el => { const sec = DC.secs[DCSEC], t = el.dataset.t, i = sec.tiles.indexOf(t); if (i >= 0) sec.tiles.splice(i, 1); else sec.tiles.push(t); haptic(); $(".sw", el).classList.toggle("on", i < 0); };
+ACT.dcDone = () => { closeSheet(); renderPage(true); };
+ACT.dcSave = () => { addEvent("settings.upserted", { dash: DC }); haptic(); toast("Dashboard saved"); DC = null; ACT.pageBack(); };
+// drag the two-line handle to reorder tiles inside a section
+document.addEventListener("pointerdown", e => {
+  const hd = e.target.closest(".dcr .hdl"); if (!hd || !DC) return; e.preventDefault();
+  const row = hd.closest(".dcr"), list = row.parentElement, si = +list.dataset.sec, y0 = e.clientY; let from = +row.dataset.t, cur = from;
+  row.classList.add("drag"); hd.setPointerCapture(e.pointerId);
+  const rows = () => $$(".dcr", list), H = row.offsetHeight;
+  const mv = ev => {
+    const dy = ev.clientY - y0, to = Math.max(0, Math.min(rows().length - 1, from + Math.round(dy / H)));
+    row.style.transform = "translateY(" + dy + "px)";
+    rows().forEach((r, k) => { if (r === row) return; const shift = (k > from && k <= to) ? -H : (k < from && k >= to) ? H : 0; r.style.transform = shift ? "translateY(" + shift + "px)" : ""; });
+    if (to !== cur) { cur = to; haptic(); }
+  };
+  const up = () => { hd.removeEventListener("pointermove", mv); hd.removeEventListener("pointerup", up); hd.removeEventListener("pointercancel", up);
+    const t = DC.secs[si].tiles; const [x] = t.splice(from, 1); t.splice(cur, 0, x); renderPage(true); };
+  hd.addEventListener("pointermove", mv); hd.addEventListener("pointerup", up); hd.addEventListener("pointercancel", up);
+});
+ACT.dashTog = () => {};
 ACT.metricsAll = () => openSheet("Body Metrics", "", optRow(I.scale, "Scale Weight", "", "openPage", ' data-k="scale"', "chev") + optRow(I.tape, "Waist", "", "openPage", ' data-k="waist"', "chev") + optRow(I.ruler, "Measurements", "Arms, calf, neck, thigh, chest", "measureSheet", "", "chev") + optRow(I.fire, "Weight Trend", "", "openPage", ' data-k="wtrend"', "chev"));
 ACT.openPage = el => openPage({ kind: el.dataset.k });
 ACT.openEx = el => openPage({ kind: "exercise", ex: el.dataset.ex });
@@ -1907,6 +2051,7 @@ function vExPage(s, i) {
       + '<span class="cell">' + (bw ? '<div class="bw">BW</div>' : cellBtn(i, k, "kg", st ? fmtKg(st.kg) : dr.kg, r.kg != null ? fmtKg(r.kg) : "")) + "</span>"
       + '<span class="cell">' + cellBtn(i, k, "reps", st ? st.reps + (st.p ? "+" + st.p : "") : (dr.reps != null && dr.reps !== "" ? dr.reps + (dr.p ? "+" + dr.p : "") : null), String(r.reps != null ? r.reps : r.lo)) + (rirOn && rirShow != null ? '<button class="rir r' + Math.min(6, rirShow) + '" data-a="kpOpen" data-i="' + i + '" data-k="' + k + '" data-f="reps">' + (rirShow >= 6 ? "6+" : rirShow) + "</button>" : "") + "</span>"
       + '<button class="cb' + (st ? " on" : "") + '" data-a="tick" data-i="' + i + '" data-k="' + k + '">' + I.tick + "</button></div>";
+    { const nt = st ? st.note : dr.note; if (nt) h += '<div class="setnote" data-a="kpOpen" data-i="' + i + '" data-k="' + k + '" data-f="reps">' + esc(nt) + "</div>"; }
     if (st && bw) h += '<div class="qrow"><button class="clean' + (st.q !== "cheated" ? " on" : "") + '" data-a="q" data-id="' + st.id + '" data-v="clean">Clean</button><button class="cheated' + (st.q === "cheated" ? " on" : "") + '" data-a="q" data-id="' + st.id + '" data-v="cheated">Cheated</button></div>';
   });
   h += '<button class="addset press" data-a="addSet" data-i="' + i + '">' + I.plus + "</button></div>";
@@ -1932,8 +2077,8 @@ ACT.tick = el => {
   const part = Math.max(0, Math.round(numIn(D.p) || 0));
   if (ex.eq !== "bw" && kg == null) { kpOpen(i, k, "kg"); return toast("Type the weight first"); }
   if (reps == null || reps <= 0) { kpOpen(i, k, "reps"); return toast("Type your reps"); }
-  const pk = s.id + ":" + i + ":" + k, rir = !setOn("rirTrack") ? null : PENDRIR[pk] != null ? PENDRIR[pk] : r.rir; delete PENDRIR[pk]; delete DRAFT[pk];
-  addEvent("set.logged", { sessionId: s.id, exId: it.ex, item: i, idx: k, kg, reps: Math.round(reps), p: part, rir, tKg: r.kg, tReps: r.reps, tRir: r.rir, q: "clean" });
+  const pk = s.id + ":" + i + ":" + k, rir = !setOn("rirTrack") ? null : PENDRIR[pk] !== undefined ? PENDRIR[pk] : r.rir; delete PENDRIR[pk]; delete DRAFT[pk];
+  addEvent("set.logged", { sessionId: s.id, exId: it.ex, item: i, idx: k, kg, reps: Math.round(reps), p: part, note: D.note || "", rir, tKg: r.kg, tReps: r.reps, tRir: r.rir, q: "clean" });
   kpClose(true); haptic();
   // copied weights below this set give way to whatever Smart Progression picks next
   for (let k2 = k + 1; k2 < it.n; k2++) { const D2 = DRAFT[s.id + ":" + i + ":" + k2]; if (D2 && D2.prop) { delete D2.kg; D2.prop = false; } }
@@ -1955,8 +2100,8 @@ function fillSets(s, i) {
     let kg = ex.eq === "bw" ? 0 : numIn(dr.kg); if (kg == null) kg = r.kg;
     let reps = numIn(dr.reps); if (reps == null) reps = r.reps != null ? r.reps : r.lo;
     if (ex.eq !== "bw" && kg == null) return;
-    const rir = !setOn("rirTrack") ? null : PENDRIR[pk] != null ? PENDRIR[pk] : r.rir; delete PENDRIR[pk]; delete DRAFT[pk];
-    addEvent("set.logged", { sessionId: s.id, exId: it.ex, item: i, idx: k, kg, reps: Math.round(reps), p: Math.max(0, Math.round(numIn(dr.p) || 0)), rir, tKg: r.kg, tReps: r.reps, tRir: r.rir, q: "clean" }); n++;
+    const rir = !setOn("rirTrack") ? null : PENDRIR[pk] !== undefined ? PENDRIR[pk] : r.rir; delete PENDRIR[pk]; delete DRAFT[pk];
+    addEvent("set.logged", { sessionId: s.id, exId: it.ex, item: i, idx: k, kg, reps: Math.round(reps), p: Math.max(0, Math.round(numIn(dr.p) || 0)), note: nt, rir, tKg: r.kg, tReps: r.reps, tRir: r.rir, q: "clean" }); n++;
   });
   return n;
 }
@@ -1969,7 +2114,8 @@ ACT.logAll = el => { if (KP) kpCommit(); const s = activeSession(), i = +el.data
 document.addEventListener("change", e => {
   const inp = e.target;
   if (inp.id === "wIn") return saveWeight(inp.value);
-  if (inp.id === "entryDate") { if (inp.value) entrySheet(inp.value); return; }
+  if (inp.id === "entryDate") { if (inp.value) entrySheet(inp.value, ENTRY_K); return; }
+  if (inp.dataset && inp.dataset.hsel) { const k = inp.dataset.hsel, cur = (CALM2[k] || today().slice(0, 7)).split("-"); if (inp.dataset.part === "m") cur[1] = pad2(+inp.value); else cur[0] = inp.value; CALM2[k] = cur.join("-"); renderPage(true); return; }
 });
 document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.tagName === "INPUT") e.target.blur(); });
 ACT.rirPick = el => kpOpen(+el.dataset.i, +el.dataset.k, "reps");
@@ -2223,27 +2369,37 @@ ACT.pickDay = () => openSheet("Which workout?", "", DAY_KEYS.map(k => '<button c
 function saveWeight(v) { const kg = numIn(v); if (kg == null) return; if (kg < 35 || kg > 150) return toast("Type it in kg"); addEvent("weight.logged", { kg: Math.round(kg * 10) / 10 }); haptic(); toast("Weight saved"); closeSheet(); render(); }
 function saveWaist(v) { const inch = numIn(v); if (inch == null) return; if (inch < 20 || inch > 50) return toast("Type it in inches"); addEvent("waist.logged", { inch: Math.round(inch * 4) / 4 }); haptic(); toast("Waist saved"); closeSheet(); render(); }
 const ddmmyyyy = d => d.slice(8) + "/" + d.slice(5, 7) + "/" + d.slice(0, 4);
-function entrySheet(d) {
-  ENTRY_D = d; const w = S.weights[d], wa = S.waists[d], fut = d > today(); GV.eW = w ? String(w.kg) : ""; GV.eWa = wa ? String(wa.inch) : "";
+function entrySheet(d, kind) {
+  kind = kind || "scale"; ENTRY_D = d; ENTRY_K = kind; const w = S.weights[d], wa = S.waists[d], fut = d > today();
+  GV.eW = w ? String(w.kg) : ""; GV.eBf = w && w.bf != null ? String(w.bf) : ""; GV.eWa = wa ? String(wa.inch) : "";
   const title = '<label class="dpick">' + ddmmyyyy(d) + " " + I.down + '<input type="date" id="entryDate" value="' + d + '"></label>';
-  const right = (w || wa) ? '<button class="ib plain" data-a="entryDel" aria-label="Delete">' + I.trash + "</button>" : "";
-  const body = fut ? '<p class="hint" style="margin-top:6px">This day has not happened yet. Pick today or an earlier day to add a weigh-in.</p>'
-    : '<div class="ef"><div><label>Weight</label>' + gField("eW", w ? String(w.kg) : "", "kg", "Weight", "0.1") + '</div><div><label>Waist</label>' + gField("eWa", wa ? String(wa.inch) : "", "in", "Waist", "0.25") + '</div></div><button class="big" style="margin-top:14px" data-a="entrySave">Save</button><p class="hint">Weigh in the morning after you pee, before food or water. Waist on Saturdays at the belly button, breathing out normally.</p>';
-  openSheet("", "Body Metrics", body, { titleHtml: title, right, name: "entry" });
+  const has = kind === "waist" ? wa : w;
+  const right = has ? '<button class="ib plain" data-a="entryDel" aria-label="Delete">' + I.trash + "</button>" : "";
+  const body = fut ? '<p class="hint" style="margin-top:6px">This day has not happened yet. Pick today or an earlier day.</p>'
+    : kind === "waist" ? '<div class="ef one"><div><label>Waist</label>' + gField("eWa", GV.eWa, "in", "Waist", "0.25") + '</div></div><button class="big" style="margin-top:14px" data-a="entrySave">Save</button>'
+    : '<div class="ef wbf"><div><label>Weight</label>' + gField("eW", GV.eW, "kg", "Weight", "0.1") + '</div><div><label>Body Fat</label>' + gField("eBf", GV.eBf, "%", "Body fat", "0.5") + '</div></div><button class="big" style="margin-top:14px" data-a="entrySave">Save</button>';
+  openSheet("", kind === "waist" ? "Waist" : "Scale Weight", body, { titleHtml: title, right, name: "entry" });
+  if (!fut && !has) setTimeout(() => { const f = $('[data-k="' + (kind === "waist" ? "eWa" : "eW") + '"]'); if (f) ACT.gpOpen(f); }, 380);
 }
-ACT.weightSheet = el => entrySheet((el && el.dataset && el.dataset.d) || today());
+let ENTRY_K = "scale";
+ACT.weightSheet = el => entrySheet((el && el.dataset && el.dataset.d) || today(), "scale");
 ACT.entrySave = () => {
-  gpClose(); const d = ENTRY_D, kg = numIn(GV.eW), inch = numIn(GV.eWa);
-  if (kg == null && inch == null) return toast("Type your weight or waist");
-  if (kg != null && (kg < 35 || kg > 150)) return toast("Weight should be in kg");
-  if (inch != null && (inch < 20 || inch > 50)) return toast("Waist should be in inches");
-  if (kg != null && (!S.weights[d] || S.weights[d].kg !== kg)) addEvent("weight.logged", { kg: Math.round(kg * 10) / 10 }, d);
-  if (inch != null && (!S.waists[d] || S.waists[d].inch !== inch)) addEvent("waist.logged", { inch: Math.round(inch * 4) / 4 }, d);
+  gpClose(); const d = ENTRY_D, kg = numIn(GV.eW), bf = numIn(GV.eBf), inch = numIn(GV.eWa);
+  if (ENTRY_K === "waist") {
+    if (inch == null) return toast("Type your waist");
+    if (inch < 20 || inch > 50) return toast("Waist should be in inches");
+    addEvent("waist.logged", { inch: Math.round(inch * 4) / 4 }, d);
+  } else {
+    if (kg == null) return toast("Type your weight");
+    if (kg < 35 || kg > 150) return toast("Weight should be in kg");
+    if (bf != null && (bf < 3 || bf > 40)) return toast("Body fat should be a %");
+    addEvent("weight.logged", bf == null ? { kg: Math.round(kg * 10) / 10 } : { kg: Math.round(kg * 10) / 10, bf: Math.round(bf * 10) / 10 }, d);
+  }
   haptic(); closeSheet(); toast("Saved"); render(); if (PAGE) renderPage(true);
 };
-ACT.entryDel = el => { if (el.dataset.sure !== "1") { el.dataset.sure = "1"; el.classList.add("warn"); toast("Tap the bin again to delete this day"); return; } const d = ENTRY_D; [S.weights[d], S.waists[d]].forEach(x => { if (x) addEvent("entity.deleted", { ref: x.id }); }); rebuild(); closeSheet(); toast("Deleted"); render(); if (PAGE) renderPage(true); };
+ACT.entryDel = el => { if (el.dataset.sure !== "1") { el.dataset.sure = "1"; el.classList.add("warn"); toast("Tap the bin again to delete"); return; } const d = ENTRY_D, x = ENTRY_K === "waist" ? S.waists[d] : S.weights[d]; if (x) addEvent("entity.deleted", { ref: x.id }); rebuild(); closeSheet(); toast("Deleted"); render(); if (PAGE) renderPage(true); };
 ACT.saveW = () => saveWeight($("#wEdit").value);
-ACT.waistSheet = el => entrySheet((el && el.dataset && el.dataset.d) || today());
+ACT.waistSheet = el => entrySheet((el && el.dataset && el.dataset.d) || today(), "waist");
 ACT.saveWa = () => saveWaist($("#waEdit").value);
 const MEAS = [["armR", "Arm, relaxed"], ["armF", "Arm, flexed"], ["calf", "Calf"], ["neck", "Neck"], ["thigh", "Thigh"], ["chest", "Chest"]];
 ACT.measureSheet = () => {
@@ -2334,12 +2490,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ===== app keypad (no iPhone keyboard while logging) =====
 // one layout for every keypad:  1 2 3 [hide] / 4 5 6 [delete] / 7 8 9 [extra] / [corner] 0 0 [go]
-function padGrid(act, hideAct, extra, corner, go) {
+function padGrid(act, hideAct, extra, corner, go, note) {
   const k = v => '<button class="kk" data-a="' + act + '" data-v="' + v + '">' + v + "</button>";
-  return '<div class="kp-grid">' + k(1) + k(2) + k(3) + '<button class="ks" data-a="' + hideAct + '" aria-label="Hide keypad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="11" rx="2"/><path d="M7 8h.01M11 8h.01M15 8h.01M7 11h10M9 19l3 2 3-2"/></svg></button>'
-    + k(4) + k(5) + k(6) + '<button class="ks del" data-a="' + act + '" data-v="del" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11v14H9l-6-7z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/></svg></button>'
-    + k(7) + k(8) + k(9) + extra
-    + corner + '<button class="kk zero" data-a="' + act + '" data-v="0">0</button>' + go + "</div>";
+  const hide = '<button class="ks" data-a="' + hideAct + '" aria-label="Hide keypad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="11" rx="2"/><path d="M7 8h.01M11 8h.01M15 8h.01M7 11h10M9 19l3 2 3-2"/></svg></button>';
+  const del = '<button class="kk del" data-a="' + act + '" data-v="del" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11v14H9l-6-7z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/></svg></button>';
+  return '<div class="kp-grid">' + k(1) + k(2) + k(3) + hide + k(4) + k(5) + k(6) + (note || '<span class="ks dim"></span>') + k(7) + k(8) + k(9) + extra + corner + k(0) + del + go + "</div>";
 }
 
 let KP = null;
@@ -2389,19 +2544,30 @@ function kpShow() {
 }
 function paintKp() {
   const el = $("#kp"); if (!KP) { el.classList.remove("on"); return; }
-  const c = kpCtx(), rirOn = setOn("rirTrack"), pk = kpKey(), rirCur = c.st ? c.st.rir : (PENDRIR[pk] != null ? PENDRIR[pk] : c.r.rir), isKg = KP.f === "kg";
+  const c = kpCtx(), rirOn = setOn("rirTrack"), pk = kpKey(), rirCur = c.st ? c.st.rir : (PENDRIR[pk] !== undefined ? PENDRIR[pk] : c.r.rir), isKg = KP.f === "kg";
   let top = "";
   if (isKg) {
     const v = numIn(kpCur());
     top = '<div class="kp-info">' + (c.ex.eq === "bb" && v ? (v >= 20 ? fmtKg((v - 20) / 2) + " kg each side + 20 kg bar" : "Lighter than the 20 kg bar") : c.ex.eq === "db" && v ? fmtKg(v) + " kg in each hand" : "Weights move in 2.5 kg steps") + "</div>";
-  } else if (rirOn) top = '<div class="kp-rir">' + [0, 1, 2, 3, 4, 5, 6].map(v => '<button class="rir r' + v + (rirCur === v || (v === 6 && rirCur >= 6) ? " sel" : "") + '" data-a="kpRir" data-v="' + v + '">' + (v === 6 ? "6+" : v) + "</button>").join("") + '<button class="rir rq' + (rirCur == null ? " sel" : "") + '" data-a="kpRir" data-v="">?</button></div>';
-  const extra = isKg ? '<div class="ks pm"><button data-a="kpStep" data-v="-1">−</button><button data-a="kpStep" data-v="1">+</button></div>' : '<div class="ks pm fp"><button class="' + (KP.f !== "p" ? "on" : "") + '" data-a="kpMode" data-v="reps">Full</button><button class="' + (KP.f === "p" ? "on" : "") + '" data-a="kpMode" data-v="p">Partial</button></div>';
-  const corner = isKg ? '<button class="kk" data-a="kpKey" data-v=".">.</button>' : '<button class="ks' + (KP.f === "rir" ? " on" : "") + '" data-a="kpMode" data-v="rir">RIR</button>';
+  } else if (rirOn) top = '<div class="kp-rir">' + [0, 1, 2, 3, 4, 5, 6, 7].map(v => '<button class="rir r' + Math.min(6, v) + (v === 7 ? " rplus" : "") + (rirCur === v ? " sel" : "") + '" data-a="kpRir" data-v="' + v + '">' + (v === 7 ? "+" : v) + "</button>").join("") + "</div>";
+  const extra = isKg ? '<div class="ks pm"><button data-a="kpStep" data-v="-1">−</button><button data-a="kpStep" data-v="1">+</button></div>' : '<div class="ks pm fp"><button class="' + (KP.f !== "p" ? "on" : "") + '" data-a="kpMode" data-v="reps">F</button><button class="' + (KP.f === "p" ? "on" : "") + '" data-a="kpMode" data-v="p">P</button></div>';
+  const corner = isKg ? '<button class="kk" data-a="kpKey" data-v=".">.</button>' : '<span class="kk"></span>';
+  const note = '<button class="ks" data-a="kpNote" aria-label="Add a note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M8 15.5l1-3 6-6 2 2-6 6z"/></svg></button>';
   const go = '<button class="ks go" data-a="kpGo" aria-label="' + (isKg ? "Next" : "Log set") + '">' + (isKg ? I.next : I.tick) + "</button>";
-  let g = padGrid("kpKey", "kpHide", extra, corner, go);
-  el.innerHTML = '<div class="kp-top">' + top + "</div>" + g;
+  el.innerHTML = '<div class="kp-top">' + top + "</div>" + padGrid("kpKey", "kpHide", extra, corner, go, note);
   el.classList.add("on"); kpShow();
 }
+ACT.kpNote = () => {
+  if (!KP) return; kpCommit(); const c = kpCtx(), key = kpKey(), cur = c.st ? (c.st.note || "") : ((DRAFT[key] || {}).note || "");
+  NOTEK = { key, ref: c.st ? c.st.id : null, i: KP.i, k: KP.k };
+  openSheet("Note", c.ex.n + " · Set " + (KP.k + 1), '<textarea class="field note" id="noteIn" rows="4" placeholder="How did it feel? Grip, pain, machine number...">' + esc(cur) + '</textarea><button class="big" style="margin-top:12px" data-a="noteSave">Save note</button>', { name: "note" });
+};
+let NOTEK = null;
+ACT.noteSave = () => {
+  const v = ($("#noteIn").value || "").trim(); if (!NOTEK) return;
+  if (NOTEK.ref) addEvent("set.note", { ref: NOTEK.ref, note: v }); else (DRAFT[NOTEK.key] = DRAFT[NOTEK.key] || {}).note = v;
+  NOTEK = null; $("#noteIn").blur(); closeSheet(); toast(v ? "Note saved" : "Note removed"); renderPage(true); if (KP) paintKp();
+};
 ACT.kpKey = el => {
   if (!KP) return; const v = el.dataset.v; haptic();
   if (KP.f === "rir") { if (v === "del" || v === ".") return; return ACT.kpRir({ dataset: { v: String(Math.min(6, +v)) } }); }
@@ -2422,10 +2588,9 @@ ACT.kpMode = el => {
   if (KP.f === "p") toast("Now typing partial reps"); else if (KP.f === "rir") toast("Type reps in reserve, 0 to 6"); haptic(); paintKp();
 };
 ACT.kpRir = el => {
-  const c = kpCtx(), v = el.dataset.v === "" ? null : +el.dataset.v;
-  if (c.st) addEvent("set.rir", { ref: c.st.id, rir: v }); else if (v == null) PENDRIR[kpKey()] = null; else PENDRIR[kpKey()] = v;
-  haptic(); if (KP.f === "rir") KP.f = "reps";
-  const keep = { i: KP.i, k: KP.k, f: KP.f, buf: KP.buf, typed: KP.typed }; kpCommit(); KP = Object.assign(keep, { typed: false, buf: "" }); renderPage(true); paintKp();
+  const c = kpCtx(), cur = c.st ? c.st.rir : (PENDRIR[kpKey()] !== undefined ? PENDRIR[kpKey()] : c.r.rir); let v = +el.dataset.v; if (v === cur) v = null;
+  if (c.st) addEvent("set.rir", { ref: c.st.id, rir: v }); else PENDRIR[kpKey()] = v;
+  haptic(); const keep = { i: KP.i, k: KP.k, f: KP.f === "rir" ? "reps" : KP.f }; kpCommit(); KP = Object.assign(keep, { typed: false, buf: "" }); renderPage(true); paintKp();
 };
 ACT.kpGo = () => {
   if (!KP) return; const c = kpCtx();
@@ -2457,10 +2622,12 @@ function gpCommit() {
 }
 function gpClose() { if (!GP) return; gpCommit(); const k = GP.k; GP = null; document.body.classList.remove("gpon"); const kp = $("#kp"); kp.classList.remove("on", "gp"); $$(".gfield.act").forEach(x => x.classList.remove("act")); if (k.startsWith("t:") && TED && SHEET === "targets") paintTargets(); }
 function paintGp() {
-  const el = $("#kp"), cur = GP.typed ? GP.buf : (GV[GP.k] || "");
-  let g = '<div class="kp-top"><div class="kp-info"><b>' + esc(GP.label) + "</b>" + (GP.unit ? " in " + (GP.unit === "kg" ? "kilograms" : GP.unit === "in" ? "inches" : GP.unit) : "") + '</div></div><div class="kp-grid">';
-  g += padGrid("gpKey", "gpDone", '<div class="ks pm"><button data-a="gpStep" data-v="-1">−</button><button data-a="gpStep" data-v="1">+</button></div>', GP.int ? '<span class="kk"></span>' : '<button class="kk" data-a="gpKey" data-v=".">.</button>', '<button class="ks go" data-a="gpDone" aria-label="Done">' + I.tick + "</button>").replace('<div class="kp-grid">', "");
-  el.innerHTML = g; el.classList.add("on", "gp"); gpShow();
+  const el = $("#kp"), L = { 2: "ABC", 3: "DEF", 4: "GHI", 5: "JKL", 6: "MNO", 7: "PQRS", 8: "TUV", 9: "WXYZ" };
+  const k = v => '<button class="ik" data-a="gpKey" data-v="' + v + '"><b>' + v + "</b>" + (L[v] ? "<i>" + L[v] + "</i>" : "") + "</button>";
+  el.innerHTML = '<div class="ipad">' + [1, 2, 3, 4, 5, 6, 7, 8, 9].map(k).join("") + (GP.int ? '<span class="ik blank"></span>' : '<button class="ik blank" data-a="gpKey" data-v=".">.</button>') + k(0)
+    + '<button class="ik blank" data-a="gpKey" data-v="del" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11v14H9l-6-7z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/></svg></button></div>';
+  el.classList.add("on", "gp"); gpShow();
+  requestAnimationFrame(() => document.body.style.setProperty("--kph", el.offsetHeight + "px"));
 }
 ACT.gpKey = el => {
   if (!GP) return; const v = el.dataset.v; haptic();
@@ -2473,6 +2640,7 @@ ACT.gpKey = el => {
 ACT.gpStep = el => { const cur = numIn(GP.typed ? GP.buf : GV[GP.k]) || (GP.k === "wIn" ? (weightList().slice(-1)[0] || { kg: 60 }).kg : 0); GP.buf = String(Math.max(0, Math.round((cur + GP.step * +el.dataset.v) * 100) / 100)); GP.typed = true; haptic(); gpShow(); };
 ACT.gpDone = () => { const k = GP && GP.k; gpCommit(); const v = GV[k]; gpClose(); if (k === "wIn" && v) saveWeight(v); };
 
+document.addEventListener("pointerdown", e => { if (GP && !e.target.closest("#kp") && !e.target.closest(".gfield") && !e.target.closest("[data-a=\"entrySave\"],[data-a=\"tSave\"],[data-a=\"saveMeas\"]")) gpClose(); }, true);
 // ===== pause, mini player, dialog =====
 const pauseKey = s => "nitfit:pause:" + s.id;
 function pauseOf(s) { try { return JSON.parse(localStorage.getItem(pauseKey(s)) || "null") || { at: null, total: 0 }; } catch (_) { return { at: null, total: 0 }; } }
@@ -2532,7 +2700,7 @@ function rangeOf(key, firstD, def) {
 }
 function rangeRow(key, def, avg) {
   const cur = RNG[key] || def || "1M";
-  return '<div class="rng">' + RANGES.map(([n]) => '<button class="' + (n === cur ? "on" : "") + '" data-a="rng" data-k="' + key + '" data-v="' + n + '">' + n + "</button>").join("")
+  return '<div class="rngw"><div class="rng">' + RANGES.map(([n]) => '<button class="' + (n === cur ? "on" : "") + '" data-a="rng" data-k="' + key + '" data-v="' + n + '">' + n + "</button>").join("") + "</div>"
     + (avg ? '<button class="avg" data-a="avg" data-k="' + key + '">' + (AVG[key] || "D") + " " + I.down + "</button>" : "") + "</div>";
 }
 ACT.rng = el => { RNG[el.dataset.k] = el.dataset.v; haptic(); renderPage(true); };
@@ -2554,16 +2722,34 @@ function buckets(from, to, mode) {
   const n = daysBetween(from, to) + 1; for (let i = 0; i < n; i++) { const x = addDays(from, i); out.push({ s: x, e: x, l: n <= 7 ? DAY2[dow(x)] : dShort(x) }); } return out;
 }
 function niceMax(v) { if (v <= 0) return 10; const p = Math.pow(10, Math.floor(Math.log10(v))), f = v / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; }
-function barChart(vals, labels, color) {
-  const W = 340, H = 190, pr = 30, pb = 24, n = Math.max(1, vals.length), mx = niceMax(Math.max(0, ...vals)), cw = (W - pr) / n, bw = Math.max(2, Math.min(18, cw * 0.62));
+function barChart(vals, labels, color, opt) {
+  opt = opt || {}; const series = Array.isArray(vals[0]) ? vals : [vals], colors = Array.isArray(color) ? color : [color];
+  const tot = series[0].map((_, i) => series.reduce((a, sv) => a + (sv[i] || 0), 0));
+  const W = 340, H = 200, pr = 30, pb = 24, n = Math.max(1, tot.length), mx = niceMax(Math.max(0, ...tot)), cw = (W - pr) / n, bw = Math.max(2, Math.min(18, cw * 0.62));
   let s = '<svg viewBox="0 0 ' + W + " " + H + '">';
-  [0, 0.5, 1].forEach(f => { const y = (H - pb) - f * (H - pb - 8); s += '<line x1="0" x2="' + (W - pr) + '" y1="' + y + '" y2="' + y + '" stroke="var(--line)"/><text x="' + (W - 4) + '" y="' + (y + 4) + '" text-anchor="end">' + Math.round(mx * f * 10) / 10 + "</text>"; });
-  vals.forEach((v, i) => { if (!v) return; const h = v / mx * (H - pb - 8); s += '<rect x="' + (i * cw + (cw - bw) / 2).toFixed(1) + '" y="' + (H - pb - h).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="2" fill="' + color + '"/>'; });
+  [0, 0.5, 1].forEach(f => { const y = (H - pb) - f * (H - pb - 8); s += '<line x1="0" x2="' + (W - pr) + '" y1="' + y + '" y2="' + y + '" stroke="var(--line)" stroke-dasharray="' + (f ? "3 4" : "0") + '"/><text x="' + (W - 4) + '" y="' + (y + 4) + '" text-anchor="end">' + Math.round(mx * f * 10) / 10 + "</text>"; });
+  for (let i = 0; i < n; i++) { let base = H - pb; series.forEach((sv, j) => { const v = sv[i] || 0; if (!v) return; const h = v / mx * (H - pb - 8); base -= h; s += '<rect x="' + (i * cw + (cw - bw) / 2).toFixed(1) + '" y="' + base.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="2" fill="' + colors[j % colors.length] + '"/>'; }); }
   const every = Math.ceil(n / 6); labels.forEach((l, i) => { if (i % every) return; s += '<text x="' + (i * cw + cw / 2).toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle">' + esc(l) + "</text>"; });
   return s + "</svg>";
 }
 function emptyLine(from, to) { const b = buckets(from, to, daysBetween(from, to) > 60 ? "M" : "D"); return barChart(b.map(() => 0), b.map(x => x.l), "var(--blue)"); }
 const legend = items => '<div class="lgd">' + items.map(([n, c, k]) => '<span><i class="' + (k || "bar") + '" style="--c:' + c + '"></i>' + n + "</span>").join("") + "</div>";
+const TUT = {}, TUTS = {
+  wtrend: [["What is Weight Trend?", "Your scale number jumps around every day. The trend is the real direction hiding under all that noise."],
+    ["How does it work?", "Each weigh-in is blended with your recent ones, so one salty dinner or a glass of water can't fool you."],
+    ["How to use it", "Weigh in every morning, the same way. Judge your progress by the trend line and the weekly change, not by today's number."]],
+  workouts: [["Sets and volume", "Sets counts every hard set you finish. Volume is weight times reps, added up."],
+    ["What to look for", "A slow rise over the weeks means you are doing more work. A sudden drop usually means missed sessions or poor sleep."]] };
+function tutorial(id) {
+  try { if (localStorage.getItem("nitfit:tut:" + id)) return ""; } catch (_) {}
+  const st = TUTS[id], i = TUT[id] || 0, [t, p] = st[i];
+  return '<div class="tutc"><b>' + (i ? I.wand : I.info) + esc(t) + "</b><p>" + esc(p) + '</p><div class="tb"><button class="dis" data-a="tutDis" data-id="' + id + '">Dismiss Tutorial</button><span></span>'
+    + (i ? '<button class="pv" data-a="tutGo" data-id="' + id + '" data-v="-1">Previous</button>' : "") + (i < st.length - 1 ? '<button class="pv" data-a="tutGo" data-id="' + id + '" data-v="1">Next</button>' : '<button class="pv" data-a="tutDis" data-id="' + id + '">Done</button>') + "</div></div>";
+}
+ACT.tutGo = el => { TUT[el.dataset.id] = (TUT[el.dataset.id] || 0) + +el.dataset.v; haptic(); renderPage(true); };
+ACT.tutDis = el => { try { localStorage.setItem("nitfit:tut:" + el.dataset.id, "1"); } catch (_) {} renderPage(true); };
+ACT.tutShow = el => { try { localStorage.removeItem("nitfit:tut:" + el.dataset.id); } catch (_) {} TUT[el.dataset.id] = 0; renderPage(true); };
+const CAP = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4L1.5 9 12 14l8-3.8V16h1.8V9z"/><path d="M6 12.6V16c0 1.6 2.7 3 6 3s6-1.4 6-3v-3.4L12 15.5z"/></svg>';
 function tip(id, title, text) {
   try { if (localStorage.getItem("nitfit:tip:" + id)) return ""; } catch (_) {}
   return '<div class="tipc"><b>' + I.info + title + "</b><p>" + text + '</p><button data-a="tipOff" data-id="' + id + '">Got it</button></div>';
@@ -2573,13 +2759,14 @@ ACT.tipOff = el => { try { localStorage.setItem("nitfit:tip:" + el.dataset.id, "
 function setsIn(from, to, filter) { return Object.values(S.sets).filter(x => !x.w && x.d >= from && x.d <= to && (!filter || filter(x))); }
 function vWorkouts() {
   const key = "workouts", tab = PTAB[key] || "Sets", first = (sessionsSorted()[0] || {}).d, R = rangeOf(key, first, "1W"), mode = AVG[key] || "D";
-  const bk = buckets(R.from, R.to, mode), sets = setsIn(R.from, R.to);
-  const val = x => tab === "Sets" ? 1 : (x.kg || 0) * x.reps;
-  const vals = bk.map(b => sets.filter(x => x.d >= b.s && x.d <= b.e).reduce((a, x) => a + val(x), 0));
-  const tot = vals.reduce((a, b) => a + b, 0), used = vals.filter(Boolean).length;
-  let h = nav("Workouts") + ptabs(key, ["Sets", "Volume"]) + '<div class="body-pad">';
-  h += statHead(["Average " + tab, used ? fmtNum(tot / used) : "--", tab === "Sets" ? "sets" : "kg"], ["Total " + tab, fmtNum(tot), tab === "Sets" ? "sets" : "kg"], fmtRange(R.from, R.to));
-  h += '<div class="chart lg">' + barChart(vals, bk.map(b => b.l), "var(--orange)") + "</div>" + rangeRow(key, "1W", true) + legend([[tab === "Sets" ? "Sets" : "Volume", "var(--orange)"]]);
+  const bk = buckets(R.from, R.to, mode), sets = setsIn(R.from, R.to), bwKg = (weightList().slice(-1)[0] || { kg: 60 }).kg;
+  const isBw = x => (getEx(x.exId) || {}).eq === "bw", val = x => tab === "Sets" ? 1 : (isBw(x) ? bwKg : (x.kg || 0)) * x.reps;
+  const res = bk.map(b => sets.filter(x => x.d >= b.s && x.d <= b.e && !isBw(x)).reduce((a, x) => a + val(x), 0));
+  const bwv = bk.map(b => sets.filter(x => x.d >= b.s && x.d <= b.e && isBw(x)).reduce((a, x) => a + val(x), 0));
+  const vals = res.map((v, i) => v + bwv[i]), tot = vals.reduce((a, b) => a + b, 0), used = vals.filter(Boolean).length, u = tab === "Sets" ? "sets" : "kg";
+  let h = nav("Workouts") + '<div class="ptabs ic2">' + [["Sets", I.next], ["Volume", I.dumb]].map(([t, ic]) => '<button class="' + (tab === t ? "on" : "") + '" data-a="ptab" data-k="' + key + '" data-v="' + t + '">' + ic + t + "</button>").join("") + "</div>" + '<div class="body-pad">';
+  h += '<div class="stathw">' + statHead(["Average " + tab, used ? fmtNum(tot / used) : "0", u], ["Total " + tab, fmtNum(tot), u], fmtRange(R.from, R.to)) + "</div>";
+  h += '<div class="chart lg">' + barChart([res, bwv], bk.map(b => b.l), ["var(--orange)", "#8a3b2a"]) + "</div>" + rangeRow(key, "1W", true) + legend([["Resistance", "var(--orange)"], ["Bodyweight", "#8a3b2a"]]);
   h += "<h2>Recent Workouts</h2>" + (sessionsSorted().filter(x => x.endTs).length ? '<div class="card">' + sessionsSorted().filter(x => x.endTs).reverse().slice(0, 10).map(x => '<button class="opt" data-a="viewSession" data-id="' + x.id + '"><div class="m"><b>' + esc(x.name) + "</b><span>" + niceDate(x.d) + " · " + sessionSets(x.id).length + " sets</span></div>" + I.chev + "</button>").join("") + "</div>" : '<p class="hint">No workouts yet.</p>');
   return h + "</div>";
 }
@@ -2616,11 +2803,11 @@ function vExList() {
 function slopePerWeek(tr) { const l = tr.slice(-21); if (l.length < 2) return null; const span = daysBetween(l[0].d, l[l.length - 1].d) || 1; return (l[l.length - 1].trend - l[0].trend) / span * 7; }
 function vWTrend() {
   const key = "wtrend", wl = weightList(), tr = trendSeries(wl), R = rangeOf(key, (wl[0] || {}).d, "1M"), inR = tr.filter(x => x.d >= R.from && x.d <= R.to);
-  let h = nav("Weight Trend") + '<div class="body-pad">';
+  let h = nav("Weight Trend", '<span class="navr"><button class="ib plain" data-a="tutShow" data-id="wtrend" aria-label="Show tutorial">' + CAP + "</button></span>") + '<div class="body-pad">';
   h += statHead(["Average", inR.length ? (inR.reduce((a, x) => a + x.trend, 0) / inR.length).toFixed(1) : "--", "kg"], ["Difference", inR.length > 1 ? sgn(inR[inR.length - 1].trend - inR[0].trend) : "0.0", "kg"], fmtRange(R.from, R.to));
   h += '<div class="chart lg">' + (inR.length > 1 ? lineChart(inR.map(x => ({ d: x.d, v: x.trend, raw: x.kg }))) : emptyLine(R.from, R.to)) + "</div>" + rangeRow(key, "1M");
   h += legend([["Scale Weight", "var(--text3)", "dot"], ["Trend Weight", "var(--purple)", "line"]]);
-  h += tip("trend", "Why a trend?", "Your scale jumps around with water, salt and food in your belly. The trend line smooths that out so you see what your body is really doing.");
+  h += tutorial("wtrend");
   const cur = tr.length ? tr[tr.length - 1] : null, wk = slopePerWeek(tr);
   h += '<h2>Insights &amp; Data</h2><div class="card"><div class="wch"><b>Weight Changes</b>' + [3, 7, 14, 30, 90].map(n => { const old = tr.find(x => x.d >= addDays(today(), -n)); const ok = cur && tr.length && tr[0].d <= addDays(today(), -n) && old; const dv = ok ? cur.trend - old.trend : null; return '<div class="wcr"><span>' + n + '-day</span><b>' + (ok ? sgn(dv) + " kg" : "-- kg") + '</b><em class="' + (ok ? (Math.abs(dv) < 0.15 ? "st" : dv > 0 ? "up" : "dn") : "wt") + '">' + (ok ? (Math.abs(dv) < 0.15 ? "Steady" : dv > 0 ? "Gaining" : "Losing") : "Waiting") + "</em></div>"; }).join("") + "</div></div>";
   const box = (v, u, t, p) => '<div class="ibox"><div class="bx"><b>' + v + "</b><span>" + u + "</span></div><div><b>" + t + "</b><p>" + p + "</p></div></div>";
@@ -2635,12 +2822,12 @@ const sgn = v => (v > 0 ? "+" : "") + v.toFixed(2).replace(/0$/, "");
 function vScale(store) {
   const w = store === "weights", key = store, list = Object.values(S[store]).sort((a, b) => a.d < b.d ? -1 : 1), val = x => w ? x.kg : x.inch, unit = w ? "kg" : "in";
   const R = rangeOf(key, (list[0] || {}).d, "1M"), inR = list.filter(x => x.d >= R.from && x.d <= R.to);
-  let h = nav(w ? "Scale Weight" : "Waist", '<span class="navr"><button class="ib plain" data-a="weightSheet" aria-label="Add">' + I.plus + "</button></span>") + '<div class="body-pad">';
+  let h = nav(w ? "Scale Weight" : "Waist", '<span class="navr"><button class="ib plain" data-a="' + (w ? "weightSheet" : "waistSheet") + '" aria-label="Add">' + I.plus + "</button></span>") + '<div class="body-pad">';
   h += statHead(["Average", inR.length ? (inR.reduce((a, x) => a + val(x), 0) / inR.length).toFixed(1) : "--", unit], ["Difference", inR.length > 1 ? sgn(val(inR[inR.length - 1]) - val(inR[0])) : "0.0", unit], fmtRange(R.from, R.to));
   h += '<div class="chart lg">' + (inR.length > 1 ? lineChart(inR.map(x => ({ d: x.d, v: val(x) }))) : emptyLine(R.from, R.to)) + "</div>" + rangeRow(key, "1M") + legend([[w ? "Scale Weight" : "Waist", "var(--green)", "line"]]);
   h += w ? tip("scale", "Same time, same way", "Weigh yourself right after waking and peeing, before food and water. Same scale, same spot on the floor.") : tip("waist", "Measuring your waist", "Saturday mornings, tape level at the belly button, breathe out normally and don't suck in.");
   const by = {}; list.slice().reverse().forEach(x => (by[x.d.slice(0, 7)] = by[x.d.slice(0, 7)] || []).push(x));
-  Object.keys(by).forEach(mk => { h += "<h2>" + MONTHS_LONG[+mk.slice(5) - 1] + " " + mk.slice(0, 4) + '</h2><div class="card">' + by[mk].map(x => '<button class="opt" data-a="weightSheet" data-d="' + x.d + '"><span class="oi">' + (w ? I.scale : I.tape) + '</span><div class="m"><b>' + val(x) + " " + unit + "</b><span>" + WEEKDAYS[dow(x.d)].slice(0, 3) + ", " + dShort(x.d) + '</span></div><span class="edit">' + I.pencil + "</span></button>").join("") + "</div>"; });
+  Object.keys(by).forEach(mk => { h += "<h2>" + MONTHS_LONG[+mk.slice(5) - 1] + " " + mk.slice(0, 4) + '</h2><div class="card">' + by[mk].map(x => '<button class="opt" data-a="' + (w ? "weightSheet" : "waistSheet") + '" data-d="' + x.d + '"><span class="oi">' + (w ? I.scale : I.tape) + '</span><div class="m"><b>' + val(x) + " " + unit + "</b><span>" + WEEKDAYS[dow(x.d)].slice(0, 3) + ", " + dShort(x.d) + '</span></div><span class="edit">' + I.pencil + "</span></button>").join("") + "</div>"; });
   if (!list.length) h += '<p class="hint" style="margin-top:18px">No entries yet. Tap + to add one.</p>';
   return h + "</div>";
 }
@@ -2652,11 +2839,14 @@ function vHabit(kind) {
   else { let x = weekSun(d); if (![0, 1, 2, 3, 4, 5, 6].some(i => doneOn(addDays(x, i)))) x = addDays(x, -7); while ([0, 1, 2, 3, 4, 5, 6].some(i => doneOn(addDays(x, i)))) { streak++; x = addDays(x, -7); } }
   let h = nav(w ? "Weigh-In" : "Workouts") + '<div class="body-pad">';
   h += w ? statHead(["Today", S.weights[d] ? S.weights[d].kg.toFixed(1) : "--", "kg"], ["Streak", streak, streak === 1 ? "day" : "days"]) : statHead(["This week", sessionsSorted().filter(x => x.d >= weekSun(d) && x.endTs).length, "workouts"], ["Streak", streak, streak === 1 ? "week" : "weeks"]);
-  h += '<div class="hcalh">' + DAY2.map(x => "<span>" + x + "</span>").join("") + '</div><div class="hcal">';
-  for (let i = 0; i < 42; i++) { const x = addDays(start, i), out = x.slice(0, 7) !== ym; h += '<button class="' + (out ? "out" : "") + (tracked(x) ? (w ? " tg" : " to") : "") + (x === d ? " today" : "") + '" data-a="habitDay" data-k="' + kind + '" data-d="' + x + '">' + +x.slice(8) + "</button>"; }
-  h += "</div>";
+  const mstart = addDays(first, -((dow(first) + 6) % 7)), yrs = []; for (let k = +d.slice(0, 4) - 3; k <= +d.slice(0, 4) + 1; k++) yrs.push(k);
+  h += '<div class="hcal">';
+  for (let i = 0; i < 42; i++) { const x = addDays(mstart, i), out = x.slice(0, 7) !== ym; if (i === 35 && out) break; h += '<button class="' + (out ? "out" : "") + (tracked(x) ? (w ? " tg" : " to") : "") + (x === d ? " today" : "") + '" data-a="habitDay" data-k="' + kind + '" data-d="' + x + '">' + +x.slice(8) + "</button>"; }
+  h += '</div><div class="hcalh">' + ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(x => "<span>" + x + "</span>").join("") + "</div>";
   const prev = dstr(new Date(y, m - 2, 1)).slice(0, 7), next = dstr(new Date(y, m, 1)).slice(0, 7);
-  h += '<div class="hnav"><button class="ib" data-a="hMonth" data-k="' + key + '" data-v="' + prev + '">' + I.back + '</button><button class="ib" data-a="hMonth" data-k="' + key + '" data-v="' + next + '" style="transform:scaleX(-1)">' + I.back + '</button><span class="hm">' + MONTHS_LONG[m - 1] + " " + y + '</span><button class="pill-btn" data-a="hMonth" data-k="' + key + '" data-v="' + d.slice(0, 7) + '">Today</button></div>';
+  h += '<div class="hnav2"><div class="pair"><button data-a="hMonth" data-k="' + key + '" data-v="' + prev + '" aria-label="Previous month">' + I.back + '</button><button data-a="hMonth" data-k="' + key + '" data-v="' + next + '" aria-label="Next month" style="transform:scaleX(-1)">' + I.back + "</button></div>"
+    + '<label class="selp wide">' + MONTHS_LONG[m - 1] + " " + I.down + '<select data-hsel="' + key + '" data-part="m">' + MONTHS_LONG.map((n, k) => '<option value="' + (k + 1) + '"' + (k + 1 === m ? " selected" : "") + ">" + n + "</option>").join("") + "</select></label>"
+    + '<label class="selp">' + y + " " + I.down + '<select data-hsel="' + key + '" data-part="y">' + yrs.map(k => '<option' + (k === y ? " selected" : "") + ">" + k + "</option>").join("") + "</select></label></div>";
   h += legend([["Tracked", w ? "var(--green)" : "var(--orange)", "ring"], ["Untracked", "var(--line)", "ring"]]);
   const yr = d.slice(0, 4), jan = yr + "-01-01", g0 = addDays(jan, -dow(jan));
   h += "<h2>" + yr + '</h2><div class="card yr"><div class="yg">';
@@ -2667,7 +2857,7 @@ function vHabit(kind) {
 ACT.hMonth = el => { CALM2[el.dataset.k] = el.dataset.v; renderPage(true); };
 ACT.habitDay = el => {
   const x = el.dataset.d;
-  if (el.dataset.k === "weights") return entrySheet(x);
+  if (el.dataset.k === "weights") return entrySheet(x, "scale");
   const s2 = sessionsSorted().filter(q => q.d === x && q.endTs); if (s2.length) return ACT.viewSession({ dataset: { id: s2[s2.length - 1].id } });
   const dk = dayKeyFor(x); toast(dk ? DAYS[dk].name + (x > today() ? " is planned" : " was not logged") : "Rest day");
 };
@@ -2684,11 +2874,11 @@ function healViewport(force) {
   els.forEach(e => { e.style.display = "none"; }); void document.body.offsetHeight;
   els.forEach((e, i) => { e.style.display = ""; e.scrollTop = ys[i]; });
 }
-document.addEventListener("focusout", e => { if (e.target && e.target.tagName === "INPUT") { setTimeout(healViewport, 150); setTimeout(healViewport, 600); } });
+document.addEventListener("focusout", e => { if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) { setTimeout(healViewport, 150); setTimeout(healViewport, 600); } });
 if (window.visualViewport) visualViewport.addEventListener("resize", () => setTimeout(healViewport, 120));
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") setTimeout(() => healViewport(true), 200); });
 // Apple Music style: scroll down and the tab bar folds into one round button with the workout player beside it.
-// Everything moves with transforms only, so it stays smooth, and it needs a real swipe (not a jitter) to switch.
+// Only a real swipe counts. The bounce at the top or bottom of a page, and small finger jitter, are ignored.
 let LASTY = 0, ACC = 0, FOLDLOCK = 0;
 function measureTabs() {
   const t = $("#tabs"); if (!t) return; const W = t.clientWidth, R = t.getBoundingClientRect();
@@ -2697,16 +2887,19 @@ function measureTabs() {
 }
 function setFold(on) {
   if (document.body.classList.contains("compact") === on) return;
-  if (on) measureTabs(); document.body.classList.toggle("compact", on); FOLDLOCK = Date.now() + 420;
+  if (on) measureTabs(); document.body.classList.toggle("compact", on); FOLDLOCK = Date.now() + 650; ACC = 0;
 }
 function bindCompact() {
   const m = $("#main");
   m.addEventListener("scroll", () => {
-    const y = m.scrollTop, dy = y - LASTY; LASTY = y;
-    if (y < 40) { ACC = 0; return setFold(false); }
+    const y = m.scrollTop, max = m.scrollHeight - m.clientHeight, dy = y - LASTY; LASTY = y;
+    if (y <= 0 || y >= max - 1) { ACC = 0; if (y <= 0) setFold(false); return; }   // rubber-band zones: never act
+    if (y < 60) { ACC = 0; return setFold(false); }
+    if (Math.abs(dy) > 160) { ACC = 0; return; }                                     // jumps from re-rendering, not a finger
+    if ((ACC > 0) !== (dy > 0) && Math.abs(dy) < 10) return;                       // tiny wobble the other way: ignore
     ACC = (ACC > 0) === (dy > 0) ? ACC + dy : dy;
     if (Date.now() < FOLDLOCK) return;
-    if (ACC > 36) setFold(true); else if (ACC < -48) setFold(false);
+    if (ACC > 70 && y > 140) setFold(true); else if (ACC < -170) setFold(false);
   }, { passive: true });
   window.addEventListener("resize", () => { if (document.body.classList.contains("compact")) measureTabs(); });
 }

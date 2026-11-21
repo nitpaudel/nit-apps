@@ -1,5 +1,5 @@
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "3.7";
+const APP_VERSION = "3.8";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -63,13 +63,14 @@ function applyEvent(e) {
     case "session.started": if (!p.v2) break; S.sessions[e.id] = { id: e.id, d: e.d, startTs: e.ts, endTs: null, dayKey: p.dayKey, name: p.name || "", items: p.items || [] }; S.bySession[e.id] = S.bySession[e.id] || []; break;
     case "session.edited": if (S.sessions[p.sessionId]) S.sessions[p.sessionId].items = p.items; break;
     case "session.finished": if (S.sessions[p.sessionId]) S.sessions[p.sessionId].endTs = p.endTs || e.ts; break;
-    case "set.logged": if (!S.sessions[p.sessionId]) break; S.sets[e.id] = { id: e.id, d: e.d, ts: e.ts, sessionId: p.sessionId, exId: p.exId, idx: p.idx, kg: p.kg || 0, reps: p.reps, p: p.p || 0, rir: p.rir == null ? null : p.rir, w: !!p.w, q: p.q || "clean", tKg: p.tKg, tReps: p.tReps, tRir: p.tRir };
+    case "set.logged": if (!S.sessions[p.sessionId]) break; S.sets[e.id] = { id: e.id, d: e.d, ts: e.ts, sessionId: p.sessionId, exId: p.exId, idx: p.idx, kg: p.kg || 0, reps: p.reps, p: p.p || 0, note: p.note || "", rir: p.rir == null ? null : p.rir, w: !!p.w, q: p.q || "clean", tKg: p.tKg, tReps: p.tReps, tRir: p.tRir };
       (S.bySession[p.sessionId] = S.bySession[p.sessionId] || []).push(e.id); (S.byEx[p.exId] = S.byEx[p.exId] || []).push(e.id); break;
     case "set.q": if (S.sets[p.ref]) S.sets[p.ref].q = p.q; break;
     case "set.rir": if (S.sets[p.ref]) S.sets[p.ref].rir = p.rir; break;
+    case "set.note": if (S.sets[p.ref]) S.sets[p.ref].note = p.note || ""; break;
     case "set.edited": if (S.sets[p.ref]) { if (p.p != null) S.sets[p.ref].p = p.p; if (p.kg != null) S.sets[p.ref].kg = p.kg; if (p.reps != null) S.sets[p.ref].reps = p.reps; } break;
     case "entity.deleted": removeRef(p.ref); break;
-    case "weight.logged": S.weights[e.d] = { id: e.id, d: e.d, kg: p.kg }; break;
+    case "weight.logged": S.weights[e.d] = { id: e.id, d: e.d, kg: p.kg, bf: p.bf == null ? null : p.bf }; break;
     case "waist.logged": S.waists[e.d] = { id: e.id, d: e.d, inch: p.inch }; break;
     case "measure.logged": S.measures[e.d] = Object.assign({ id: e.id, d: e.d }, p); break;
     case "settings.upserted": Object.assign(S.settings, p); break;

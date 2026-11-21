@@ -690,3 +690,90 @@ body.compact #mini .mth{opacity:0}
 .seg.slide button{min-width:134px}
 .seg.slide .thumbx{top:3px;bottom:3px;left:3px;width:calc(50% - 3px)}
 .seg.slide button{text-align:center;justify-content:center;display:flex;align-items:center}
+
+/* ===== v3.8 ===== */
+/* keypad like the reference: plain number keys, side column of actions, RIR chips with a + */
+.kp-grid{grid-template-columns:repeat(3,1fr) 1.2fr;gap:6px}
+.kp-grid .kk{background:transparent!important;height:54px;font-size:28px;font-weight:400}
+.kp-grid .kk:active{background:var(--chip)!important}
+.kp-grid .kk.zero{grid-column:auto}
+.kp-grid .kk.del svg{width:30px;height:30px}
+.kp-grid .ks{height:54px}
+.kp-grid .ks.fp button{font-size:22px;font-weight:400}
+.kp-grid .ks.fp button.on{background:var(--inv);color:var(--invtext);border-radius:10px;margin:4px}
+.kp-rir{gap:4px}
+.kp-rir .rir{width:36px;height:36px}
+.kp-rir .rir.rplus{background:#2f6bff;color:#fff;font-size:22px;font-weight:500}
+.kp-top{border-bottom:1px solid var(--line);margin:0 -10px 8px;padding:0 14px 10px}
+.setnote{grid-column:1/-1;margin:-4px 0 8px 46px;font-size:13px;color:var(--text2);font-style:italic}
+textarea.field.note{height:auto;min-height:110px;padding:12px 14px;resize:none;line-height:1.4;font:inherit}
+/* iPhone style number pad for weigh-in, waist, targets, measurements */
+.kp.gp{background:#2a2a2c;padding:8px 6px calc(var(--sab) + 6px);border-radius:0}
+.ipad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.ipad .ik{height:50px;border-radius:9px;background:#5b5b5e;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.ipad .ik b{font-size:26px;font-weight:400}
+.ipad .ik i{font-style:normal;font-size:10px;font-weight:600;letter-spacing:.18em;margin-top:2px}
+.ipad .ik.blank{background:transparent;font-size:28px}
+.ipad .ik.blank svg{width:28px;height:28px}
+.ipad .ik:active{background:#7a7a7e}
+.ipad .ik.blank:active{background:#3a3a3c}
+html[data-theme="light"] .kp.gp{background:#d1d3d9}
+html[data-theme="light"] .ipad .ik{background:#fff;color:#000}
+html[data-theme="light"] .ipad .ik.blank{background:transparent;color:#000}
+body.gpon .sheet.on{transform:translateY(calc(-1 * var(--kph, 0px)))!important;transition:transform .3s cubic-bezier(.32,.72,0,1)}
+body.gpon .sheet .sbody{padding-bottom:20px}
+.ef.wbf{grid-template-columns:1.6fr 1fr}
+.ef.one{grid-template-columns:1fr}
+.fin.gfield.act{box-shadow:inset 0 0 0 2px var(--text)!important;background:transparent}
+/* monday-first habit calendar */
+.hcal{margin-top:18px}
+.hcalh{margin-top:10px}
+.hnav2{display:flex;align-items:center;gap:10px;margin-top:18px}
+.hnav2 .pair{display:flex;background:var(--chip);border-radius:24px;height:46px;align-items:center;padding:0 6px}
+.hnav2 .pair button{width:40px;height:40px;display:grid;place-items:center}
+.hnav2 .pair svg{width:20px;height:20px}
+.selp{position:relative;height:46px;border-radius:24px;background:var(--chip);display:flex;align-items:center;justify-content:center;gap:6px;padding:0 18px;font-weight:500}
+.selp.wide{flex:1}
+.selp select{position:absolute;inset:0;opacity:0;width:100%;font-size:16px}
+/* range pills in one capsule, averaging pill beside it */
+.rngw{display:flex;gap:8px;align-items:center;margin-top:14px}
+.rngw .rng{flex:1;margin:0;background:var(--chip);border-radius:24px;padding:4px;gap:0}
+.rngw .rng button{height:38px;border-radius:19px}
+.rngw .avg{height:46px;border-radius:24px;padding:0 16px;background:var(--chip);color:var(--text);display:flex;align-items:center;gap:6px;font-weight:500}
+.ptabs.ic2 button{display:flex;align-items:center;justify-content:center;gap:8px}
+.ptabs.ic2 button svg{width:18px;height:18px}
+/* tutorial card */
+.tutc{margin-top:14px;padding:16px;border-radius:16px;background:#2f2550;color:#fff}
+.tutc b{display:flex;gap:10px;align-items:center;font-weight:600;font-size:17px}
+.tutc b svg{width:20px;height:20px}
+.tutc p{font-size:15px;line-height:1.45;margin-top:8px;opacity:.9}
+.tutc .tb{display:flex;align-items:center;gap:8px;margin-top:12px}
+.tutc .tb span{flex:1}
+.tutc .dis{font-weight:600;font-size:15px}
+.tutc .pv{height:40px;padding:0 16px;border-radius:20px;background:#4a35a8;font-weight:600}
+html[data-theme="light"] .tutc{background:#e9e4ff;color:#2b2250}
+html[data-theme="light"] .tutc .pv{background:#cfc4ff}
+/* customize dashboard */
+.navtxt{font-size:17px;font-weight:500;padding:0 6px;height:44px}
+.dctop{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:6px 16px 18px;background:var(--top)}
+.dcp{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dbox{width:100%;aspect-ratio:16/10;border:2px solid var(--text);border-radius:12px;display:grid;place-items:center;overflow:hidden}
+.dbox svg{width:100%;height:100%}
+.dcp .ib svg{width:22px;height:22px}
+.dch{display:flex;align-items:center;gap:4px;margin:26px 4px 10px}
+.dch h2{flex:1;margin:0}
+.dch .ib[disabled]{opacity:.25}
+.dch .ib svg{width:22px;height:22px}
+.dcl{padding-bottom:12px}
+.dcr{display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--card);position:relative;transition:transform .18s ease}
+.dcr.drag{z-index:3;transition:none;box-shadow:0 10px 30px rgba(0,0,0,.45);border-radius:12px}
+.dcr b{flex:1;font-weight:500;font-size:17px}
+.dci{width:52px;height:40px;border-radius:8px;background:var(--card2);display:grid;place-items:center;overflow:hidden;flex:none}
+.dci svg{width:100%;height:100%}
+.hdl{width:44px;height:40px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;touch-action:none;cursor:grab}
+.hdl i{width:22px;height:2px;border-radius:1px;background:var(--text)}
+.addrm{display:block;width:calc(100% - 32px);margin:14px 16px 0;height:50px;border-radius:12px;background:var(--chip);font-weight:500;font-size:16px;text-align:center}
+.opt.dct{gap:14px}
+.prompt .wbox{display:grid;place-items:center}
+/* compact bar: player shows just the clock and buttons */
+body.compact #mini .mth{display:none}
