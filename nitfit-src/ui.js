@@ -173,9 +173,9 @@ function render() {
   if (!isStandalone() && !/dev/.test(location.search)) { $("#main").innerHTML = vInstall(); $("#tabs").hidden = true; return; }
   const m = $("#main");
   const keep = m.dataset.tab === TAB ? m.scrollTop : (SCROLL[TAB] || 0);
-  m.innerHTML = TAB === "dashboard" ? vDash() : TAB === "workout" ? vWorkoutTab() : TAB === "levels" ? vLevels() : vMore();
-  m.dataset.tab = TAB; if (TAB === "levels") attachBody2d(); m.scrollTop = keep; LASTY = m.scrollTop; ACC = 0; FOLDLOCK = Date.now() + 400; if (keep < 60) document.body.classList.remove("compact");
-  $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB));
+  m.innerHTML = TAB === "dashboard" ? vDash() : TAB === "workout" ? vWorkoutTab() : TAB === "levels" ? vLevels() : vProfile();
+  m.dataset.tab = TAB; if (TAB === "levels") attachBody2d(); m.scrollTop = keep; LASTY = m.scrollTop; ACC = 0; FOLDLOCK = Date.now() + 400; if (keep < 40) document.body.classList.remove("tsmall");
+  $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB)); tabsPill();
   const pg = $("#pager"); if (pg) pg.addEventListener("scroll", () => { const i = Math.round(pg.scrollLeft / pg.clientWidth); $$(".pdots i").forEach((d, k) => d.classList.toggle("on", k === i)); }, { passive: true });
   renderPage();
 }
@@ -189,7 +189,7 @@ function renderPage(keepScroll) {
   pg.innerHTML = K === "preview" ? vPreview(PAGE.dayKey) : K === "log" ? vLog() : K === "history" ? vHistory() : K === "wset" ? vWset()
     : K === "workouts" ? vWorkouts() : K === "muscle" ? vMuscle(PAGE.m) : K === "exercise" ? vExercise(PAGE.ex) : K === "wtrend" ? vWTrend()
     : K === "scale" ? vScale("weights") : K === "waist" ? vScale("waists") : K === "weighin" ? vHabit("weights") : K === "wohabit" ? vHabit("workouts")
-    : K === "exlist" ? vExList() : K === "dashcust" ? vDashCust() : "";
+    : K === "exlist" ? vExList() : K === "dashcust" ? vDashCust() : K === "settings" ? vSettings() : "";
   pg.classList.add("on"); $("#tabs").hidden = true; paintMini();
   if (keepScroll) pg.scrollTop = y;
   const on = $("#strip .st.on"); if (on) { const st = $("#strip"); st.scrollLeft = Math.max(0, on.offsetLeft - st.clientWidth / 2 + on.clientWidth / 2); }
@@ -357,7 +357,7 @@ function d2tile(id) {
   }
   if (id === "wtrend") {
     const tr = trendSeries(weightList()), l = tr.slice(-14), last = tr[tr.length - 1], ch = d2delta(tr.map(x => ({ d: x.d, v: x.trend })), "v", d);
-    return d2card("openPage", ' data-k="wtrend"', "Weight trend", "Last 14 days", (last ? d2num(last.trend.toFixed(1), "kg") : d2num("--")) + d2chart(l.map(x => x.trend), 140, 46, { fill: 1, color: D2A, w: 2.2 }), ch == null ? (last ? "No change yet" : "No entries yet") : d2sign(ch) + " kg this week");
+    return d2card("openPage", ' data-k="wtrend"', "Weight trend", "Last 14 days", (last ? d2num(last.trend.toFixed(1), "kg") : d2num("--")) + d2chart(l.map(x => x.trend), 140, 46, { fill: 1, color: "#fff", w: 2.2 }), ch == null ? (last ? "No change yet" : "No entries yet") : d2sign(ch) + " kg this week");
   }
   if (id === "weighin") {
     const days = Array.from({ length: 30 }, (_, i) => addDays(d, i - 29)), ws = days.map(x => S.weights[x] ? S.weights[x].kg : null), have = ws.filter(v => v != null);
@@ -1127,11 +1127,33 @@ ACT.b2Open = () => { if (!B2.sel) return; const m = BOPEN[B2.sel] || B2.sel; ACT
 ACT.b3Home = () => { b2Select(null); b2Animate({ pos: Math.round(B2.pos / 4) * 4, z: 1, px: 0, py: 0 }, 300); };
 ACT.flip = () => { FLIP = FLIP === "front" ? "back" : "front"; SCROLL.levels = $("#main").scrollTop; render(); };
 ACT.lvRange = () => { LVRANGE = LVRANGE === 1 ? 4 : 1; SCROLL.levels = $("#main").scrollTop; render(); };
-// ===== More =====
-function vMore() {
-  const st = syncStatus(), t = S.settings.theme || "dark", first = EV.length ? EV.reduce((a, e) => e.d < a ? e.d : a, EV[0].d) : today();
-  let h = head("More") + "</div><div class='body-pad'>";
-  h += '<div class="prof"><div class="av">N</div><div><b>Nit</b><span>Member since ' + +first.slice(8) + " " + MONTHS_LONG[+first.slice(5, 7) - 1] + " " + first.slice(0, 4) + "</span></div></div>";
+// ===== Profile and Settings =====
+function weekStreak() {
+  const fin = sessionsSorted().filter(x => x.endTs && sessionSets(x.id).length).map(x => x.d); if (!fin.length) return 0;
+  let w = weekSun(today()), n = 0; if (!fin.some(d => d >= w)) w = addDays(w, -7);
+  while (fin.some(d => d >= w && d <= addDays(w, 6))) { n++; w = addDays(w, -7); }
+  return n;
+}
+function vProfile() {
+  const first = EV.length ? EV.reduce((a, e) => e.d < a ? e.d : a, EV[0].d) : today(), fin = sessionsSorted().filter(x => x.endTs && sessionSets(x.id).length);
+  const sets = Object.values(S.sets).filter(x => !x.w).length, wl = weightList(), ws = Object.values(S.waists).sort((a, b) => a.d < b.d ? -1 : 1);
+  let h = '<div class="d2 pf">' + head("Profile", "", '<button class="ib" data-a="settings" aria-label="Settings">' + '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/></svg>' + "</button>") + '</div><div class="body-pad">';
+  h += '<div class="pfh"><div class="pfa">N</div><div class="pfn"><b>Nit</b><span>Training since ' + MONTHS_LONG[+first.slice(5, 7) - 1] + " " + first.slice(0, 4) + "</span></div></div>";
+  h += '<div class="pfs"><div><b>' + fin.length + "</b><span>Workouts</span></div><div><b>" + sets + "</b><span>Sets</span></div><div><b>" + weekStreak() + "</b><span>Week streak</span></div></div>";
+  const kg = wl.length ? wl[wl.length - 1].kg : null, kg0 = wl.length ? wl[0].kg : null, wa = ws.length ? +ws[ws.length - 1].inch : null;
+  h += '<div class="d2sec"><h2>Body</h2></div><div class="d2grid">'
+    + d2card("openPage", ' data-k="scale"', "Weight", wl.length ? "Since " + dShort(wl[0].d) : "No entries yet", d2num(kg == null ? "--" : kg.toFixed(1), kg == null ? "" : "kg"), kg == null ? "Log your morning weight" : (kg - kg0 === 0 ? "No change yet" : d2sign(kg - kg0) + " kg in total"))
+    + d2card("openPage", ' data-k="waist"', "Waist", ws.length ? "Latest entry" : "No entries yet", d2num(wa == null ? "--" : wa.toFixed(1), wa == null ? "" : "in"), ws.length ? dShort(ws[ws.length - 1].d) : "Measure each week") + "</div>";
+  h += '<div class="d2sec"><h2>Personal records</h2></div>' + recordsHtml();
+  h += '<div class="d2sec"><h2>Recent workouts</h2>' + (fin.length ? '<button class="d2see" data-a="history">See all</button>' : "") + "</div>";
+  h += fin.length ? '<div class="pfl">' + fin.slice(-5).reverse().map(x => '<div class="pfr"><div class="m"><b>' + esc(x.name || "Workout") + "</b><span>" + dShort(x.d) + "</span></div><em>" + sessionSets(x.id).length + " sets</em></div>").join("") + "</div>"
+    : '<div class="pfl"><div class="pfr"><div class="m"><span>Your finished workouts show up here.</span></div></div></div>';
+  return h + "</div></div>";
+}
+ACT.settings = () => openPage({ kind: "settings" });
+function vSettings() {
+  const st = syncStatus(), t = S.settings.theme || "dark";
+  let h = nav("Settings") + "<div class='body-pad'>";
   h += "<h2>General</h2><div class='card'>" + optRow(I.scale, "Weight", weightList().length ? weightList().slice(-1)[0].kg.toFixed(1) + " kg" : "", "openPage", ' data-k="scale"', "chev")
     + optRow(I.tape, "Waist", "", "openPage", ' data-k="waist"', "chev") + optRow(I.ruler, "Measurements", "", "measureSheet", "", "chev")
     + optRow(I.clock, "Daily Routine", "", "routine", "", "chev") + optRow(I.book, "Units", "Kilograms and inches", "units", "", "chev") + "</div>";
@@ -1185,7 +1207,7 @@ function lineChart(pts) {
 }
 
 // ----- tabs and taps -----
-ACT.tab = el => { if (document.body.classList.contains("compact")) { setFold(false); if (el.classList.contains("on")) return; } const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; if (t === TAB) { $("#main").scrollTo({ top: 0, behavior: "smooth" }); return; } TAB = t; haptic(); render(); };
+ACT.tab = el => { const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; if (t === TAB) { $("#main").scrollTo({ top: 0, behavior: "smooth" }); return; } TAB = t; haptic(); render(); };
 document.addEventListener("click", e => { const el = e.target.closest("[data-a]"); if (!el) return; const f = ACT[el.dataset.a]; if (f) { e.preventDefault(); f(el, e); } });
 document.addEventListener("DOMContentLoaded", () => {
   $("#importIn").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { const n = await importExport(JSON.parse(await f.text())); toast(n + " entries loaded"); render(); } catch (er) { toast(er.message || "Could not read that file"); } e.target.value = ""; });
@@ -1581,37 +1603,87 @@ function healViewport(force) {
 document.addEventListener("focusout", e => { if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) { setTimeout(healViewport, 150); setTimeout(healViewport, 600); } });
 if (window.visualViewport) visualViewport.addEventListener("resize", () => setTimeout(healViewport, 120));
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") setTimeout(() => healViewport(true), 200); });
-// Apple Music style: scroll down and the tab bar folds into one round button with the workout player beside it.
-// Only a real swipe counts. The bounce at the top or bottom of a page, and small finger jitter, are ignored.
+// Instagram style: scroll down and the tab bar gets a little smaller, scroll back up and it comes back.
+// Only a real swipe counts: the bounce at the top or bottom of a page and tiny finger jitter are ignored.
 let LASTY = 0, ACC = 0, FOLDLOCK = 0;
-function measureTabs() {
-  const t = $("#tabs"); if (!t) return; const W = t.clientWidth, R = t.getBoundingClientRect();
-  t.style.setProperty("--cw", Math.max(0, W - 64) + "px");
-  $$("#tabs > button").forEach(b => { const r = b.getBoundingClientRect(), c = r.left - R.left + r.width / 2; b.style.setProperty("--dxl", (32 - c) + "px"); b.style.setProperty("--dxr", (W - 32 - c) + "px"); });
-}
 function setFold(on) {
-  if (document.body.classList.contains("compact") === on) return;
-  if (on) measureTabs(); document.body.classList.toggle("compact", on); FOLDLOCK = Date.now() + 650; ACC = 0;
+  if (document.body.classList.contains("tsmall") === on) return;
+  document.body.classList.toggle("tsmall", on); FOLDLOCK = Date.now() + 280; ACC = 0;
 }
 function bindCompact() {
   const m = $("#main");
   m.addEventListener("scroll", () => {
     const y = m.scrollTop, max = m.scrollHeight - m.clientHeight, dy = y - LASTY; LASTY = y;
-    if (y <= 0 || y >= max - 1) { ACC = 0; if (y <= 0) setFold(false); return; }   // rubber-band zones: never act
-    if (y < 60) { ACC = 0; return setFold(false); }
-    if (Math.abs(dy) > 160) { ACC = 0; return; }                                     // jumps from re-rendering, not a finger
-    if ((ACC > 0) !== (dy > 0) && Math.abs(dy) < 10) return;                       // tiny wobble the other way: ignore
+    if (y <= 0 || y >= max - 1) { ACC = 0; if (y <= 0) setFold(false); return; }
+    if (y < 40) { ACC = 0; return setFold(false); }
+    if (Math.abs(dy) > 160) { ACC = 0; return; }
+    if ((ACC > 0) !== (dy > 0) && Math.abs(dy) < 4) return;
     ACC = (ACC > 0) === (dy > 0) ? ACC + dy : dy;
     if (Date.now() < FOLDLOCK) return;
-    if (ACC > 70 && y > 140) setFold(true); else if (ACC < -170) setFold(false);
+    if (ACC > 36 && y > 100) setFold(true); else if (ACC < -28) setFold(false);
   }, { passive: true });
-  window.addEventListener("resize", () => { if (document.body.classList.contains("compact")) measureTabs(); });
+}
+// ----- liquid glass tab bar -----
+// The pill slides under the tab you are on. Drag a finger along the bar and a glass lens follows it,
+// magnifying the icons under it. Let go and it snaps onto the nearest tab and opens it.
+let TABPREV = null, TABDRAG = null, TABEATCLICK = false;
+const tabBtns = () => $$("#tabs > button[data-tab]");
+function tabsPill(noAnim) {
+  const nav = $("#tabs"), pill = $("#tabs .pill"), on = $("#tabs > button.on"); if (!nav || !pill || !on) return;
+  const x = on.offsetLeft, w = on.offsetWidth, prev = TABPREV;
+  if (noAnim || prev == null || prev === x) { pill.style.transition = "none"; pill.style.transform = "translateX(" + x + "px)"; pill.style.width = w + "px"; pill.offsetWidth; pill.style.transition = ""; TABPREV = x; return; }
+  // liquid move: a lens lifts off the old tab, glides to the new one and settles into the pill
+  TABPREV = x; lensAt(prev + w / 2, false); pill.style.opacity = 0;
+  const L = $("#tabs .lens"); L.classList.add("on", "glide");
+  requestAnimationFrame(() => requestAnimationFrame(() => { lensAt(x + w / 2, true); }));
+  clearTimeout(tabsPill.t); tabsPill.t = setTimeout(() => { L.classList.remove("on", "glide"); pill.style.transition = "none"; pill.style.transform = "translateX(" + x + "px)"; pill.style.width = w + "px"; pill.offsetWidth; pill.style.transition = ""; pill.style.opacity = ""; }, 430);
+}
+function lensBuild() {
+  const row = $("#tabs .lrow"); if (!row) return;
+  row.innerHTML = $$("#tabs > button").map(b => '<span class="' + (b.classList.contains("plus") ? "lp" : "") + '" style="left:' + b.offsetLeft + "px;width:" + b.offsetWidth + 'px">' + b.innerHTML + "</span>").join("");
+}
+function lensAt(cx) {
+  const nav = $("#tabs"), L = $("#tabs .lens"), row = $("#tabs .lrow"), b0 = tabBtns()[0]; if (!L || !b0) return;
+  const W = nav.offsetWidth, H = nav.offsetHeight, LW = Math.round(b0.offsetWidth * 1.18), LH = H + 10;
+  cx = Math.max(LW / 2 - 4, Math.min(W - LW / 2 + 4, cx));
+  const left = cx - LW / 2, top = (H - LH) / 2;
+  L.style.width = LW + "px"; L.style.height = LH + "px"; L.style.top = top + "px"; L.style.transform = "translateX(" + left.toFixed(1) + "px)";
+  row.style.width = W + "px"; row.style.height = H + "px"; row.style.left = "0px"; row.style.top = -top + "px";
+  row.style.transform = "translateX(" + (-left).toFixed(1) + "px) scale(1.3)"; row.style.transformOrigin = cx.toFixed(1) + "px 50%";
+  row.style.setProperty("--lx", cx.toFixed(1) + "px");
+}
+function tabsGlass() {
+  const nav = $("#tabs"); if (!nav || nav._glass) return; nav._glass = 1;
+  lensBuild(); tabsPill(true);
+  const local = e => { const r = nav.getBoundingClientRect(); return (e.clientX - r.left) * nav.offsetWidth / r.width; };
+  const nearest = x => { let best = null, d = 1e9; tabBtns().forEach(b => { const c = b.offsetLeft + b.offsetWidth / 2, k = Math.abs(c - x); if (k < d) { d = k; best = b; } }); return best; };
+  nav.addEventListener("pointerdown", e => { if (e.target.closest(".plus")) return; TABDRAG = { x0: e.clientX, on: false, id: e.pointerId, hover: null }; });
+  nav.addEventListener("pointermove", e => {
+    const D = TABDRAG; if (!D || D.id !== e.pointerId) return;
+    if (!D.on && Math.abs(e.clientX - D.x0) > 7) { D.on = true; try { nav.setPointerCapture(e.pointerId); } catch (_) {} lensBuild(); $("#tabs .pill").style.opacity = 0; const L = $("#tabs .lens"); L.classList.remove("glide"); L.classList.add("on", "drag"); }
+    if (!D.on) return;
+    const x = local(e); lensAt(x); const h = nearest(x); if (h !== D.hover) { if (D.hover) haptic(); D.hover = h; }
+    e.preventDefault();
+  });
+  const end = e => {
+    const D = TABDRAG; TABDRAG = null; if (!D || !D.on) return;
+    TABEATCLICK = true; setTimeout(() => TABEATCLICK = false, 350);
+    const b = nearest(local(e)), L = $("#tabs .lens"); L.classList.remove("drag"); L.classList.add("glide");
+    lensAt(b.offsetLeft + b.offsetWidth / 2);
+    setTimeout(() => {
+      L.classList.remove("on", "glide"); const pill = $("#tabs .pill"); pill.style.opacity = "";
+      if (b.dataset.tab !== TAB) { TABPREV = null; ACT.tab(b); } else tabsPill(true);
+    }, 300);
+  };
+  nav.addEventListener("pointerup", end); nav.addEventListener("pointercancel", end);
+  nav.addEventListener("click", e => { if (TABEATCLICK) { e.stopPropagation(); e.preventDefault(); TABEATCLICK = false; } }, true);
+  window.addEventListener("resize", () => { lensBuild(); tabsPill(true); });
 }
 ACT.expandTabs = () => setFold(false);
 // ----- boot -----
 async function boot() {
   try { await coreBoot(); } catch (e) { $("#main").innerHTML = '<div class="head"><div class="title">NitFit</div></div><p class="hint" style="padding:20px">NitFit could not open its storage. Close it and open it again.</p>'; return; }
-  applyTheme(); render(); bindCompact();
+  applyTheme(); render(); bindCompact(); tabsGlass();
   try { const r = JSON.parse(localStorage.getItem("nitfit:rest") || "null"); if (r && r.end > Date.now()) { REST = r; restIv = setInterval(paintRest, 250); } } catch (_) {}
   if (activeSession()) { PAGE = { kind: "log" }; renderPage(); }
   try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => { if (S.settings.theme === "system") { applyTheme(); render(); } }); } catch (_) {}

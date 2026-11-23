@@ -915,6 +915,58 @@ html[data-theme="light"] .b3w{background:radial-gradient(120% 80% at 50% 40%,#3a
 .d2 .d2seg .thumbx{background:#636366!important;box-shadow:none}
 .d2 .d2seg button,.d2 .d2seg button.on{color:#fff!important}
 .d2 .d2seg button:not(.on){color:#AEAEB2!important}
+/* v4.7 tab bar: Instagram size, shrinks on scroll, liquid glass pill and lens */
+#main[data-tab="profile"]{background:#000;--dacc:#FF9F0A;--sf:-apple-system,"SF Pro Text","SF Pro Display",system-ui,"Helvetica Neue",sans-serif;--sfr:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,sans-serif}
+#tabs{left:18px;right:18px;height:60px;border-radius:30px;padding:0 6px;display:flex;align-items:center;justify-content:space-between;transform-origin:50% 100%;transition:transform .42s cubic-bezier(.32,.72,0,1);touch-action:none;overflow:visible;-webkit-user-select:none;user-select:none}
+#tabs .tbg{border-radius:30px;clip-path:none!important;background:rgba(28,28,30,.74);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.16),inset 0 1px 0 rgba(255,255,255,.07),0 10px 30px rgba(0,0,0,.45)}
+#tabs > button{flex:1;height:48px;border-radius:24px;font-size:0;gap:0;color:var(--text);background:transparent!important;transform:none!important;opacity:1!important;pointer-events:auto!important;z-index:1}
+#tabs > button svg{width:26px;height:26px;transition:transform .25s}
+#tabs > button:active svg{transform:scale(.88)}
+#tabs > button.on svg{stroke-width:2.25}
+#tabs .plus{flex:none;width:56px;height:48px;border-radius:0;background:transparent!important;margin:0;display:grid;place-items:center;color:var(--invtext)}
+#tabs .plus span{width:40px;height:40px;border-radius:50%;background:var(--inv);color:var(--invtext);display:grid;place-items:center}
+#tabs .plus svg{width:20px;height:20px}
+#tabs .pill{position:absolute;left:0;top:6px;height:48px;border-radius:24px;background:rgba(255,255,255,.14);z-index:0;pointer-events:none;transition:transform .5s cubic-bezier(.3,1.2,.5,1),width .3s,opacity .12s}
+html[data-theme="light"] #tabs .pill{background:rgba(0,0,0,.07)}
+#tabs .lens{position:absolute;left:0;z-index:3;border-radius:999px;overflow:hidden;pointer-events:none;opacity:0;transition:opacity .16s;
+  background:rgba(44,44,48,.5);-webkit-backdrop-filter:blur(12px) saturate(170%) brightness(1.08);backdrop-filter:blur(12px) saturate(170%) brightness(1.08);
+  box-shadow:inset 0 0 0 .7px rgba(255,255,255,.5),inset 0 2px 3px rgba(255,255,255,.35),inset 0 -2px 5px rgba(255,255,255,.12),inset 4px 0 6px rgba(255,80,140,.2),inset -4px 0 6px rgba(80,190,255,.24),0 8px 22px rgba(0,0,0,.5)}
+#tabs .lens::after{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(120% 70% at 50% 0%,rgba(255,255,255,.16),transparent 60%);pointer-events:none}
+#tabs .lens.on{opacity:1}
+#tabs .lens.glide,#tabs .lens.glide .lrow{transition:transform .38s cubic-bezier(.3,1.25,.5,1),opacity .16s}
+#tabs .lrow{position:absolute;pointer-events:none}
+#tabs .lrow > span{position:absolute;top:0;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text)}
+#tabs .lrow svg{width:26px;height:26px}
+#tabs .lrow .lp > span{width:40px;height:40px;border-radius:50%;background:var(--inv);color:var(--invtext);display:grid;place-items:center}
+#tabs .lrow .lp svg{width:20px;height:20px}
+body.tsmall #tabs{transform:translateY(6px) scale(.86)}
+#mini{bottom:calc(var(--barb) + 68px);transition:transform .42s cubic-bezier(.32,.72,0,1)!important;left:18px;right:18px}
+body.tsmall #mini{transform:translateY(14px)}
+/* Profile */
+.pfh{display:flex;align-items:center;gap:16px;margin-top:6px}
+.pfa{width:72px;height:72px;border-radius:50%;background:linear-gradient(145deg,#48484A,#1C1C1E);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);display:grid;place-items:center;font:700 30px var(--sfr);color:#fff;flex:none}
+.pfn b{display:block;font:700 22px var(--sf);color:#fff}
+.pfn span{font:400 15px var(--sf);color:#8E8E93}
+.pfs{display:grid;grid-template-columns:repeat(3,1fr);margin-top:20px;background:#1C1C1E;border-radius:20px;padding:16px 0}
+.pfs div{text-align:center}
+.pfs div + div{border-left:.5px solid rgba(84,84,88,.6)}
+.pfs b{display:block;font:700 26px/1.1 var(--sfr);color:#fff}
+.pfs span{font:400 13px var(--sf);color:#8E8E93}
+.pfl{background:#1C1C1E;border-radius:20px;overflow:hidden}
+.pfr{display:flex;align-items:center;gap:10px;padding:14px 16px}
+.pfr + .pfr{border-top:.5px solid rgba(84,84,88,.6)}
+.pfr .m{flex:1;min-width:0}
+.pfr b{display:block;font:600 16px var(--sf);color:#fff}
+.pfr span{font:400 13px var(--sf);color:#8E8E93}
+.pfr em{font:600 15px var(--sfr);font-style:normal;color:#8E8E93}
+.pf .recs{background:#1C1C1E;border-radius:20px;overflow:hidden}
+.pf .recs{min-height:0;gap:0;padding:0 16px}
+.pf .recs.empty{padding:22px 16px}
+.pf .rec{padding:14px 0;border-bottom:.5px solid rgba(84,84,88,.6)}
+.pf .rec:last-child{border-bottom:0}
+.pf .rec b{font:600 16px var(--sf);color:#fff}
+.pf .rec span{font:400 14px var(--sf);color:#8E8E93}
 
 </style>
 </head>
@@ -923,13 +975,7 @@ html[data-theme="light"] .b3w{background:radial-gradient(120% 80% at 50% 40%,#3a
 <div id="page" class="scr"></div>
 
 <div id="mini" hidden></div>
-<nav id="tabs"><div class="tbg"></div>
-<button data-a="tab" data-tab="dashboard" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6.5" height="9" rx="1.2"/><rect x="13.5" y="4" width="6.5" height="5" rx="1.2"/><rect x="4" y="15.5" width="6.5" height="4.5" rx="1.2"/><rect x="13.5" y="11.5" width="6.5" height="8.5" rx="1.2"/></svg>Dashboard</button>
-<button data-a="tab" data-tab="workout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6.3 14.6l3.1 3.1M14.6 6.3l3.1 3.1M9.4 14.6l5.2-5.2M4.1 16.8l3.1 3.1M16.8 4.1l3.1 3.1M5.2 12.5l6.3 6.3M12.5 5.2l6.3 6.3"/></svg>Workout</button>
-<button data-a="plusMenu" class="plus" aria-label="Quick add"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
-<button data-a="tab" data-tab="levels"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 2.2 4.5 5.6 4.3 10.2L14.5 16h-5l-1.8-2.8C7.5 8.6 9 5.2 12 3z"/><circle cx="12" cy="9.5" r="1.6"/><path d="M8 13.5l-2.5 2.2.7 3.3 2.8-2M16 13.5l2.5 2.2-.7 3.3-2.8-2"/></svg>Levels</button>
-<button data-a="tab" data-tab="more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="8.3" cy="12" r=".7" fill="currentColor"/><circle cx="12" cy="12" r=".7" fill="currentColor"/><circle cx="15.7" cy="12" r=".7" fill="currentColor"/></svg>More</button>
-</nav>
+<nav id="tabs"><div class="tbg"></div><div class="pill"></div><button data-a="tab" data-tab="dashboard" class="on" aria-label="Dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.6L12 4l8.5 6.6V19a1.5 1.5 0 0 1-1.5 1.5h-4.2v-5.6H9.2v5.6H5A1.5 1.5 0 0 1 3.5 19z"/></svg></button><button data-a="tab" data-tab="workout" aria-label="Workout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12h8"/><rect x="4.6" y="7" width="3.4" height="10" rx="1.4"/><rect x="16" y="7" width="3.4" height="10" rx="1.4"/><path d="M2.6 10v4M21.4 10v4"/></svg></button><button data-a="plusMenu" class="plus" aria-label="Quick add"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5.5v13M5.5 12h13"/></svg></span></button><button data-a="tab" data-tab="levels" aria-label="Progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16M6.5 16v-4M11 16V8.5M15.5 16v-6M19.5 16V5"/></svg></button><button data-a="tab" data-tab="profile" aria-label="Profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><circle cx="12" cy="10" r="2.9"/><path d="M6.6 18.2c1.2-2.2 3.1-3.3 5.4-3.3s4.2 1.1 5.4 3.3"/></svg></button><div class="lens"><div class="lrow"></div></div></nav>
 
 <div class="kp" id="kp"></div>
 <div class="scrim" id="scrim" data-a="closeSheet"></div>
@@ -1434,7 +1480,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "4.6";
+const APP_VERSION = "4.7";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -1821,9 +1867,9 @@ function render() {
   if (!isStandalone() && !/dev/.test(location.search)) { $("#main").innerHTML = vInstall(); $("#tabs").hidden = true; return; }
   const m = $("#main");
   const keep = m.dataset.tab === TAB ? m.scrollTop : (SCROLL[TAB] || 0);
-  m.innerHTML = TAB === "dashboard" ? vDash() : TAB === "workout" ? vWorkoutTab() : TAB === "levels" ? vLevels() : vMore();
-  m.dataset.tab = TAB; if (TAB === "levels") attachBody2d(); m.scrollTop = keep; LASTY = m.scrollTop; ACC = 0; FOLDLOCK = Date.now() + 400; if (keep < 60) document.body.classList.remove("compact");
-  $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB));
+  m.innerHTML = TAB === "dashboard" ? vDash() : TAB === "workout" ? vWorkoutTab() : TAB === "levels" ? vLevels() : vProfile();
+  m.dataset.tab = TAB; if (TAB === "levels") attachBody2d(); m.scrollTop = keep; LASTY = m.scrollTop; ACC = 0; FOLDLOCK = Date.now() + 400; if (keep < 40) document.body.classList.remove("tsmall");
+  $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB)); tabsPill();
   const pg = $("#pager"); if (pg) pg.addEventListener("scroll", () => { const i = Math.round(pg.scrollLeft / pg.clientWidth); $$(".pdots i").forEach((d, k) => d.classList.toggle("on", k === i)); }, { passive: true });
   renderPage();
 }
@@ -1837,7 +1883,7 @@ function renderPage(keepScroll) {
   pg.innerHTML = K === "preview" ? vPreview(PAGE.dayKey) : K === "log" ? vLog() : K === "history" ? vHistory() : K === "wset" ? vWset()
     : K === "workouts" ? vWorkouts() : K === "muscle" ? vMuscle(PAGE.m) : K === "exercise" ? vExercise(PAGE.ex) : K === "wtrend" ? vWTrend()
     : K === "scale" ? vScale("weights") : K === "waist" ? vScale("waists") : K === "weighin" ? vHabit("weights") : K === "wohabit" ? vHabit("workouts")
-    : K === "exlist" ? vExList() : K === "dashcust" ? vDashCust() : "";
+    : K === "exlist" ? vExList() : K === "dashcust" ? vDashCust() : K === "settings" ? vSettings() : "";
   pg.classList.add("on"); $("#tabs").hidden = true; paintMini();
   if (keepScroll) pg.scrollTop = y;
   const on = $("#strip .st.on"); if (on) { const st = $("#strip"); st.scrollLeft = Math.max(0, on.offsetLeft - st.clientWidth / 2 + on.clientWidth / 2); }
@@ -2005,7 +2051,7 @@ function d2tile(id) {
   }
   if (id === "wtrend") {
     const tr = trendSeries(weightList()), l = tr.slice(-14), last = tr[tr.length - 1], ch = d2delta(tr.map(x => ({ d: x.d, v: x.trend })), "v", d);
-    return d2card("openPage", ' data-k="wtrend"', "Weight trend", "Last 14 days", (last ? d2num(last.trend.toFixed(1), "kg") : d2num("--")) + d2chart(l.map(x => x.trend), 140, 46, { fill: 1, color: D2A, w: 2.2 }), ch == null ? (last ? "No change yet" : "No entries yet") : d2sign(ch) + " kg this week");
+    return d2card("openPage", ' data-k="wtrend"', "Weight trend", "Last 14 days", (last ? d2num(last.trend.toFixed(1), "kg") : d2num("--")) + d2chart(l.map(x => x.trend), 140, 46, { fill: 1, color: "#fff", w: 2.2 }), ch == null ? (last ? "No change yet" : "No entries yet") : d2sign(ch) + " kg this week");
   }
   if (id === "weighin") {
     const days = Array.from({ length: 30 }, (_, i) => addDays(d, i - 29)), ws = days.map(x => S.weights[x] ? S.weights[x].kg : null), have = ws.filter(v => v != null);
@@ -2775,11 +2821,33 @@ ACT.b2Open = () => { if (!B2.sel) return; const m = BOPEN[B2.sel] || B2.sel; ACT
 ACT.b3Home = () => { b2Select(null); b2Animate({ pos: Math.round(B2.pos / 4) * 4, z: 1, px: 0, py: 0 }, 300); };
 ACT.flip = () => { FLIP = FLIP === "front" ? "back" : "front"; SCROLL.levels = $("#main").scrollTop; render(); };
 ACT.lvRange = () => { LVRANGE = LVRANGE === 1 ? 4 : 1; SCROLL.levels = $("#main").scrollTop; render(); };
-// ===== More =====
-function vMore() {
-  const st = syncStatus(), t = S.settings.theme || "dark", first = EV.length ? EV.reduce((a, e) => e.d < a ? e.d : a, EV[0].d) : today();
-  let h = head("More") + "</div><div class='body-pad'>";
-  h += '<div class="prof"><div class="av">N</div><div><b>Nit</b><span>Member since ' + +first.slice(8) + " " + MONTHS_LONG[+first.slice(5, 7) - 1] + " " + first.slice(0, 4) + "</span></div></div>";
+// ===== Profile and Settings =====
+function weekStreak() {
+  const fin = sessionsSorted().filter(x => x.endTs && sessionSets(x.id).length).map(x => x.d); if (!fin.length) return 0;
+  let w = weekSun(today()), n = 0; if (!fin.some(d => d >= w)) w = addDays(w, -7);
+  while (fin.some(d => d >= w && d <= addDays(w, 6))) { n++; w = addDays(w, -7); }
+  return n;
+}
+function vProfile() {
+  const first = EV.length ? EV.reduce((a, e) => e.d < a ? e.d : a, EV[0].d) : today(), fin = sessionsSorted().filter(x => x.endTs && sessionSets(x.id).length);
+  const sets = Object.values(S.sets).filter(x => !x.w).length, wl = weightList(), ws = Object.values(S.waists).sort((a, b) => a.d < b.d ? -1 : 1);
+  let h = '<div class="d2 pf">' + head("Profile", "", '<button class="ib" data-a="settings" aria-label="Settings">' + '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/></svg>' + "</button>") + '</div><div class="body-pad">';
+  h += '<div class="pfh"><div class="pfa">N</div><div class="pfn"><b>Nit</b><span>Training since ' + MONTHS_LONG[+first.slice(5, 7) - 1] + " " + first.slice(0, 4) + "</span></div></div>";
+  h += '<div class="pfs"><div><b>' + fin.length + "</b><span>Workouts</span></div><div><b>" + sets + "</b><span>Sets</span></div><div><b>" + weekStreak() + "</b><span>Week streak</span></div></div>";
+  const kg = wl.length ? wl[wl.length - 1].kg : null, kg0 = wl.length ? wl[0].kg : null, wa = ws.length ? +ws[ws.length - 1].inch : null;
+  h += '<div class="d2sec"><h2>Body</h2></div><div class="d2grid">'
+    + d2card("openPage", ' data-k="scale"', "Weight", wl.length ? "Since " + dShort(wl[0].d) : "No entries yet", d2num(kg == null ? "--" : kg.toFixed(1), kg == null ? "" : "kg"), kg == null ? "Log your morning weight" : (kg - kg0 === 0 ? "No change yet" : d2sign(kg - kg0) + " kg in total"))
+    + d2card("openPage", ' data-k="waist"', "Waist", ws.length ? "Latest entry" : "No entries yet", d2num(wa == null ? "--" : wa.toFixed(1), wa == null ? "" : "in"), ws.length ? dShort(ws[ws.length - 1].d) : "Measure each week") + "</div>";
+  h += '<div class="d2sec"><h2>Personal records</h2></div>' + recordsHtml();
+  h += '<div class="d2sec"><h2>Recent workouts</h2>' + (fin.length ? '<button class="d2see" data-a="history">See all</button>' : "") + "</div>";
+  h += fin.length ? '<div class="pfl">' + fin.slice(-5).reverse().map(x => '<div class="pfr"><div class="m"><b>' + esc(x.name || "Workout") + "</b><span>" + dShort(x.d) + "</span></div><em>" + sessionSets(x.id).length + " sets</em></div>").join("") + "</div>"
+    : '<div class="pfl"><div class="pfr"><div class="m"><span>Your finished workouts show up here.</span></div></div></div>';
+  return h + "</div></div>";
+}
+ACT.settings = () => openPage({ kind: "settings" });
+function vSettings() {
+  const st = syncStatus(), t = S.settings.theme || "dark";
+  let h = nav("Settings") + "<div class='body-pad'>";
   h += "<h2>General</h2><div class='card'>" + optRow(I.scale, "Weight", weightList().length ? weightList().slice(-1)[0].kg.toFixed(1) + " kg" : "", "openPage", ' data-k="scale"', "chev")
     + optRow(I.tape, "Waist", "", "openPage", ' data-k="waist"', "chev") + optRow(I.ruler, "Measurements", "", "measureSheet", "", "chev")
     + optRow(I.clock, "Daily Routine", "", "routine", "", "chev") + optRow(I.book, "Units", "Kilograms and inches", "units", "", "chev") + "</div>";
@@ -2833,7 +2901,7 @@ function lineChart(pts) {
 }
 
 // ----- tabs and taps -----
-ACT.tab = el => { if (document.body.classList.contains("compact")) { setFold(false); if (el.classList.contains("on")) return; } const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; if (t === TAB) { $("#main").scrollTo({ top: 0, behavior: "smooth" }); return; } TAB = t; haptic(); render(); };
+ACT.tab = el => { const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; if (t === TAB) { $("#main").scrollTo({ top: 0, behavior: "smooth" }); return; } TAB = t; haptic(); render(); };
 document.addEventListener("click", e => { const el = e.target.closest("[data-a]"); if (!el) return; const f = ACT[el.dataset.a]; if (f) { e.preventDefault(); f(el, e); } });
 document.addEventListener("DOMContentLoaded", () => {
   $("#importIn").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { const n = await importExport(JSON.parse(await f.text())); toast(n + " entries loaded"); render(); } catch (er) { toast(er.message || "Could not read that file"); } e.target.value = ""; });
@@ -3229,37 +3297,87 @@ function healViewport(force) {
 document.addEventListener("focusout", e => { if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) { setTimeout(healViewport, 150); setTimeout(healViewport, 600); } });
 if (window.visualViewport) visualViewport.addEventListener("resize", () => setTimeout(healViewport, 120));
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") setTimeout(() => healViewport(true), 200); });
-// Apple Music style: scroll down and the tab bar folds into one round button with the workout player beside it.
-// Only a real swipe counts. The bounce at the top or bottom of a page, and small finger jitter, are ignored.
+// Instagram style: scroll down and the tab bar gets a little smaller, scroll back up and it comes back.
+// Only a real swipe counts: the bounce at the top or bottom of a page and tiny finger jitter are ignored.
 let LASTY = 0, ACC = 0, FOLDLOCK = 0;
-function measureTabs() {
-  const t = $("#tabs"); if (!t) return; const W = t.clientWidth, R = t.getBoundingClientRect();
-  t.style.setProperty("--cw", Math.max(0, W - 64) + "px");
-  $$("#tabs > button").forEach(b => { const r = b.getBoundingClientRect(), c = r.left - R.left + r.width / 2; b.style.setProperty("--dxl", (32 - c) + "px"); b.style.setProperty("--dxr", (W - 32 - c) + "px"); });
-}
 function setFold(on) {
-  if (document.body.classList.contains("compact") === on) return;
-  if (on) measureTabs(); document.body.classList.toggle("compact", on); FOLDLOCK = Date.now() + 650; ACC = 0;
+  if (document.body.classList.contains("tsmall") === on) return;
+  document.body.classList.toggle("tsmall", on); FOLDLOCK = Date.now() + 280; ACC = 0;
 }
 function bindCompact() {
   const m = $("#main");
   m.addEventListener("scroll", () => {
     const y = m.scrollTop, max = m.scrollHeight - m.clientHeight, dy = y - LASTY; LASTY = y;
-    if (y <= 0 || y >= max - 1) { ACC = 0; if (y <= 0) setFold(false); return; }   // rubber-band zones: never act
-    if (y < 60) { ACC = 0; return setFold(false); }
-    if (Math.abs(dy) > 160) { ACC = 0; return; }                                     // jumps from re-rendering, not a finger
-    if ((ACC > 0) !== (dy > 0) && Math.abs(dy) < 10) return;                       // tiny wobble the other way: ignore
+    if (y <= 0 || y >= max - 1) { ACC = 0; if (y <= 0) setFold(false); return; }
+    if (y < 40) { ACC = 0; return setFold(false); }
+    if (Math.abs(dy) > 160) { ACC = 0; return; }
+    if ((ACC > 0) !== (dy > 0) && Math.abs(dy) < 4) return;
     ACC = (ACC > 0) === (dy > 0) ? ACC + dy : dy;
     if (Date.now() < FOLDLOCK) return;
-    if (ACC > 70 && y > 140) setFold(true); else if (ACC < -170) setFold(false);
+    if (ACC > 36 && y > 100) setFold(true); else if (ACC < -28) setFold(false);
   }, { passive: true });
-  window.addEventListener("resize", () => { if (document.body.classList.contains("compact")) measureTabs(); });
+}
+// ----- liquid glass tab bar -----
+// The pill slides under the tab you are on. Drag a finger along the bar and a glass lens follows it,
+// magnifying the icons under it. Let go and it snaps onto the nearest tab and opens it.
+let TABPREV = null, TABDRAG = null, TABEATCLICK = false;
+const tabBtns = () => $$("#tabs > button[data-tab]");
+function tabsPill(noAnim) {
+  const nav = $("#tabs"), pill = $("#tabs .pill"), on = $("#tabs > button.on"); if (!nav || !pill || !on) return;
+  const x = on.offsetLeft, w = on.offsetWidth, prev = TABPREV;
+  if (noAnim || prev == null || prev === x) { pill.style.transition = "none"; pill.style.transform = "translateX(" + x + "px)"; pill.style.width = w + "px"; pill.offsetWidth; pill.style.transition = ""; TABPREV = x; return; }
+  // liquid move: a lens lifts off the old tab, glides to the new one and settles into the pill
+  TABPREV = x; lensAt(prev + w / 2, false); pill.style.opacity = 0;
+  const L = $("#tabs .lens"); L.classList.add("on", "glide");
+  requestAnimationFrame(() => requestAnimationFrame(() => { lensAt(x + w / 2, true); }));
+  clearTimeout(tabsPill.t); tabsPill.t = setTimeout(() => { L.classList.remove("on", "glide"); pill.style.transition = "none"; pill.style.transform = "translateX(" + x + "px)"; pill.style.width = w + "px"; pill.offsetWidth; pill.style.transition = ""; pill.style.opacity = ""; }, 430);
+}
+function lensBuild() {
+  const row = $("#tabs .lrow"); if (!row) return;
+  row.innerHTML = $$("#tabs > button").map(b => '<span class="' + (b.classList.contains("plus") ? "lp" : "") + '" style="left:' + b.offsetLeft + "px;width:" + b.offsetWidth + 'px">' + b.innerHTML + "</span>").join("");
+}
+function lensAt(cx) {
+  const nav = $("#tabs"), L = $("#tabs .lens"), row = $("#tabs .lrow"), b0 = tabBtns()[0]; if (!L || !b0) return;
+  const W = nav.offsetWidth, H = nav.offsetHeight, LW = Math.round(b0.offsetWidth * 1.18), LH = H + 10;
+  cx = Math.max(LW / 2 - 4, Math.min(W - LW / 2 + 4, cx));
+  const left = cx - LW / 2, top = (H - LH) / 2;
+  L.style.width = LW + "px"; L.style.height = LH + "px"; L.style.top = top + "px"; L.style.transform = "translateX(" + left.toFixed(1) + "px)";
+  row.style.width = W + "px"; row.style.height = H + "px"; row.style.left = "0px"; row.style.top = -top + "px";
+  row.style.transform = "translateX(" + (-left).toFixed(1) + "px) scale(1.3)"; row.style.transformOrigin = cx.toFixed(1) + "px 50%";
+  row.style.setProperty("--lx", cx.toFixed(1) + "px");
+}
+function tabsGlass() {
+  const nav = $("#tabs"); if (!nav || nav._glass) return; nav._glass = 1;
+  lensBuild(); tabsPill(true);
+  const local = e => { const r = nav.getBoundingClientRect(); return (e.clientX - r.left) * nav.offsetWidth / r.width; };
+  const nearest = x => { let best = null, d = 1e9; tabBtns().forEach(b => { const c = b.offsetLeft + b.offsetWidth / 2, k = Math.abs(c - x); if (k < d) { d = k; best = b; } }); return best; };
+  nav.addEventListener("pointerdown", e => { if (e.target.closest(".plus")) return; TABDRAG = { x0: e.clientX, on: false, id: e.pointerId, hover: null }; });
+  nav.addEventListener("pointermove", e => {
+    const D = TABDRAG; if (!D || D.id !== e.pointerId) return;
+    if (!D.on && Math.abs(e.clientX - D.x0) > 7) { D.on = true; try { nav.setPointerCapture(e.pointerId); } catch (_) {} lensBuild(); $("#tabs .pill").style.opacity = 0; const L = $("#tabs .lens"); L.classList.remove("glide"); L.classList.add("on", "drag"); }
+    if (!D.on) return;
+    const x = local(e); lensAt(x); const h = nearest(x); if (h !== D.hover) { if (D.hover) haptic(); D.hover = h; }
+    e.preventDefault();
+  });
+  const end = e => {
+    const D = TABDRAG; TABDRAG = null; if (!D || !D.on) return;
+    TABEATCLICK = true; setTimeout(() => TABEATCLICK = false, 350);
+    const b = nearest(local(e)), L = $("#tabs .lens"); L.classList.remove("drag"); L.classList.add("glide");
+    lensAt(b.offsetLeft + b.offsetWidth / 2);
+    setTimeout(() => {
+      L.classList.remove("on", "glide"); const pill = $("#tabs .pill"); pill.style.opacity = "";
+      if (b.dataset.tab !== TAB) { TABPREV = null; ACT.tab(b); } else tabsPill(true);
+    }, 300);
+  };
+  nav.addEventListener("pointerup", end); nav.addEventListener("pointercancel", end);
+  nav.addEventListener("click", e => { if (TABEATCLICK) { e.stopPropagation(); e.preventDefault(); TABEATCLICK = false; } }, true);
+  window.addEventListener("resize", () => { lensBuild(); tabsPill(true); });
 }
 ACT.expandTabs = () => setFold(false);
 // ----- boot -----
 async function boot() {
   try { await coreBoot(); } catch (e) { $("#main").innerHTML = '<div class="head"><div class="title">NitFit</div></div><p class="hint" style="padding:20px">NitFit could not open its storage. Close it and open it again.</p>'; return; }
-  applyTheme(); render(); bindCompact();
+  applyTheme(); render(); bindCompact(); tabsGlass();
   try { const r = JSON.parse(localStorage.getItem("nitfit:rest") || "null"); if (r && r.end > Date.now()) { REST = r; restIv = setInterval(paintRest, 250); } } catch (_) {}
   if (activeSession()) { PAGE = { kind: "log" }; renderPage(); }
   try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => { if (S.settings.theme === "system") { applyTheme(); render(); } }); } catch (_) {}
