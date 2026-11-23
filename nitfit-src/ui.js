@@ -284,13 +284,34 @@ function tickRing(size, n, lit, big) {
   }
   return s + "</svg>";
 }
+// weekly score out of 100: sets count for half, exercises and muscles a quarter each
+function weekScore(done, plan) {
+  const f = (a, b) => b ? Math.min(1, a / b) : 0;
+  return Math.round(100 * (0.5 * f(done.sets, plan.sets) + 0.25 * f(done.ex.size, plan.ex.size) + 0.25 * f(done.mus.size, plan.mus.size)));
+}
+function solidRing(v, frac, sub, color, track) {
+  const S = 104, w = 10, r = (S - w) / 2, c = 2 * Math.PI * r, f = Math.max(0, Math.min(1, frac));
+  return '<div class="rv"><svg width="' + S + '" height="' + S + '" viewBox="0 0 ' + S + " " + S + '"><circle cx="52" cy="52" r="' + r + '" fill="none" stroke="' + track + '" stroke-width="' + w + '"/>'
+    + (f > 0 ? '<circle class="arc" cx="52" cy="52" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="' + w + '" stroke-linecap="round" stroke-dasharray="' + (c * f).toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 52 52)"/></svg>'
+    + '<div class="rc"><b>' + v + "</b><small>" + sub + "</small></div></div>";
+}
 function ringsHtml() {
-  const st = weekStats(RINGMODE), all = RINGMODE === "all";
-  const one = (label, v, t, lw, size, big) => {
-    const N = big ? 60 : 24, n = all ? N : t, litN = all ? Math.round(v / Math.max(1, lw, v) * N) : v, mid = all ? "this week" : "of " + t, foot = all ? lw + " last week" : Math.max(0, t - v) + " left";
-    return '<div class="d2r' + (big ? " lg" : "") + '"><div class="rv">' + tickRing(size, n, litN, big) + '<div class="rc"><b>' + v + "</b><small>" + mid + "</small></div></div><div class=\"rl\">" + label + '</div><div class="rt">' + foot + "</div></div>";
-  };
-  return one("Muscles", st.done.mus.size, st.plan.mus.size, st.last.mus.size, 96) + one("Sets", st.done.sets, st.plan.sets, st.last.sets, 156, 1) + one("Exercises", st.done.ex.size, st.plan.ex.size, st.last.ex.size, 96);
+  const st = weekStats(RINGMODE), all = RINGMODE === "all", p = st.plan, dn = st.done, ls = st.last;
+  const sc = weekScore(dn, p), scL = weekScore(ls, p), diff = sc - scL;
+  const one = (label, ring, foot) => '<div class="d3r">' + ring + '<div class="rl">' + label + '</div><div class="rt">' + foot + "</div></div>";
+  const setsFrac = all ? dn.sets / Math.max(1, ls.sets, dn.sets) : dn.sets / Math.max(1, p.sets), exFrac = all ? dn.ex.size / Math.max(1, ls.ex.size, dn.ex.size) : dn.ex.size / Math.max(1, p.ex.size);
+  let h = '<div class="d3rings">'
+    + one("Sets", solidRing(dn.sets, setsFrac, "done", "#FF6B6B", "rgba(255,107,107,.2)"), all ? ls.sets + " last week" : "of " + p.sets)
+    + one("Training score", solidRing(sc, sc / 100, "of 100", "#E5E5EA", "rgba(229,229,234,.16)"), (diff > 0 ? "+" : diff < 0 ? "−" : "") + Math.abs(diff) + " vs last week")
+    + one("Exercises", solidRing(dn.ex.size, exFrac, "done", "#7AB8F5", "rgba(122,184,245,.2)"), all ? ls.ex.size + " last week" : "of " + p.ex.size) + "</div>";
+  // pace: how many planned sets should be done by the end of today
+  const d = today(), w0 = weekSun(d); let due = 0;
+  for (let i = 0; i < 7; i++) { const x = addDays(w0, i); if (x >= d) break; const dk = dayKeyFor(x); if (dk) itemsForDay(dk, x).forEach(it => due += it.n); }
+  const left = Math.max(0, p.sets - dn.sets);
+  const msg = !p.sets ? "No program sets planned this week."
+    : left === 0 ? "Week done. <b>" + dn.sets + " sets</b> logged."
+    : (dn.sets >= due ? "You're on pace. " : "A bit behind. ") + "<b>" + left + " sets</b> left this week.";
+  return h + '<div class="d3pace"><svg viewBox="0 0 20 20" width="18" height="18"><path d="M3 14l5-5 3 3 6-6M13 6h4v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>' + msg + "</span></div>";
 }
 // smooth line through points (Catmull-Rom turned into curves)
 function d2path(P) {
@@ -365,7 +386,7 @@ function d2tile(id) {
 function vDash() {
   const d = today(), L = dashLayout();
   let h = '<div class="d2">' + head("Dashboard", "", '<button class="ib" data-a="dashCustom" aria-label="Customize">' + I.sliders + "</button>");
-  const pg = { rings: '<div class="pg"><h2 class="d2h2">Weekly workouts</h2><div class="d2rings" id="rings">' + ringsHtml() + "</div>"
+  const pg = { rings: '<div class="pg"><div class="d3hd"><h2 class="d2h2">Weekly workouts</h2><span>This week</span></div><div class="d3card" id="rings">' + ringsHtml() + "</div>"
       + '<div class="seg slide d2seg' + (RINGMODE === "all" ? " right" : "") + '"><i class="thumbx"></i><button class="' + (RINGMODE === "program" ? "on" : "") + '" data-a="ringMode" data-v="program">Active program</button><button class="' + (RINGMODE === "all" ? "on" : "") + '" data-a="ringMode" data-v="all">All workouts</button></div></div>',
     records: '<div class="pg"><h2 class="d2h2">Recent records</h2>' + recordsHtml() + "</div>" };
   h += '<div class="pager" id="pager">' + L.pages.map(p => pg[p]).join("") + '</div><div class="pdots"><i class="on"></i><i></i></div></div><div class="body-pad">';
