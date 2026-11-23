@@ -1257,7 +1257,7 @@ html[data-theme="light"] #tabs .lens{background:var(--glhi)!important;
 #tabs .lens{-webkit-backdrop-filter:var(--glblur)!important;backdrop-filter:var(--glblur)!important}
 #tabs .lens::after{display:none}
 /* v7: the glass lens is drawn on the graphics chip. The bar itself never grows or blurs. */
-#tabs .lgl{position:absolute;z-index:4;pointer-events:none;display:none}
+#tabs .lgl{position:absolute;z-index:4;pointer-events:none;display:block}
 #tabs.lgon .lgl,#tabs.lgend .lgl{display:block}
 #tabs.lgon .tcap > button[data-tab] > *,#tabs.lgend .tcap > button[data-tab] > *{opacity:0!important;transition:none!important}
 #tabs.lgon .tcap .pill{opacity:0!important;transition:none!important}

@@ -1274,7 +1274,7 @@ html[data-theme="light"] #tabs .lens{background:var(--glhi)!important;
 #tabs .lens{-webkit-backdrop-filter:var(--glblur)!important;backdrop-filter:var(--glblur)!important}
 #tabs .lens::after{display:none}
 /* v7: the glass lens is drawn on the graphics chip. The bar itself never grows or blurs. */
-#tabs .lgl{position:absolute;z-index:4;pointer-events:none;display:none}
+#tabs .lgl{position:absolute;z-index:4;pointer-events:none;display:block}
 #tabs.lgon .lgl,#tabs.lgend .lgl{display:block}
 #tabs.lgon .tcap > button[data-tab] > *,#tabs.lgend .tcap > button[data-tab] > *{opacity:0!important;transition:none!important}
 #tabs.lgon .tcap .pill{opacity:0!important;transition:none!important}
@@ -1796,7 +1796,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "7.0";
+const APP_VERSION = "8.0";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -3241,7 +3241,7 @@ ACT.tab = el => { const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; 
   const bs = tabBtns(), from = bs.findIndex(b => b.classList.contains("on")), to = bs.indexOf(el), cen = b => b.offsetLeft + b.offsetWidth / 2;
   TAB = t; if (!el._glass) haptic(); $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB));
   if (el._glass) { render(); return; }
-  if (LG.ready && from >= 0 && to >= 0) { lgStart(cen(bs[from]), from, "fly", cen(bs[to])); render(); return; }
+  if (LG.ready && from >= 0 && to >= 0) { LG.run = true; LG.rid = (LG.rid || 0) + 1; lgMsg({ t: "fly", from, to, id: LG.rid }); render(); return; }
   tabsPill(); requestAnimationFrame(() => setTimeout(render, 0)); };
 document.addEventListener("click", e => { const el = e.target.closest("[data-a]"); if (!el) return; const f = ACT[el.dataset.a]; if (f) { e.preventDefault(); f(el, e); } });
 document.addEventListener("DOMContentLoaded", () => {
@@ -3722,24 +3722,37 @@ function tabsGlass() {
   const hold = () => {
     const D = TABDRAG; if (!D || D.held) return; D.held = true; clearTimeout(LENST);
     try { cap.setPointerCapture(D.id); } catch (_) {}
-    if (LG.ready) { D.gl = true; const on = tabBtns().findIndex(b => b.classList.contains("on")); lgStart(D.x, Math.max(0, on), "hold"); D.hover = nearest(D.x); haptic(); return; }
     lensBuild(); const L = $("#tabs .lens"); L.classList.remove("glide"); lensAt(D.x); glassOn(true); L.classList.add("on");
     D.hover = nearest(D.x); haptic();
   };
-  cap.addEventListener("pointerdown", e => { TABDRAG = { id: e.pointerId, x0: e.clientX, x: local(e), held: false, hover: null }; TABDRAG.t = setTimeout(hold, 170); });
+  cap.addEventListener("pointerdown", e => {
+    TABDRAG = { id: e.pointerId, x0: e.clientX, x: local(e), held: false, hover: null }; const D = TABDRAG;
+    if (LG.ready) {
+      // the glass answers the moment the finger lands
+      D.gl = D.held = true; try { cap.setPointerCapture(D.id); } catch (_) {}
+      const bs = tabBtns(), on = bs.findIndex(b => b.classList.contains("on"));
+      LG.run = true; LG.rid = (LG.rid || 0) + 1; lgMsg({ t: "down", x: D.x, from: on >= 0 ? LG.centers[on] : D.x, on, id: LG.rid });
+      D.hover = nearest(D.x); haptic(); return;
+    }
+    D.t = setTimeout(hold, 170);
+  });
   cap.addEventListener("pointermove", e => {
     const D = TABDRAG; if (!D || D.id !== e.pointerId) return; D.x = local(e);
+    if (D.gl) { lgMsg({ t: "move", x: D.x }); const h = nearest(D.x); if (h !== D.hover) { if (Math.abs(e.clientX - D.x0) > 6) haptic(); D.hover = h; } e.preventDefault(); return; }
     if (!D.held && Math.abs(e.clientX - D.x0) > 6) { clearTimeout(D.t); hold(); }
     if (!D.held) return;
-    if (D.gl) { if (LG.s) LG.s.tx = D.x; const h = nearest(D.x); if (h !== D.hover) { haptic(); D.hover = h; } e.preventDefault(); return; }
     lensAt(D.x); const h = nearest(D.x); if (h !== D.hover) { haptic(); D.hover = h; }
     e.preventDefault();
   });
-  const end = () => {
+  const end = e => {
     const D = TABDRAG; TABDRAG = null; if (!D) return; clearTimeout(D.t); if (!D.held) return;
     TABEATCLICK = true; setTimeout(() => TABEATCLICK = false, 350);
     const b = nearest(D.x), L = $("#tabs .lens"), c = b.offsetLeft + b.offsetWidth / 2;
-    if (D.gl && LG.s) { LG.s.mode = "fly"; LG.s.tx = c; if (b.dataset.tab !== TAB) { b._glass = 1; ACT.tab(b); b._glass = 0; } return; }
+    if (D.gl) {
+      lgMsg({ t: "up", idx: tabBtns().indexOf(b) });
+      if (b.dataset.tab !== TAB && !(e && e.type === "pointercancel")) { b._glass = 1; try { ACT.tab(b); } catch (err) { console.error(err); } b._glass = 0; }
+      return;
+    }
     const x0 = D.x, t0 = performance.now(), dur = 230;
     const step = now => { const k = Math.min(1, (now - t0) / dur), e = 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2); lensAt(x0 + (c - x0) * e); if (k < 1 && $("#tabs").classList.contains("held")) requestAnimationFrame(step); };
     requestAnimationFrame(step);
@@ -3751,8 +3764,7 @@ function tabsGlass() {
   cap.addEventListener("pointerup", end); cap.addEventListener("pointercancel", end);
   // never leave the glass stuck: a finger lifted anywhere, or the app coming back, clears it
   addEventListener("pointerup", () => setTimeout(() => { if (!TABDRAG) glassReset(); }, 400), true);
-  addEventListener("pointercancel", () => { if (TABDRAG && TABDRAG.gl && LG.s && LG.s.mode === "hold") { LG.s.mode = "fly"; const b = nearest(LG.s.x); LG.s.tx = b.offsetLeft + b.offsetWidth / 2; } }, true);
-  document.addEventListener("visibilitychange", () => { TABDRAG = null; glassReset(); if (LG.run) lgStop(); });
+  document.addEventListener("visibilitychange", () => { TABDRAG = null; glassReset(); if (LG.run) { LG.run = false; lgMsg({ t: "stop" }); $("#tabs").classList.remove("lgon"); tabsPill(true); } });
   cap.addEventListener("click", e => { if (TABEATCLICK) { e.stopPropagation(); e.preventDefault(); TABEATCLICK = false; } }, true);
   window.addEventListener("resize", () => { lensBuild(); tabsPill(true); });
 }
@@ -3769,46 +3781,123 @@ function lensWarp() {
   x.putImageData(img, 0, 0);
   const fe = document.getElementById("lgwImg"); if (fe) { fe.setAttribute("href", c.toDataURL()); fe.setAttributeNS("http://www.w3.org/1999/xlink", "href", c.toDataURL()); }
 }
-// ----- Liquid Glass v7: the lens is drawn on the graphics chip (WebGL) -----
-// While the lens shows, one canvas draws the whole bar row: the normal row outside the lens, and inside it
-// a magnified, accent-tinted copy that bends toward the rim (the droopy look). Nothing on the page is
-// re-laid-out per frame, so it stays smooth. If WebGL is missing, the older lens is used instead.
-const LG = { ok: false, ready: false, M: 16 };
-const LGVS = "attribute vec2 a;varying vec2 vP;uniform vec2 uCan;void main(){vP=(a*.5+.5)*uCan;vP.y=uCan.y-vP.y;gl_Position=vec4(a,0.,1.);}";
-const LGFS = `precision highp float;varying vec2 vP;uniform sampler2D tA,tB;uniform vec2 uCan,uBar;uniform vec4 uLens,uTint;
-uniform float uM,uMag,uRef,uOut,uLA,uBand,uRim,uDpr,uSh;
-void main(){vec2 q=vP-vec2(uM);vec2 dl=q-uLens.xy;float hw=uLens.z,hh=uLens.w;
-float sx=max(abs(dl.x)-(hw-hh),0.);vec2 e=vec2(sx*sign(dl.x),dl.y);float le=length(e);float d=le-hh;vec2 n=e/max(le,1e-3);
-float ins=clamp(.5-d*uDpr,0.,1.);
-vec4 outc=texture2D(tA,vP/uCan)*uOut;
-float t=clamp(-d/(hh*.55),0.,1.);float k=(1.-t);k=k*k;
-vec2 src=uLens.xy+dl/uMag-n*k*uRef;
-vec4 con=texture2D(tB,(src+vec2(uM))/uCan);
-vec2 bc=uBar*.5;float bsx=max(abs(q.x-bc.x)-(bc.x-bc.y),0.);float bd=length(vec2(bsx,q.y-bc.y))-bc.y;
-vec4 col=uTint*clamp(.5+bd*uDpr,0.,1.);
-col=con+col*(1.-con.a);
-float band=(1.-smoothstep(1.2,7.,-d))*smoothstep(0.,1.2,-d)*smoothstep(.45,.92,abs(n.y))*uBand;
-col=vec4(col.rgb*(1.-band),col.a+band*(1.-col.a));
-float rim=(1.-smoothstep(0.,1.4,-d))*(.2+.45*max(0.,dot(n,vec2(-.45,-.89)))+.15*max(0.,dot(n,vec2(.45,.89))))*uRim;
-col=vec4(vec3(rim)+col.rgb*(1.-rim),rim+col.a*(1.-rim));
-float ds=length(vec2(sx,dl.y-3.))-hh;float sh=(1.-ins)*exp(-max(ds,0.)/5.)*.22*uSh;
-vec4 lc=col*ins*uLA;vec4 bl=outc+vec4(0.,0.,0.,sh*uLA)*(1.-outc.a);
-gl_FragColor=lc+bl*(1.-ins*uLA);}`;
-function lgInit() {
-  const cap = $("#tabs .tcap"); if (!cap || LG.gl) return;
-  try {
-    const cv = document.createElement("canvas"); cv.className = "lgl"; cap.appendChild(cv);
-    const gl = cv.getContext("webgl", { premultipliedAlpha: true, alpha: true, antialias: false, preserveDrawingBuffer: false }); if (!gl) return;
+// ----- Liquid Glass v8 -----
+// The glass is drawn by the graphics chip on its own worker thread, so it keeps moving even while a page
+// is being drawn. It starts the moment a finger touches the bar. While it runs, one canvas draws the whole
+// row: the plain row outside the bubble, and inside it a magnified, tinted copy that bends at the rim.
+const LG = { ok: false, ready: false, run: false, M: 16 };
+// lgCore runs in the worker (or on the page if workers can't draw). It only talks through messages.
+function lgCore(post) {
+  const VS = "attribute vec2 a;varying vec2 vP;uniform vec2 uCan;void main(){vP=(a*.5+.5)*uCan;vP.y=uCan.y-vP.y;gl_Position=vec4(a,0.,1.);}";
+  const FS = "precision highp float;varying vec2 vP;uniform sampler2D tA,tB;uniform vec2 uCan,uBar;uniform vec4 uLens,uTint,uPill;" +
+    "uniform float uM,uMag,uRef,uBand,uRim,uDpr,uSh,uPA;" +
+    "void main(){vec2 q=vP-vec2(uM);vec2 dl=q-uLens.xy;float hw=uLens.z,hh=uLens.w;" +
+    "float sx=max(abs(dl.x)-(hw-hh),0.);vec2 e=vec2(sx*sign(dl.x),dl.y);float le=length(e);float d=le-hh;vec2 n=e/max(le,1e-3);" +
+    "float ins=clamp(.5-d*uDpr,0.,1.);vec4 outc=texture2D(tA,vP/uCan);" +
+    "float t=clamp(-d/(hh*.55),0.,1.);float k=(1.-t);k=k*k;" +
+    "vec2 src=uLens.xy+dl/uMag-n*k*uRef;vec4 con=texture2D(tB,(src+vec2(uM))/uCan);" +
+    "vec2 bc=uBar*.5;float bsx=max(abs(q.x-bc.x)-(bc.x-bc.y),0.);float bd=length(vec2(bsx,q.y-bc.y))-bc.y;" +
+    "vec4 col=uPill*uPA;vec4 tc=uTint*clamp(.5+bd*uDpr,0.,1.);col=tc+col*(1.-tc.a);col=con+col*(1.-con.a);" +
+    "float band=(1.-smoothstep(1.2,7.,-d))*smoothstep(0.,1.2,-d)*smoothstep(.45,.92,abs(n.y))*uBand;" +
+    "col=vec4(col.rgb*(1.-band),col.a+band*(1.-col.a));" +
+    "float rim=(1.-smoothstep(0.,1.4,-d))*(.2+.45*max(0.,dot(n,vec2(-.45,-.89)))+.15*max(0.,dot(n,vec2(.45,.89))))*uRim;" +
+    "col=vec4(vec3(rim)+col.rgb*(1.-rim),rim+col.a*(1.-rim));" +
+    "float ds=length(vec2(sx,dl.y-3.))-hh;float sh=(1.-ins)*exp(-max(ds,0.)/5.)*.22*uSh;" +
+    "vec4 bl=outc+vec4(0.,0.,0.,sh)*(1.-outc.a);gl_FragColor=col*ins+bl*(1.-ins);}";
+  let gl, U, cv, D, TA = [], TR = [], TB, S = null, raf = 0, shown = false;
+  const now = () => performance.now();
+  const RAF = typeof requestAnimationFrame === "function" ? requestAnimationFrame.bind(self) : f => setTimeout(() => f(now()), 16);
+  const CAF = typeof cancelAnimationFrame === "function" ? cancelAnimationFrame.bind(self) : clearTimeout;
+  function init(c) {
+    cv = c; gl = cv.getContext("webgl", { premultipliedAlpha: true, alpha: true, antialias: false }); if (!gl) throw new Error("no webgl");
     const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; };
-    const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, LGVS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, LGFS)); gl.linkProgram(pr);
+    const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(pr);
     if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error("link"); gl.useProgram(pr);
-    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
     const al = gl.getAttribLocation(pr, "a"); gl.enableVertexAttribArray(al); gl.vertexAttribPointer(al, 2, gl.FLOAT, false, 0, 0);
-    const U = {}; ["tA", "tB", "uCan", "uBar", "uLens", "uTint", "uM", "uMag", "uRef", "uOut", "uLA", "uBand", "uRim", "uDpr", "uSh"].forEach(k => U[k] = gl.getUniformLocation(pr, k));
+    U = {}; ["tA", "tB", "uCan", "uBar", "uLens", "uTint", "uPill", "uM", "uMag", "uRef", "uBand", "uRim", "uDpr", "uSh", "uPA"].forEach(k => U[k] = gl.getUniformLocation(pr, k));
     gl.uniform1i(U.tA, 0); gl.uniform1i(U.tB, 1);
-    Object.assign(LG, { cv, gl, U, ok: true, texA: [], texB: null });
-    cv.addEventListener("webglcontextlost", e => { e.preventDefault(); LG.ok = LG.ready = false; lgStop(); });
-    lgBuild();
+  }
+  function tex(img, t) {
+    t = t || gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER].forEach(p => gl.texParameteri(gl.TEXTURE_2D, p, gl.LINEAR));
+    [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T].forEach(p => gl.texParameteri(gl.TEXTURE_2D, p, gl.CLAMP_TO_EDGE)); return t;
+  }
+  function spring(key, target, k, z, dt) { const v = S[key + "v"], x = S[key], c = 2 * Math.sqrt(k) * z, a = -k * (x - target) - c * v; S[key + "v"] = v + a * dt; S[key] = x + S[key + "v"] * dt; }
+  function draw() {
+    const lens = { hw: D.tabW * .58, hh: D.H * .61 }, pill = { hw: D.tabW / 2, hh: D.pillH / 2 };
+    const p = Math.max(0, Math.min(1.15, S.s)), A = Math.max(0, Math.min(1, p)), sp = Math.abs(S.xv), st = Math.min(.3, sp / 2400);
+    const hw = (pill.hw + (lens.hw - pill.hw) * p) * (1 + st), hh = (pill.hh + (lens.hh - pill.hh) * p) * (1 - st * .25);
+    const cx = Math.max(hw - 6, Math.min(D.W - hw + 6, S.x));
+    gl.viewport(0, 0, cv.width, cv.height);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, (S.end ? TR : TA)[S.on] || TA[0]);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, TB);
+    gl.uniform2f(U.uCan, D.CW, D.CH); gl.uniform2f(U.uBar, D.W, D.H); gl.uniform1f(U.uM, D.M); gl.uniform1f(U.uDpr, D.dpr);
+    gl.uniform4f(U.uLens, cx, D.H / 2, hw, hh);
+    const t = D.tint, pc = D.pill; gl.uniform4f(U.uTint, t[0] * t[3], t[1] * t[3], t[2] * t[3], t[3] * A); gl.uniform4f(U.uPill, pc[0] * pc[3], pc[1] * pc[3], pc[2] * pc[3], pc[3]);
+    gl.uniform1f(U.uPA, Math.max(0, 1 - A * 2.2)); gl.uniform1f(U.uMag, 1 + .16 * A); gl.uniform1f(U.uRef, 8 * A + Math.min(9, sp * .004));
+    gl.uniform1f(U.uBand, (D.light ? .2 : .72) * A); gl.uniform1f(U.uRim, A); gl.uniform1f(U.uSh, A);
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+  function loop() {
+    if (!S) return; const tn = now(), dt = Math.min(.034, Math.max(.004, (tn - S.t) / 1000)) * (self.LGSLOW || 1); S.t = tn;
+    if (S.mode === "hold") { spring("x", S.tx, 1500, .9, dt); spring("s", 1, 900, .78, dt); }
+    else if (S.mode === "fly") {
+      spring("x", S.tx, 650, .82, dt); spring("s", Math.abs(S.x - S.tx) > 14 ? 1 : .15, 750, .8, dt);
+      if (Math.abs(S.x - S.tx) < 1.5 && Math.abs(S.xv) < 60) { S.mode = "end"; S.end = true; S.on = S.to; }
+    } else if (S.mode === "end") { spring("x", S.tx, 700, 1, dt); spring("s", -.05, 560, 1, dt); if (S.s <= .01) { S.s = 0; draw(); const id = S.id; S = null; post({ t: "done", id }); return; } }
+    draw(); if (!shown) { shown = true; post({ t: "shown", id: S.id }); }
+    raf = RAF(loop);
+  }
+  function begin(x, on) {
+    if (!S) { S = { x, xv: 0, s: 0, sv: 0, tx: x, mode: "hold", on: Math.max(0, on), to: on, end: false, t: now() }; shown = false; CAF(raf); raf = RAF(loop); }
+    else { S.mode = "hold"; S.end = false; }
+  }
+  return m => {
+    try {
+      if (m.t === "init") { init(m.cv); return; }
+      if (m.t === "tex") {
+        D = m.d; if (cv.width !== D.pw || cv.height !== D.ph) { cv.width = D.pw; cv.height = D.ph; }
+        TA = m.A.map((b, i) => tex(b, TA[i])); TR = m.R.map((b, i) => tex(b, TR[i])); TB = tex(m.B, TB);
+        m.A.concat(m.R, [m.B]).forEach(b => b.close && b.close()); post({ t: "ready" }); return;
+      }
+      if (!D) return;
+      if (m.t === "down") { begin(m.from, m.on); S.tx = m.x; if (S.id !== m.id) { S.id = m.id; shown = false; } }
+      else if (m.t === "move") { if (S && S.mode === "hold") S.tx = m.x; }
+      else if (m.t === "up") { if (S) { S.mode = "fly"; S.tx = D.centers[m.idx]; S.to = m.idx; } }
+      else if (m.t === "fly") { begin(D.centers[m.from], m.from); S.mode = "fly"; S.tx = D.centers[m.to]; S.to = m.to; if (S.id !== m.id) { S.id = m.id; shown = false; } }
+      else if (m.t === "clear") { if (!S) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); } }
+      else if (m.t === "stop") { S = null; CAF(raf); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); }
+      else if (m.t === "slow") self.LGSLOW = m.v;
+    } catch (err) { post({ t: "error", e: String(err) }); }
+  };
+}
+function lgMsg(m, transfer) { if (LG.worker) LG.worker.postMessage(m, transfer || []); else if (LG.local) LG.local(m); }
+function lgOnMsg(m) {
+  const T = $("#tabs");
+  if (m.t === "ready") LG.ready = true;
+  else if (m.t === "shown") { if (LG.run && m.id === LG.rid) T.classList.add("lgon"); }
+  else if (m.t === "done") { if (m.id !== LG.rid) return;
+    LG.run = false; const b = tabBtns().find(x => x.classList.contains("on")); if (b) { pillTo(b, true); TABX = b.offsetLeft + b.offsetWidth / 2; }
+    T.classList.remove("lgon"); requestAnimationFrame(() => lgMsg({ t: "clear" }));
+  } else if (m.t === "error") { console.error("glass", m.e); LG.ok = LG.ready = false; T.classList.remove("lgon"); LG.run = false; }
+}
+function lgInit() {
+  const cap = $("#tabs .tcap"); if (!cap || LG.cv) return;
+  try {
+    const cv = document.createElement("canvas"); cv.className = "lgl"; cap.appendChild(cv); LG.cv = cv;
+    let done = false;
+    if (cv.transferControlToOffscreen && typeof Worker === "function" && !/[?&]noworker/.test(location.search)) {
+      try {
+        const src = "self.LGSLOW=1;const h=(" + lgCore.toString() + ")(m=>postMessage(m));onmessage=e=>h(e.data);";
+        const w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+        const off = cv.transferControlToOffscreen(); w.onmessage = e => lgOnMsg(e.data); w.onerror = e => { console.error(e); };
+        w.postMessage({ t: "init", cv: off }, [off]); LG.worker = w; LG.mode = "worker"; done = true;
+      } catch (err) { console.error(err); }
+    }
+    if (!done) { const h = lgCore(m => setTimeout(() => lgOnMsg(m), 0)); h({ t: "init", cv }); LG.local = h; LG.mode = "page"; }
+    LG.ok = true; lgBuild();
     window.addEventListener("resize", () => lgBuild());
     new MutationObserver(() => lgBuild()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
   } catch (err) { console.error(err); LG.ok = false; }
@@ -3822,7 +3911,7 @@ function lgIcon(svg, color, px) {
 }
 let LGBUILD = 0;
 async function lgBuild() {
-  if (!LG.ok || TABDRAG || LG.run) return; const my = ++LGBUILD; LG.ready = false;
+  if (!LG.ok || LG.run) return; const my = ++LGBUILD; LG.ready = false;
   try { await document.fonts.ready; } catch (_) {}
   const cap = $("#tabs .tcap"), cr = cap.getBoundingClientRect(), sc = cr.width / cap.offsetWidth || 1, M = LG.M;
   const W = cap.offsetWidth, H = cap.offsetHeight, dpr = Math.min(3, devicePixelRatio || 1), CW = W + 2 * M, CH = H + 2 * M;
@@ -3836,67 +3925,25 @@ async function lgBuild() {
       const r = rel(svg), im = await lgIcon(svg, color, Math.round(r.w * dpr)); x.drawImage(im, r.x, r.y, r.w, r.h);
       const l = b.querySelector(".tlb"), lr = rel(l), ls = getComputedStyle(l);
       x.font = ls.fontWeight + " " + ls.fontSize + " " + ls.fontFamily; if ("letterSpacing" in x) x.letterSpacing = ls.letterSpacing;
-      x.textAlign = "center"; x.fillStyle = color; const m = x.measureText("Hg"), asc = m.fontBoundingBoxAscent || parseFloat(ls.fontSize) * .8, des = m.fontBoundingBoxDescent || parseFloat(ls.fontSize) * .2;
+      x.textAlign = "center"; x.fillStyle = color;
       const mk = document.createElement("span"); mk.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline"; l.appendChild(mk);
-      const base = mk.getBoundingClientRect().top / 1 - cr.top; mk.remove(); void asc; void des;
+      const base = (mk.getBoundingClientRect().top - cr.top) / sc + M; mk.remove();
       if (!inLens) { x.shadowColor = light ? "rgba(255,255,255,.6)" : "rgba(0,0,0,.35)"; x.shadowBlur = 8 * dpr; }
-      x.fillText(l.textContent, lr.x + lr.w / 2, base / sc + M); x.shadowColor = "transparent"; x.shadowBlur = 0;
+      x.fillText(l.textContent, lr.x + lr.w / 2, base); x.shadowColor = "transparent"; x.shadowBlur = 0;
     }
-    return c;
+    return createImageBitmap(c);
   };
-  const cA = [], cR = []; for (let i = 0; i < btns.length; i++) { cA.push(await draw(false, i)); cR.push(await draw(false, i, true)); }
-  const cB = await draw(true, -1); if (my !== LGBUILD) return;
-  const gl = LG.gl, up = (cv, tex) => { tex = tex || gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cv);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); return tex; };
-  LG.texA = cA.map((c, i) => up(c, LG.texA[i])); LG.texR = cR.map((c, i) => up(c, (LG.texR || [])[i])); LG.texB = up(cB, LG.texB);
-  const cv = LG.cv; cv.width = Math.round(CW * dpr); cv.height = Math.round(CH * dpr);
-  cv.style.cssText = "left:" + -M + "px;top:" + -M + "px;width:" + CW + "px;height:" + CH + "px";
-  gl.viewport(0, 0, cv.width, cv.height);
-  const tint = light ? [1, 1, 1, .42] : [34 / 255, 34 / 255, 37 / 255, .42];
-  Object.assign(LG, { W, H, CW, CH, dpr, light, tint, tabW: btns[0].offsetWidth, ready: true });
+  const A = [], R = []; for (let i = 0; i < btns.length; i++) { A.push(await draw(false, i)); R.push(await draw(false, i, true)); }
+  const B = await draw(true, -1); if (my !== LGBUILD) return;
+  LG.cv.style.cssText = "left:" + -M + "px;top:" + -M + "px;width:" + CW + "px;height:" + CH + "px";
+  const pillEl = $("#tabs .pill"), pcs = pillEl ? getComputedStyle(pillEl).backgroundColor : "rgba(8,8,10,.62)";
+  const num = s => (s.match(/[\d.]+/g) || [0, 0, 0, 1]).map(Number), pv = num(pcs);
+  const d = { W, H, CW, CH, M, dpr, pw: Math.round(CW * dpr), ph: Math.round(CH * dpr), light, tabW: btns[0].offsetWidth, pillH: pillEl ? pillEl.offsetHeight : 50,
+    tint: light ? [1, 1, 1, .42] : [34 / 255, 34 / 255, 37 / 255, .42], pill: [pv[0] / 255, pv[1] / 255, pv[2] / 255, pv.length > 3 ? pv[3] : 1],
+    centers: btns.map(b => b.offsetLeft + b.offsetWidth / 2) };
+  Object.assign(LG, d);
+  lgMsg({ t: "tex", d, A, R, B }, A.concat(R, [B]));
 }
-// spring helper: moves value v toward target with speed s (stiffness k, damping ratio z)
-function lgSpring(o, key, target, k, z, dt) { const v = o[key + "v"] || 0, x = o[key], c = 2 * Math.sqrt(k) * z, a = -k * (x - target) - c * v, nv = v + a * dt; o[key + "v"] = nv; o[key] = x + nv * dt; }
-function lgDraw() {
-  const S = LG.s, gl = LG.gl, U = LG.U, lens = { hw: LG.tabW * 0.58, hh: LG.H * 0.61 }, pill = { hw: LG.tabW / 2, hh: 25 };
-  const p = Math.max(0, Math.min(1.15, S.s)), st = Math.min(.28, Math.abs(S.xv || 0) / 2600);
-  const hw = (pill.hw + (lens.hw - pill.hw) * p) * (1 + st), hh = (pill.hh + (lens.hh - pill.hh) * p) * (1 - st * .25);
-  const cx = Math.max(hw - 6, Math.min(LG.W - hw + 6, S.x)), A = Math.max(0, Math.min(1, p));
-  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, (S.end ? LG.texR : LG.texA)[S.onIdx] || LG.texA[0]);
-  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, LG.texB);
-  gl.uniform2f(U.uCan, LG.CW, LG.CH); gl.uniform2f(U.uBar, LG.W, LG.H); gl.uniform1f(U.uM, LG.M); gl.uniform1f(U.uDpr, LG.dpr);
-  gl.uniform4f(U.uLens, cx, LG.H / 2, hw, hh);
-  const t = LG.tint; gl.uniform4f(U.uTint, t[0] * t[3], t[1] * t[3], t[2] * t[3], t[3]);
-  gl.uniform1f(U.uMag, 1 + .16 * A); gl.uniform1f(U.uRef, 8 * A); gl.uniform1f(U.uOut, S.out ? 1 : 0);
-  gl.uniform1f(U.uLA, S.end ? Math.min(1, A * 3) : 1); gl.uniform1f(U.uBand, (LG.light ? .2 : .72) * A); gl.uniform1f(U.uRim, S.end ? A : Math.min(1, .35 + A)); gl.uniform1f(U.uSh, A);
-  gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-}
-function lgMode(m) { const T = $("#tabs"); T.classList.toggle("lgon", m === "on"); T.classList.toggle("lgend", m === "end"); }
-function lgLoop(now) {
-  const S = LG.s; if (!S) return; const dt = Math.min(.034, Math.max(.004, (now - (S.t || now - 16)) / 1000)) * (window.LGSLOW || 1); S.t = now;
-  if (S.mode === "hold") { lgSpring(S, "x", S.tx, 2200, .95, dt); lgSpring(S, "s", 1, 900, .75, dt); }
-  else if (S.mode === "fly") {
-    lgSpring(S, "x", S.tx, 620, .8, dt); lgSpring(S, "s", Math.abs(S.x - S.tx) > 14 ? 1 : 0.15, 700, .8, dt);
-    if (Math.abs(S.x - S.tx) < 1.5 && Math.abs(S.xv) < 60) lgSettle();
-  } else if (S.mode === "end") {
-    lgSpring(S, "x", S.tx, 700, 1, dt); lgSpring(S, "s", -0.05, 520, 1, dt);
-    if (S.s <= 0.01) return lgStop();
-  }
-  lgDraw(); LG.raf = requestAnimationFrame(lgLoop);
-}
-function lgStart(fromX, onIdx, mode, tx) {
-  cancelAnimationFrame(LG.raf); LG.run = true;
-  LG.s = { x: fromX, xv: 0, s: 0, sv: 0, tx: tx == null ? fromX : tx, mode, onIdx, out: true, end: false, t: 0 };
-  lgMode("on"); lgDraw(); LG.raf = requestAnimationFrame(lgLoop);
-}
-function lgSettle() {
-  const S = LG.s; if (!S || S.mode === "end") return; S.mode = "end"; S.end = true;
-  const bs = tabBtns(), i = bs.findIndex(b => Math.abs(b.offsetLeft + b.offsetWidth / 2 - S.tx) < 2); if (i >= 0) { pillTo(bs[i], true); TABX = S.tx; S.onIdx = i; }
-  lgMode("end");
-}
-function lgStop() { cancelAnimationFrame(LG.raf); LG.s = null; LG.run = false; lgMode(""); }
 ACT.expandTabs = () => setFold(false);
 // ----- boot -----
 async function boot() {
