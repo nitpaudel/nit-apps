@@ -1278,13 +1278,13 @@ html[data-theme="light"]{--gx:linear-gradient(180deg,rgba(255,255,255,.55),rgba(
   --gxrim:inset 0 0 0 .6px rgba(0,0,0,.08),inset 1.2px 1.6px 1px -1px rgba(255,255,255,.95),inset -1.2px -1.6px 1px -1px rgba(255,255,255,.6);
   --gxrimhi:inset 0 0 0 .7px rgba(0,0,0,.1),inset 1.4px 1.8px 1px -1px #fff,inset -1.4px -1.8px 1px -1px rgba(255,255,255,.8);
   --gxsh:0 6px 18px rgba(0,0,0,.12)}
-.head .ib:not(.inv):not(.plain),.navr .ib,.b3home,#tabs .tyou .tbg{background:var(--gx)!important;box-shadow:var(--gxrim),var(--gxsh)!important;
+.head .ib:not(.inv):not(.plain),.navr .ib,.b3home{background:var(--gx)!important;box-shadow:var(--gxrim),var(--gxsh)!important;
   -webkit-backdrop-filter:var(--glblur)!important;backdrop-filter:var(--glblur)!important;color:var(--gltext)}
 .head .ib,.navr .ib,.b3home,#tabs .tyou{transition:transform .5s cubic-bezier(.25,1.7,.4,1),background .25s,box-shadow .25s!important;will-change:transform}
 .head .ib:active,.navr .ib:active,.b3home:active,#tabs .tyou:active{transform:none}
 /* touched: grows and lights up like the tab bubble, then springs back */
 .head .ib.pr,.navr .ib.pr,.b3home.pr,#tabs .tyou.pr{transform:scale(1.16)!important;transition:transform .2s cubic-bezier(.2,.9,.3,1.2),background .12s,box-shadow .12s!important}
-.head .ib.pr:not(.inv),.navr .ib.pr,.b3home.pr,#tabs .tyou.pr .tbg{background:var(--gxhi)!important;box-shadow:var(--gxrimhi),0 10px 24px rgba(0,0,0,.34)!important}
+.head .ib.pr:not(.inv),.navr .ib.pr,.b3home.pr{background:var(--gxhi)!important;box-shadow:var(--gxrimhi),0 10px 24px rgba(0,0,0,.34)!important}
 #tabs .tyou .tic{transition:transform .5s cubic-bezier(.25,1.7,.4,1)}
 #tabs .tyou.pr .tic{transform:scale(1.08)}
 /* profile open: the same dark pill the bar uses sits inside the circle */
@@ -1299,3 +1299,6 @@ html[data-theme="light"]{--gx:linear-gradient(180deg,rgba(255,255,255,.55),rgba(
 html[data-theme="light"] .mcard{background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,.35)),rgba(255,255,255,.4)!important}
 .mcard .mcn div{background:rgba(255,255,255,.07)!important;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.08)}
 .mcard b,.mcard h3,.mcard .mct{text-shadow:0 1px 8px rgba(0,0,0,.35)}
+/* v8.2: the profile circle uses the exact same glass as the bar, so they read as one set */
+#tabs .tyou.pr .tbg{background:var(--glhi)!important}
+#tabs .tyou .tic,#tabs .tyou .tic svg{width:25px!important;height:25px!important}
