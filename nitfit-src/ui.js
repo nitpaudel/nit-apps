@@ -271,7 +271,7 @@ const card2 = (act, extra, title, sub, viz, val, unit) => '<button class="ic pre
 // ===== Dashboard (Apple style) =====
 const D2N = { insights: "Insights & analytics", habits: "Habits", body: "Body metrics", muscles: "Muscle groups", exercises: "Exercises" };
 const D2T = id => ({ workouts: "Workouts", wtrend: "Weight trend", weighin: "Weigh-in", wohabit: "Workouts", scale: "Scale weight", waist: "Waist", bf: "Body fat" })[id] || TILE_NAME(id);
-const D2A = "#0A84FF", D2OFF = "#3A3A3C";
+const D2A = "#0A84FF", D2OFF = "currentColor";
 const d2num = (v, unit) => '<div class="d2n">' + v + (unit ? "<small>" + unit + "</small>" : "") + "</div>";
 const d2sign = v => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(1);
 // a ring of separate little dashes, one per target item, lit when done
@@ -291,8 +291,8 @@ function weekScore(done, plan) {
 }
 function solidRing(v, frac, sub, color, track) {
   const S = 104, w = 10, r = (S - w) / 2, c = 2 * Math.PI * r, f = Math.max(0, Math.min(1, frac));
-  return '<div class="rv"><svg width="' + S + '" height="' + S + '" viewBox="0 0 ' + S + " " + S + '"><circle cx="52" cy="52" r="' + r + '" fill="none" stroke="' + track + '" stroke-width="' + w + '"/>'
-    + (f > 0 ? '<circle class="arc" cx="52" cy="52" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="' + w + '" stroke-linecap="round" stroke-dasharray="' + (c * f).toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 52 52)"/>' : "") + "</svg>"
+  return '<div class="rv"><svg width="' + S + '" height="' + S + '" viewBox="0 0 ' + S + " " + S + '"><circle cx="52" cy="52" r="' + r + '" fill="none" style="stroke:' + track + '" stroke-width="' + w + '"/>'
+    + (f > 0 ? '<circle class="arc" cx="52" cy="52" r="' + r + '" fill="none" style="stroke:' + color + '" stroke-width="' + w + '" stroke-linecap="round" stroke-dasharray="' + (c * f).toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 52 52)"/>' : "") + "</svg>"
     + '<div class="rc"><b>' + v + "</b><small>" + sub + "</small></div></div>";
 }
 function ringsHtml() {
@@ -302,7 +302,7 @@ function ringsHtml() {
   const setsFrac = all ? dn.sets / Math.max(1, ls.sets, dn.sets) : dn.sets / Math.max(1, p.sets), exFrac = all ? dn.ex.size / Math.max(1, ls.ex.size, dn.ex.size) : dn.ex.size / Math.max(1, p.ex.size);
   let h = '<div class="d3rings">'
     + one("Sets", solidRing(dn.sets, setsFrac, "done", "#FF6B6B", "rgba(255,107,107,.2)"), all ? ls.sets + " last week" : "of " + p.sets)
-    + one("Training score", solidRing(sc, sc / 100, "of 100", "#E5E5EA", "rgba(229,229,234,.16)"), (diff > 0 ? "+" : diff < 0 ? "−" : "") + Math.abs(diff) + " vs last week")
+    + one("Training score", solidRing(sc, sc / 100, "of 100", "var(--dt)", "var(--dtrk)"), (diff > 0 ? "+" : diff < 0 ? "−" : "") + Math.abs(diff) + " vs last week")
     + one("Exercises", solidRing(dn.ex.size, exFrac, "done", "#7AB8F5", "rgba(122,184,245,.2)"), all ? ls.ex.size + " last week" : "of " + p.ex.size) + "</div>";
   // pace: how many planned sets should be done by the end of today
   const d = today(), w0 = weekSun(d); let due = 0;
@@ -326,21 +326,21 @@ function d2path(P) {
 let D2G = 0;
 function d2chart(vals, W, H, o) {
   o = o || {}; const pts = vals.map((v, i) => [i, v]).filter(p => p[1] != null);
-  if (!pts.length) return '<svg class="d2v" width="' + W + '" height="' + H + '"><line x1="2" y1="' + (H - 2) + '" x2="' + (W - 2) + '" y2="' + (H - 2) + '" stroke="' + D2OFF + '" stroke-width="1.5" stroke-dasharray="2 4" stroke-linecap="round"/></svg>';
+  if (!pts.length) return '<svg class="d2v" width="' + W + '" height="' + H + '"><line x1="2" y1="' + (H - 2) + '" x2="' + (W - 2) + '" y2="' + (H - 2) + '" stroke="currentColor" stroke-opacity=".25" stroke-width="1.5" stroke-dasharray="2 4" stroke-linecap="round"/></svg>';
   const lo = Math.min(...pts.map(p => p[1])), hi = Math.max(...pts.map(p => p[1])), sp = hi - lo || 1, n = Math.max(vals.length - 1, 1), pad = o.dots ? 4 : 2;
   const P = pts.map(p => [pad + p[0] / n * (W - pad * 2), hi === lo ? H / 2 : pad + (1 - (p[1] - lo) / sp) * (H - pad * 2 - (o.fill ? 6 : 0))]);
-  const line = d2path(P), id = "d2g" + (++D2G), col = o.color || "#fff";
+  const line = d2path(P), id = "d2g" + (++D2G), col = o.color || "currentColor";
   let s = '<svg class="d2v" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + " " + H + '">';
   if (o.fill && P.length > 1) s += '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + col + '" stop-opacity=".28"/><stop offset="1" stop-color="' + col + '" stop-opacity="0"/></linearGradient></defs><path d="' + line + " L" + P[P.length - 1][0].toFixed(1) + " " + H + " L" + P[0][0].toFixed(1) + " " + H + ' Z" fill="url(#' + id + ')"/>';
   if (P.length > 1) s += '<path d="' + line + '" fill="none" stroke="' + col + '" stroke-width="' + (o.w || 2) + '" stroke-linecap="round" stroke-linejoin="round"/>';
-  if (o.dots) s += P.map((p, i) => '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (i === P.length - 1 ? 3.6 : 2.2) + '" fill="' + (i === P.length - 1 ? col : "rgba(255,255,255,.55)") + '"/>').join("");
+  if (o.dots) s += P.map((p, i) => '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (i === P.length - 1 ? 3.6 : 2.2) + '" fill="' + col + '"' + (i === P.length - 1 ? "" : ' fill-opacity=".55"') + "/>").join("");
   else { const L = P[P.length - 1]; s += '<circle cx="' + L[0].toFixed(1) + '" cy="' + L[1].toFixed(1) + '" r="3" fill="' + col + '"/>'; }
   return s + "</svg>";
 }
 function d2bars(vals, W, H) {
   const n = Math.max(vals.length, 1), mx = Math.max(1, ...vals), bw = 7, gap = (W - n * bw) / Math.max(n - 1, 1);
-  return '<svg class="d2v" width="' + W + '" height="' + H + '">' + (vals.length ? vals.map((v, i) => { const h = Math.max(6, v / mx * H); return '<rect x="' + (i * (bw + Math.min(gap, 9))).toFixed(1) + '" y="' + (H - h).toFixed(1) + '" width="' + bw + '" height="' + h.toFixed(1) + '" rx="3.5" fill="' + (i === vals.length - 1 ? "#fff" : "rgba(255,255,255,.3)") + '"/>'; }).join("")
-    : Array.from({ length: 7 }, (_, i) => '<rect x="' + i * 14 + '" y="' + (H - 6) + '" width="7" height="6" rx="3" fill="' + D2OFF + '"/>').join("")) + "</svg>";
+  return '<svg class="d2v" width="' + W + '" height="' + H + '">' + (vals.length ? vals.map((v, i) => { const h = Math.max(6, v / mx * H); return '<rect x="' + (i * (bw + Math.min(gap, 9))).toFixed(1) + '" y="' + (H - h).toFixed(1) + '" width="' + bw + '" height="' + h.toFixed(1) + '" rx="3.5" fill="currentColor"' + (i === vals.length - 1 ? "" : ' fill-opacity=".3"') + "/>"; }).join("")
+    : Array.from({ length: 7 }, (_, i) => '<rect x="' + i * 14 + '" y="' + (H - 6) + '" width="7" height="6" rx="3" fill="currentColor" fill-opacity=".2"/>').join("")) + "</svg>";
 }
 // change over the last 7 days: newest entry minus the newest entry on or before 7 days ago
 function d2delta(list, key, d) {
@@ -357,13 +357,13 @@ function d2tile(id) {
   }
   if (id === "wtrend") {
     const tr = trendSeries(weightList()), l = tr.slice(-14), last = tr[tr.length - 1], ch = d2delta(tr.map(x => ({ d: x.d, v: x.trend })), "v", d);
-    return d2card("openPage", ' data-k="wtrend"', "Weight trend", "Last 14 days", (last ? d2num(last.trend.toFixed(1), "kg") : d2num("--")) + d2chart(l.map(x => x.trend), 140, 46, { fill: 1, color: "#fff", w: 2.2 }), ch == null ? (last ? "No change yet" : "No entries yet") : d2sign(ch) + " kg this week");
+    return d2card("openPage", ' data-k="wtrend"', "Weight trend", "Last 14 days", (last ? d2num(last.trend.toFixed(1), "kg") : d2num("--")) + d2chart(l.map(x => x.trend), 140, 46, { fill: 1, w: 2.2 }), ch == null ? (last ? "No change yet" : "No entries yet") : d2sign(ch) + " kg this week");
   }
   if (id === "weighin") {
     const days = Array.from({ length: 30 }, (_, i) => addDays(d, i - 29)), ws = days.map(x => S.weights[x] ? S.weights[x].kg : null), have = ws.filter(v => v != null);
     const lo = Math.min(...have), hi = Math.max(...have), sp = hi - lo || 1, W = 142, H = 46, dx = (W - 6) / 29;
     let svg = '<svg class="d2v" width="' + W + '" height="' + H + '">';
-    ws.forEach((v, i) => { const x = 3 + i * dx; svg += v == null ? '<circle cx="' + x.toFixed(1) + '" cy="' + (H - 3) + '" r="1.9" fill="none" stroke="#48484A" stroke-width="1.1"/>' : '<circle cx="' + x.toFixed(1) + '" cy="' + (3 + (hi === lo ? 0.5 : 1 - (v - lo) / sp) * (H - 14)).toFixed(1) + '" r="2.4" fill="#fff"/>'; });
+    ws.forEach((v, i) => { const x = 3 + i * dx; svg += v == null ? '<circle cx="' + x.toFixed(1) + '" cy="' + (H - 3) + '" r="1.9" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="1.1"/>' : '<circle cx="' + x.toFixed(1) + '" cy="' + (3 + (hi === lo ? 0.5 : 1 - (v - lo) / sp) * (H - 14)).toFixed(1) + '" r="2.4" fill="currentColor"/>'; });
     const n = Object.keys(S.weights).filter(x => x >= wk0 && x <= d).length;
     return d2card("openPage", ' data-k="weighin"', "Weigh-in", "Last 30 days", svg + "</svg>", "<em>" + n + "</em> of 7 this week");
   }
@@ -377,11 +377,11 @@ function d2tile(id) {
   if (id === "scale" || id === "bf" || id === "waist") {
     const isW = id === "waist", list = isW ? Object.values(S.waists).sort((a, b) => a.d < b.d ? -1 : 1).map(x => ({ d: x.d, v: +x.inch })) : weightList().filter(x => id === "scale" || x.bf != null).map(x => ({ d: x.d, v: id === "scale" ? x.kg : x.bf }));
     const unit = isW ? "in" : id === "bf" ? "%" : "kg", last = list[list.length - 1], ch = d2delta(list, "v", d);
-    return d2card("openPage", ' data-k="' + (isW ? "waist" : "scale") + '"', D2T(id), "Last 7 entries", '<div class="d2row">' + d2num(last ? (+last.v).toFixed(1) : "--", last ? unit : "") + d2chart(list.slice(-7).map(x => x.v), 56, 30, { color: "#fff", w: 1.8 }) + "</div>", ch == null ? (last ? "No change yet" : "No entries yet") : d2sign(ch) + " this week");
+    return d2card("openPage", ' data-k="' + (isW ? "waist" : "scale") + '"', D2T(id), "Last 7 entries", '<div class="d2row">' + d2num(last ? (+last.v).toFixed(1) : "--", last ? unit : "") + d2chart(list.slice(-7).map(x => x.v), 56, 30, { w: 1.8 }) + "</div>", ch == null ? (last ? "No change yet" : "No entries yet") : d2sign(ch) + " this week");
   }
   if (id.startsWith("m:")) { const m = id.slice(2), v = muscleSets(7, d)[m]; return d2card("muscle", ' data-m="' + esc(m) + '"', m, "Last 7 days", '<div class="d2pic">' + muscleThumb(m) + "</div>", "<em>" + (v ? fmtKg(v) : 0) + "</em> " + (v === 1 ? "set" : "sets")); }
   const ex = id.slice(2), hs = histFor(ex).slice(-7), v = hs.map(x => Math.max(...x.sets.map(s2 => e1rm(s2.kg || 0, s2.reps)))), last = v[v.length - 1];
-  return d2card("openEx", ' data-ex="' + ex + '"', D2T(id), "Last 7 workouts", '<div class="d2row">' + d2num(last ? fmtKg(Math.round(last * 2) / 2) : "--", last ? "kg" : "") + d2chart(v, 56, 30, { color: "#fff", w: 1.8 }) + "</div>", last ? "Estimated 1-RM" : "No sets yet");
+  return d2card("openEx", ' data-ex="' + ex + '"', D2T(id), "Last 7 workouts", '<div class="d2row">' + d2num(last ? fmtKg(Math.round(last * 2) / 2) : "--", last ? "kg" : "") + d2chart(v, 56, 30, { w: 1.8 }) + "</div>", last ? "Estimated 1-RM" : "No sets yet");
 }
 function vDash() {
   const d = today(), L = dashLayout();
@@ -1138,7 +1138,7 @@ function vProfile() {
   const first = EV.length ? EV.reduce((a, e) => e.d < a ? e.d : a, EV[0].d) : today(), fin = sessionsSorted().filter(x => x.endTs && sessionSets(x.id).length);
   const sets = Object.values(S.sets).filter(x => !x.w).length, wl = weightList(), ws = Object.values(S.waists).sort((a, b) => a.d < b.d ? -1 : 1);
   let h = '<div class="d2 pf">' + head("Profile", "", '<button class="ib" data-a="settings" aria-label="Settings">' + '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/></svg>' + "</button>") + '</div><div class="body-pad">';
-  h += '<div class="pfh"><div class="pfa">N</div><div class="pfn"><b>Nit</b><span>Training since ' + MONTHS_LONG[+first.slice(5, 7) - 1] + " " + first.slice(0, 4) + "</span></div></div>";
+  h += '<div class="pfh"><button class="pfa" data-a="pickAvatar" aria-label="Change photo">' + (S.settings.avatar ? '<img src="' + S.settings.avatar + '" alt="">' : "N") + "<i>" + I.pencil + '</i></button><div class="pfn"><b>Nit</b><span>Training since ' + MONTHS_LONG[+first.slice(5, 7) - 1] + " " + first.slice(0, 4) + "</span></div></div>";
   h += '<div class="pfs"><div><b>' + fin.length + "</b><span>Workouts</span></div><div><b>" + sets + "</b><span>Sets</span></div><div><b>" + weekStreak() + "</b><span>Week streak</span></div></div>";
   const kg = wl.length ? wl[wl.length - 1].kg : null, kg0 = wl.length ? wl[0].kg : null, wa = ws.length ? +ws[ws.length - 1].inch : null;
   h += '<div class="d2sec"><h2>Body</h2></div><div class="d2grid">'
@@ -1151,6 +1151,9 @@ function vProfile() {
   return h + "</div></div>";
 }
 ACT.settings = () => openPage({ kind: "settings" });
+// profile photo: picked from the phone, cut to a square, made small, saved with the rest of your data
+ACT.pickAvatar = () => { let f = $("#avIn"); if (!f) { f = document.createElement("input"); f.type = "file"; f.accept = "image/*"; f.id = "avIn"; f.hidden = true; document.body.appendChild(f); f.addEventListener("change", () => { const file = f.files[0]; f.value = ""; if (!file) return; const im = new Image(), u = URL.createObjectURL(file); im.onload = () => { const c = document.createElement("canvas"), N = 240, k = Math.min(im.width, im.height); c.width = c.height = N; c.getContext("2d").drawImage(im, (im.width - k) / 2, (im.height - k) / 2, k, k, 0, 0, N, N); URL.revokeObjectURL(u); addEvent("settings.upserted", { avatar: c.toDataURL("image/jpeg", 0.82) }); paintAvatar(); render(); haptic(); }; im.src = u; }); } f.click(); };
+function paintAvatar() { const b = $("#tabs .tyou"); if (!b) return; b.innerHTML = '<span class="tbg"></span>' + (S.settings.avatar ? '<img class="tav" src="' + S.settings.avatar + '" alt="">' : '<span class="tav tini">N</span>'); }
 function vSettings() {
   const st = syncStatus(), t = S.settings.theme || "dark";
   let h = nav("Settings") + "<div class='body-pad'>";
@@ -1675,7 +1678,7 @@ ACT.expandTabs = () => setFold(false);
 // ----- boot -----
 async function boot() {
   try { await coreBoot(); } catch (e) { $("#main").innerHTML = '<div class="head"><div class="title">NitFit</div></div><p class="hint" style="padding:20px">NitFit could not open its storage. Close it and open it again.</p>'; return; }
-  applyTheme(); render(); bindCompact(); tabsGlass();
+  applyTheme(); paintAvatar(); render(); bindCompact(); tabsGlass();
   try { const r = JSON.parse(localStorage.getItem("nitfit:rest") || "null"); if (r && r.end > Date.now()) { REST = r; restIv = setInterval(paintRest, 250); } } catch (_) {}
   if (activeSession()) { PAGE = { kind: "log" }; renderPage(); }
   try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => { if (S.settings.theme === "system") { applyTheme(); render(); } }); } catch (_) {}
