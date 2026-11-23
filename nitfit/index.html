@@ -1246,6 +1246,33 @@ html[data-theme="light"] #tabs .tlb{text-shadow:0 0 8px rgba(255,255,255,.6)}
 #tabs .tcap,#tabs .lens,#tabs .tcap .pill{will-change:transform;transform:translateZ(0)}
 #tabs .tcap .pill{transform:translateX(var(--x)) scale(var(--sx),var(--sy))}
 #tabs.held .tcap{transform:scale(1.05,1.08)}
+/* v6.2: the lens is clear glass like Apple's. You see the page through it, the bar edge bends
+   into dark curved bands at the top and bottom, and a thin rainbow runs round the rim.
+   The bar under the lens is cut out so nothing shows twice. */
+#tabs .lens{background:var(--glhi)!important;
+  box-shadow:inset 0 0 0 .75px rgba(255,255,255,.30),
+    inset 0 10px 3px -4px rgba(0,0,0,.92),inset 0 -10px 3px -4px rgba(0,0,0,.92),
+    inset 0 3px 2px -2px rgba(185,120,255,.75),inset 0 -3px 2px -2px rgba(80,200,255,.65),
+    inset 5px 0 5px -4px rgba(120,255,170,.45),inset -5px 0 5px -4px rgba(255,110,190,.45),
+    0 8px 22px rgba(0,0,0,.28)!important}
+html[data-theme="light"] #tabs .lens{background:var(--glhi)!important;
+  box-shadow:inset 0 0 0 .75px rgba(0,0,0,.12),
+    inset 0 11px 7px -8px rgba(0,0,0,.22),inset 0 -11px 7px -8px rgba(0,0,0,.22),
+    inset 0 3px 2px -2px rgba(185,120,255,.6),inset 0 -3px 2px -2px rgba(80,200,255,.55),
+    inset 5px 0 5px -4px rgba(120,255,170,.35),inset -5px 0 5px -4px rgba(255,110,190,.35),
+    0 8px 22px rgba(0,0,0,.12)!important}
+#tabs .lens::after{background:radial-gradient(60% 40% at 30% 18%,rgba(255,255,255,.14),transparent 70%)!important}
+#tabs .lwarp{background:none!important}
+#tabs.held .tcap > .tbg,#tabs.held .tcap > button[data-tab]{
+  -webkit-mask-image:linear-gradient(#000,#000),var(--lm);mask-image:linear-gradient(#000,#000),var(--lm);
+  -webkit-mask-size:100% 100%,var(--lw) var(--lh);mask-size:100% 100%,var(--lw) var(--lh);
+  -webkit-mask-position:0 0,calc(var(--lx) - var(--ox,0px)) calc(var(--ly) - var(--oy,0px));mask-position:0 0,calc(var(--lx) - var(--ox,0px)) calc(var(--ly) - var(--oy,0px));
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-composite:xor;mask-composite:exclude}
+#tabs .lens{transition:opacity .08s!important}
+
+/* the lens blurs what is behind it the same as the bar does, so the page looks the same through both */
+#tabs .lens{-webkit-backdrop-filter:var(--glblur)!important;backdrop-filter:var(--glblur)!important}
+#tabs .lens::after{display:none}
 
 </style>
 </head>
@@ -1254,7 +1281,7 @@ html[data-theme="light"] #tabs .tlb{text-shadow:0 0 8px rgba(255,255,255,.6)}
 <div id="page" class="scr"></div>
 
 <div id="mini" hidden></div>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="lgw" x="0" y="0" width="1" height="1" primitiveUnits="objectBoundingBox" color-interpolation-filters="sRGB"><feImage id="lgwImg" x="0" y="0" width="1" height="1" preserveAspectRatio="none" result="m"/><feDisplacementMap in="SourceGraphic" in2="m" scale=".05" xChannelSelector="R" yChannelSelector="G"/></filter></svg><nav id="tabs"><div class="tcap"><div class="tbg"></div><div class="pill"></div><div class="lens"><div class="lwarp"><div class="lrow"></div></div></div><button data-a="tab" data-tab="dashboard" class="on"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.9 2.6 10.9a1 1 0 0 0 1.3 1.5l.9-.77v7.82c0 1 .8 1.8 1.8 1.8h3.5v-5.2c0-.5.4-.85.85-.85h2.1c.5 0 .85.4.85.85v5.2h3.5c1 0 1.8-.8 1.8-1.8v-7.82l.9.77a1 1 0 0 0 1.3-1.5l-2.5-2.13V5.2a.7.7 0 0 0-.7-.7h-1.1a.7.7 0 0 0-.7.7v1.4z"/></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.9 2.6 10.9a1 1 0 0 0 1.3 1.5l.9-.77v7.82c0 1 .8 1.8 1.8 1.8h3.5v-5.2c0-.5.4-.85.85-.85h2.1c.5 0 .85.4.85.85v5.2h3.5c1 0 1.8-.8 1.8-1.8v-7.82l.9.77a1 1 0 0 0 1.3-1.5l-2.5-2.13V5.2a.7.7 0 0 0-.7-.7h-1.1a.7.7 0 0 0-.7.7v1.4z"/></svg></span><span class="tlb">Home</span></button><button data-a="tab" data-tab="workout"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mrun"><rect width="24" height="24" fill="#fff"/><g stroke="#000" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M13.2 8.9l-1.7 3.9 2.1 1.8-.4 3.3"/><path d="M11.5 12.8l-.9 2.5-2.6.6"/><path d="M13.2 8.9l2.2 1.6 1.6-.4"/><path d="M13.2 8.9l-2.3.2-1.3 1.7"/></g><circle cx="14.6" cy="6.3" r="1.65" fill="#000"/></mask></defs><circle cx="12" cy="12" r="10.6" fill="currentColor" mask="url(#mrun)"/></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mrun2"><rect width="24" height="24" fill="#fff"/><g stroke="#000" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M13.2 8.9l-1.7 3.9 2.1 1.8-.4 3.3"/><path d="M11.5 12.8l-.9 2.5-2.6.6"/><path d="M13.2 8.9l2.2 1.6 1.6-.4"/><path d="M13.2 8.9l-2.3.2-1.3 1.7"/></g><circle cx="14.6" cy="6.3" r="1.65" fill="#000"/></mask></defs><circle cx="12" cy="12" r="10.6" fill="currentColor" mask="url(#mrun2)"/></svg></span><span class="tlb">Workout</span></button><button data-a="tab" data-tab="levels"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="12" cy="4.3" r="2.35"/><path d="M9.7 7.6h4.6c1.45 0 2.6 1.15 2.6 2.6v4.3c0 .6-.45 1.05-1.05 1.05S14.8 15.1 14.8 14.5v-3.6h-.5v9.4c0 .7-.55 1.25-1.25 1.25s-1.25-.55-1.25-1.25v-5.3h-.6v5.3c0 .7-.55 1.25-1.25 1.25S8.7 21 8.7 20.3v-9.4h-.5v3.6c0 .6-.45 1.05-1.05 1.05S6.1 15.1 6.1 14.5v-4.3c0-1.45 1.15-2.6 2.6-2.6z" transform="translate(.5 0)"/></g></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="12" cy="4.3" r="2.35"/><path d="M9.7 7.6h4.6c1.45 0 2.6 1.15 2.6 2.6v4.3c0 .6-.45 1.05-1.05 1.05S14.8 15.1 14.8 14.5v-3.6h-.5v9.4c0 .7-.55 1.25-1.25 1.25s-1.25-.55-1.25-1.25v-5.3h-.6v5.3c0 .7-.55 1.25-1.25 1.25S8.7 21 8.7 20.3v-9.4h-.5v3.6c0 .6-.45 1.05-1.05 1.05S6.1 15.1 6.1 14.5v-4.3c0-1.45 1.15-2.6 2.6-2.6z" transform="translate(.5 0)"/></g></svg></span><span class="tlb">Progress</span></button></div><button class="tyou" data-a="tab" data-tab="profile"><span class="tbg"></span><span class="tic"><svg class="av" viewBox="0 0 28 28" aria-hidden="true"><defs><clipPath id="avc"><circle cx="14" cy="14" r="14"/></clipPath></defs><circle cx="14" cy="14" r="14" class="avb"/><g clip-path="url(#avc)" fill="#fff"><circle cx="14" cy="11" r="4.6"/><ellipse cx="14" cy="25.5" rx="9" ry="7.2"/></g></svg></span><span class="tlb">You</span></button></nav>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="lgw" x="0" y="0" width="1" height="1" primitiveUnits="objectBoundingBox" color-interpolation-filters="sRGB"><feImage id="lgwImg" x="0" y="0" width="1" height="1" preserveAspectRatio="none" result="m"/><feDisplacementMap in="SourceGraphic" in2="m" scale=".05" xChannelSelector="R" yChannelSelector="G"/></filter></svg><nav id="tabs"><div class="tcap"><div class="tbg"></div><div class="pill"></div><div class="lens"><div class="lwarp"><div class="lrow"></div></div></div><button data-a="tab" data-tab="dashboard" class="on"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.9 2.6 10.9a1 1 0 0 0 1.3 1.5l.9-.77v7.82c0 1 .8 1.8 1.8 1.8h3.5v-5.2c0-.5.4-.85.85-.85h2.1c.5 0 .85.4.85.85v5.2h3.5c1 0 1.8-.8 1.8-1.8v-7.82l.9.77a1 1 0 0 0 1.3-1.5l-2.5-2.13V5.2a.7.7 0 0 0-.7-.7h-1.1a.7.7 0 0 0-.7.7v1.4z"/></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.9 2.6 10.9a1 1 0 0 0 1.3 1.5l.9-.77v7.82c0 1 .8 1.8 1.8 1.8h3.5v-5.2c0-.5.4-.85.85-.85h2.1c.5 0 .85.4.85.85v5.2h3.5c1 0 1.8-.8 1.8-1.8v-7.82l.9.77a1 1 0 0 0 1.3-1.5l-2.5-2.13V5.2a.7.7 0 0 0-.7-.7h-1.1a.7.7 0 0 0-.7.7v1.4z"/></svg></span><span class="tlb">Home</span></button><button data-a="tab" data-tab="workout"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mrun"><rect width="24" height="24" fill="#fff"/><g stroke="#000" stroke-width="1.22" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M12.09 8.77 L10.95 12.09"/><path d="M11.91 8.77 L10.78 12.09"/><path d="M12.00 8.86 L14.27 10.60 L16.45 9.73"/><path d="M11.65 8.69 L9.73 8.77 L9.30 10.87"/><path d="M10.78 12.17 L9.56 14.44 L7.64 16.62"/><path d="M10.87 12.17 L14.44 13.40 L12.87 15.92"/></g><circle cx="13.74" cy="6.33" r="1.29" fill="#000"/></mask></defs><circle cx="12" cy="12" r="10.6" fill="currentColor" mask="url(#mrun)"/></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mrun2"><rect width="24" height="24" fill="#fff"/><g stroke="#000" stroke-width="1.22" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M12.09 8.77 L10.95 12.09"/><path d="M11.91 8.77 L10.78 12.09"/><path d="M12.00 8.86 L14.27 10.60 L16.45 9.73"/><path d="M11.65 8.69 L9.73 8.77 L9.30 10.87"/><path d="M10.78 12.17 L9.56 14.44 L7.64 16.62"/><path d="M10.87 12.17 L14.44 13.40 L12.87 15.92"/></g><circle cx="13.74" cy="6.33" r="1.29" fill="#000"/></mask></defs><circle cx="12" cy="12" r="10.6" fill="currentColor" mask="url(#mrun2)"/></svg></span><span class="tlb">Workout</span></button><button data-a="tab" data-tab="levels"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="12" cy="4.3" r="2.35"/><path d="M9.7 7.6h4.6c1.45 0 2.6 1.15 2.6 2.6v4.3c0 .6-.45 1.05-1.05 1.05S14.8 15.1 14.8 14.5v-3.6h-.5v9.4c0 .7-.55 1.25-1.25 1.25s-1.25-.55-1.25-1.25v-5.3h-.6v5.3c0 .7-.55 1.25-1.25 1.25S8.7 21 8.7 20.3v-9.4h-.5v3.6c0 .6-.45 1.05-1.05 1.05S6.1 15.1 6.1 14.5v-4.3c0-1.45 1.15-2.6 2.6-2.6z" transform="translate(.5 0)"/></g></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="12" cy="4.3" r="2.35"/><path d="M9.7 7.6h4.6c1.45 0 2.6 1.15 2.6 2.6v4.3c0 .6-.45 1.05-1.05 1.05S14.8 15.1 14.8 14.5v-3.6h-.5v9.4c0 .7-.55 1.25-1.25 1.25s-1.25-.55-1.25-1.25v-5.3h-.6v5.3c0 .7-.55 1.25-1.25 1.25S8.7 21 8.7 20.3v-9.4h-.5v3.6c0 .6-.45 1.05-1.05 1.05S6.1 15.1 6.1 14.5v-4.3c0-1.45 1.15-2.6 2.6-2.6z" transform="translate(.5 0)"/></g></svg></span><span class="tlb">Progress</span></button></div><button class="tyou" data-a="tab" data-tab="profile"><span class="tbg"></span><span class="tic"><svg class="av" viewBox="0 0 28 28" aria-hidden="true"><defs><clipPath id="avc"><circle cx="14" cy="14" r="14"/></clipPath></defs><circle cx="14" cy="14" r="14" class="avb"/><g clip-path="url(#avc)" fill="#fff"><circle cx="14" cy="11" r="4.6"/><ellipse cx="14" cy="25.5" rx="9" ry="7.2"/></g></svg></span><span class="tlb">You</span></button></nav>
 
 <div class="kp" id="kp"></div>
 <div class="scrim" id="scrim" data-a="closeSheet"></div>
@@ -1759,7 +1786,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "6.1";
+const APP_VERSION = "6.2";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -3653,6 +3680,10 @@ function lensAt(cx) {
   cx = Math.max(LW / 2 - 6, Math.min(W - LW / 2 + 6, cx));
   const left = cx - LW / 2, top = (H - LH) / 2;
   L.style.width = LW + "px"; L.style.height = LH + "px"; L.style.top = top + "px"; L.style.transform = "translateX(" + left.toFixed(1) + "px)";
+  const T = $("#tabs"); T.style.setProperty("--lx", left.toFixed(1) + "px"); T.style.setProperty("--ly", top.toFixed(1) + "px");
+  if (T._lw !== LW || T._lh !== LH) { T._lw = LW; T._lh = LH; T.style.setProperty("--lw", LW + "px"); T.style.setProperty("--lh", LH + "px");
+    T.style.setProperty("--lm", 'url("data:image/svg+xml,' + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='" + LW + "' height='" + LH + "'><rect width='" + LW + "' height='" + LH + "' rx='" + LH / 2 + "' fill='black'/></svg>") + '")');
+    tabBtns().forEach(b => { b.style.setProperty("--ox", b.offsetLeft + "px"); b.style.setProperty("--oy", b.offsetTop + "px"); }); }
   row.style.width = W + "px"; row.style.height = H + "px";
   row.style.transformOrigin = cx.toFixed(1) + "px " + (H / 2) + "px";
   row.style.transform = "translate(" + (-left).toFixed(1) + "px," + (-top).toFixed(1) + "px) scale(1.12)";
@@ -3691,11 +3722,13 @@ function tabsGlass() {
     const D = TABDRAG; TABDRAG = null; if (!D) return; clearTimeout(D.t); if (!D.held) return;
     TABEATCLICK = true; setTimeout(() => TABEATCLICK = false, 350);
     const b = nearest(D.x), L = $("#tabs .lens"), c = b.offsetLeft + b.offsetWidth / 2;
-    L.classList.add("glide"); lensAt(c);
+    const x0 = D.x, t0 = performance.now(), dur = 230;
+    const step = now => { const k = Math.min(1, (now - t0) / dur), e = 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2); lensAt(x0 + (c - x0) * e); if (k < 1 && $("#tabs").classList.contains("held")) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
     LENST = setTimeout(() => {
       pillTo(b, true); glassReset();
       if (b.dataset.tab !== TAB) { TABX = c; try { ACT.tab(b); } catch (err) { console.error(err); } }
-    }, 220);
+    }, 240);
   };
   cap.addEventListener("pointerup", end); cap.addEventListener("pointercancel", end);
   // never leave the glass stuck: a finger lifted anywhere, or the app coming back, clears it

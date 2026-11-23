@@ -1680,6 +1680,10 @@ function lensAt(cx) {
   cx = Math.max(LW / 2 - 6, Math.min(W - LW / 2 + 6, cx));
   const left = cx - LW / 2, top = (H - LH) / 2;
   L.style.width = LW + "px"; L.style.height = LH + "px"; L.style.top = top + "px"; L.style.transform = "translateX(" + left.toFixed(1) + "px)";
+  const T = $("#tabs"); T.style.setProperty("--lx", left.toFixed(1) + "px"); T.style.setProperty("--ly", top.toFixed(1) + "px");
+  if (T._lw !== LW || T._lh !== LH) { T._lw = LW; T._lh = LH; T.style.setProperty("--lw", LW + "px"); T.style.setProperty("--lh", LH + "px");
+    T.style.setProperty("--lm", 'url("data:image/svg+xml,' + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='" + LW + "' height='" + LH + "'><rect width='" + LW + "' height='" + LH + "' rx='" + LH / 2 + "' fill='black'/></svg>") + '")');
+    tabBtns().forEach(b => { b.style.setProperty("--ox", b.offsetLeft + "px"); b.style.setProperty("--oy", b.offsetTop + "px"); }); }
   row.style.width = W + "px"; row.style.height = H + "px";
   row.style.transformOrigin = cx.toFixed(1) + "px " + (H / 2) + "px";
   row.style.transform = "translate(" + (-left).toFixed(1) + "px," + (-top).toFixed(1) + "px) scale(1.12)";
@@ -1718,11 +1722,13 @@ function tabsGlass() {
     const D = TABDRAG; TABDRAG = null; if (!D) return; clearTimeout(D.t); if (!D.held) return;
     TABEATCLICK = true; setTimeout(() => TABEATCLICK = false, 350);
     const b = nearest(D.x), L = $("#tabs .lens"), c = b.offsetLeft + b.offsetWidth / 2;
-    L.classList.add("glide"); lensAt(c);
+    const x0 = D.x, t0 = performance.now(), dur = 230;
+    const step = now => { const k = Math.min(1, (now - t0) / dur), e = 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2); lensAt(x0 + (c - x0) * e); if (k < 1 && $("#tabs").classList.contains("held")) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
     LENST = setTimeout(() => {
       pillTo(b, true); glassReset();
       if (b.dataset.tab !== TAB) { TABX = c; try { ACT.tab(b); } catch (err) { console.error(err); } }
-    }, 220);
+    }, 240);
   };
   cap.addEventListener("pointerup", end); cap.addEventListener("pointercancel", end);
   // never leave the glass stuck: a finger lifted anywhere, or the app coming back, clears it
