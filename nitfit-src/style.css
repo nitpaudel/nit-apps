@@ -1065,3 +1065,10 @@ body.tsmall #tabs{transform:translateY(3px) scale(.92)}
 #tabs .tyou.on{color:var(--dt)}
 #tabs .tyou .tic{position:relative;z-index:1;width:23px;height:23px}
 #tabs .tyou .tic svg{width:23px;height:23px}
+/* v5.3 icons: solid glyphs with a soft glass depth */
+#tabs .tic svg{filter:drop-shadow(0 .6px .6px rgba(0,0,0,.45))}
+#tabs button.on .tic svg{filter:drop-shadow(0 .6px .6px rgba(0,0,0,.45)) drop-shadow(0 0 5px rgba(255,255,255,.22))}
+html[data-theme="light"] #tabs .tic svg,html[data-theme="light"] #tabs button.on .tic svg{filter:drop-shadow(0 .5px .5px rgba(255,255,255,.9))}
+#tabs [data-tab="dashboard"] .tic svg{width:21px;height:21px}
+#tabs [data-tab="levels"] .tic svg{width:22px;height:22px}
+#tabs .tyou .tic svg{width:24px;height:24px}
