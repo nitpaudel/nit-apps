@@ -1256,3 +1256,13 @@ html[data-theme="light"] #tabs .lens{background:var(--glhi)!important;
 /* the lens blurs what is behind it the same as the bar does, so the page looks the same through both */
 #tabs .lens{-webkit-backdrop-filter:var(--glblur)!important;backdrop-filter:var(--glblur)!important}
 #tabs .lens::after{display:none}
+/* v7: the glass lens is drawn on the graphics chip. The bar itself never grows or blurs. */
+#tabs .lgl{position:absolute;z-index:4;pointer-events:none;display:none}
+#tabs.lgon .lgl,#tabs.lgend .lgl{display:block}
+#tabs.lgon .tcap > button[data-tab] > *,#tabs.lgend .tcap > button[data-tab] > *{opacity:0!important;transition:none!important}
+#tabs.lgon .tcap .pill{opacity:0!important;transition:none!important}
+#tabs.lgend .tcap .pill{transition:none!important}
+#tabs.held .tcap,#tabs .tcap{transform:translateZ(0)!important}
+#tabs.held .tcap .tbg{background:var(--gl)!important}
+/* older lens (only used if the graphics chip path is missing): no pink or green */
+#tabs .lens{box-shadow:inset 0 0 0 .75px rgba(255,255,255,.3),inset 0 10px 3px -4px rgba(0,0,0,.92),inset 0 -10px 3px -4px rgba(0,0,0,.92),0 8px 22px rgba(0,0,0,.28)!important}
