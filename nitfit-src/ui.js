@@ -991,7 +991,7 @@ function levelMap() { const mv = muscleSets(7 * LVRANGE, today()), lv = {}; ALL_
 function vLevels() {
   const { mv } = levelMap();
   let h = "<div class='body-pad'>";
-  h += '<div class="b3w"><div id="b3slot" class="b3slot"></div><button class="b2name" id="b3name" data-a="b2Open" hidden></button><button class="ib b3home" data-a="b3Home" aria-label="Reset view">' + I.rotate + "</button></div>";
+  h += '<div class="b3w"><div id="b3slot" class="b3slot"></div><button class="b2name" id="b3name" data-a="b2Open" hidden></button><button class="ib b3home" data-a="b3Home" aria-label="Reset view">' + I.rotate + '</button><div class="mcard" id="b3card"></div></div>';
   h += '<div class="legend"><i></i>Average weekly sets over <button data-a="lvRange">' + LVRANGE + "-week " + I.down + "</button></div>";
   ["Upper", "Lower"].forEach(g => {
     h += "<h2>" + g + ' Body Levels</h2><div class="card">' + MUSCLE_GROUPS[g].map(m => { const v = (mv[m] || 0) / LVRANGE; return '<button class="lvrow press" data-a="muscle" data-m="' + esc(m) + '"><div class="thumb">' + muscleThumb(m) + '</div><div class="m"><b>' + esc(m) + "</b><span>" + fmtKg(Math.round(v * 10) / 10) + " sets</span></div></button>"; }).join("") + "</div>";
@@ -1058,7 +1058,20 @@ function b2Select(g) {
   });
   b2Name();
 }
-function b2Name() { const b = $("#b3name"); if (!b) return; b.hidden = !B2.sel; if (B2.sel) b.innerHTML = esc(B2.sel) + I.chev; }
+function b2Name() {
+  const b = $("#b3name"), c = $("#b3card"); if (b) b.hidden = true; if (!c) return;
+  if (!B2.sel) { c.classList.remove("on"); return; }
+  // the tapped muscle's numbers, right under the body: no scrolling needed
+  const m = BOPEN[B2.sel] || B2.sel, d = today(), w1 = muscleSets(7, d)[m] || 0, w4 = (muscleSets(28, d)[m] || 0) / 4, from = addDays(d, -27), cnt = {};
+  Object.values(S.sets).forEach(x => { if (x.w || x.d < from || x.d > d || !tagsOf(x.exId).includes(m)) return; cnt[x.exId] = (cnt[x.exId] || 0) + 1; });
+  const top = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]).slice(0, 3);
+  const sub = B2.sel !== m ? '<span class="mcs">' + esc(B2.sel) + "</span>" : "";
+  c.innerHTML = '<button class="mch press" data-a="b2Open"><div><b>' + esc(m) + "</b>" + sub + "</div>" + I.chev + "</button>"
+    + '<div class="mcn"><div><b>' + fmtKg(Math.round(w1 * 10) / 10) + '</b><span>Sets this week</span></div><div><b>' + fmtKg(Math.round(w4 * 10) / 10) + "</b><span>4-week average</span></div></div>"
+    + (top.length ? '<div class="mce">' + top.map(x => '<button class="press" data-a="openEx" data-ex="' + x + '"><span>' + esc((getEx(x) || {}).n || x) + "</span><em>" + cnt[x] + " sets</em></button>").join("") + "</div>"
+      : '<p class="mc0">No sets for this muscle in the last 4 weeks.</p>');
+  c.classList.add("on");
+}
 function b2Hit(cx, cy) {
   const n = BV.length, v = BV[Math.round(((B2.pos % n) + n) % n) % n], L = B2.maps[v]; if (!L || !B2.G) return null;
   const r = $('.b2v[data-v="' + v + '"]', B2.el).getBoundingClientRect(), X = Math.floor((cx - r.left) / r.width * BMW), Y = Math.floor((cy - r.top) / r.height * BMH);
