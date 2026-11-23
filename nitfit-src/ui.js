@@ -1602,9 +1602,13 @@ window.addEventListener("resize", () => { MAXH = Math.max(MAXH, window.innerHeig
 // iPhone bug: with the see-through status bar, a home-screen app's page can stop short of the bottom of the screen
 // by the height of the status bar. Measure the missing strip and stretch the page over it.
 function fixGap() {
-  const g = isStandalone() && innerHeight < innerWidth * 3 ? Math.round(screen.height - innerHeight) : 0;
-  const gap = g > 10 && g < 80 ? g : 0;
-  document.documentElement.style.setProperty("--vgap", gap + "px"); document.body.classList.toggle("gapfix", gap > 0);
+  if (!isStandalone() || innerHeight > innerWidth * 3 || innerWidth > innerHeight) { document.documentElement.style.setProperty("--vgap", "0px"); document.documentElement.classList.remove("gapfix"); return; }
+  let pr = document.getElementById("vprobe");
+  if (!pr) { pr = document.createElement("div"); pr.id = "vprobe"; pr.style.cssText = "position:absolute;left:-9px;top:0;width:1px;height:100vh;height:100lvh;visibility:hidden;pointer-events:none"; document.documentElement.appendChild(pr); }
+  const vis = Math.min(innerHeight, document.documentElement.clientHeight || innerHeight);
+  const full = Math.max(screen.height, pr.getBoundingClientRect().height);
+  const g = Math.round(full - vis), gap = g > 10 && g < 80 ? g : 0;
+  document.documentElement.style.setProperty("--vgap", gap + "px"); document.documentElement.classList.toggle("gapfix", gap > 0);
 }
 fixGap(); addEventListener("resize", () => setTimeout(fixGap, 60)); addEventListener("orientationchange", () => setTimeout(fixGap, 300));
 function healViewport(force) {

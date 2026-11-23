@@ -1119,3 +1119,12 @@ body.gapfix{transform:translateZ(0);height:calc(100% + var(--vgap))!important}
 /* v5.6 soft greys instead of pure black (dark mode only) */
 :root,html[data-theme="dark"]{--bg:#181818;--top:#212121;--card:#252525;--card2:#2f2f2f;--chip:#333333;--line:#333336;
   --dbg:#181818;--dcard:#252525;--dfill:#2f2f2f;--dt:#f2f2f2;--ds:#a1a1a6;--ds2:#b4b4b9;--dinact:#a1a1a6;--dmute:#4a4a4e;--dsep:#333336;--dthumb:#4a4a4e;--dglass:rgba(48,48,50,.7);--dpill:rgba(0,0,0,.32)}
+/* v5.7: fill the whole screen top to bottom. html and body both grow over the strip iPhone leaves empty,
+   so nothing is clipped; body becomes the frame for every pinned piece (pages, bar, sheets). */
+html.gapfix{height:calc(100% + var(--vgap))!important}
+html.gapfix body{height:100%!important}
+html.gapfix body{transform:translateZ(0)}
+body.gapfix{transform:none;height:100%!important}
+/* bar about 5% lower */
+#tabs{bottom:max(20px, calc(var(--sab) - 8px))}
+#mini{bottom:calc(max(20px, calc(var(--sab) - 8px)) + 62px)}

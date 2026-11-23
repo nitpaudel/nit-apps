@@ -1136,6 +1136,15 @@ body.gapfix{transform:translateZ(0);height:calc(100% + var(--vgap))!important}
 /* v5.6 soft greys instead of pure black (dark mode only) */
 :root,html[data-theme="dark"]{--bg:#181818;--top:#212121;--card:#252525;--card2:#2f2f2f;--chip:#333333;--line:#333336;
   --dbg:#181818;--dcard:#252525;--dfill:#2f2f2f;--dt:#f2f2f2;--ds:#a1a1a6;--ds2:#b4b4b9;--dinact:#a1a1a6;--dmute:#4a4a4e;--dsep:#333336;--dthumb:#4a4a4e;--dglass:rgba(48,48,50,.7);--dpill:rgba(0,0,0,.32)}
+/* v5.7: fill the whole screen top to bottom. html and body both grow over the strip iPhone leaves empty,
+   so nothing is clipped; body becomes the frame for every pinned piece (pages, bar, sheets). */
+html.gapfix{height:calc(100% + var(--vgap))!important}
+html.gapfix body{height:100%!important}
+html.gapfix body{transform:translateZ(0)}
+body.gapfix{transform:none;height:100%!important}
+/* bar about 5% lower */
+#tabs{bottom:max(20px, calc(var(--sab) - 8px))}
+#mini{bottom:calc(max(20px, calc(var(--sab) - 8px)) + 62px)}
 
 </style>
 </head>
@@ -1649,7 +1658,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "5.6";
+const APP_VERSION = "5.7";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -3465,9 +3474,13 @@ window.addEventListener("resize", () => { MAXH = Math.max(MAXH, window.innerHeig
 // iPhone bug: with the see-through status bar, a home-screen app's page can stop short of the bottom of the screen
 // by the height of the status bar. Measure the missing strip and stretch the page over it.
 function fixGap() {
-  const g = isStandalone() && innerHeight < innerWidth * 3 ? Math.round(screen.height - innerHeight) : 0;
-  const gap = g > 10 && g < 80 ? g : 0;
-  document.documentElement.style.setProperty("--vgap", gap + "px"); document.body.classList.toggle("gapfix", gap > 0);
+  if (!isStandalone() || innerHeight > innerWidth * 3 || innerWidth > innerHeight) { document.documentElement.style.setProperty("--vgap", "0px"); document.documentElement.classList.remove("gapfix"); return; }
+  let pr = document.getElementById("vprobe");
+  if (!pr) { pr = document.createElement("div"); pr.id = "vprobe"; pr.style.cssText = "position:absolute;left:-9px;top:0;width:1px;height:100vh;height:100lvh;visibility:hidden;pointer-events:none"; document.documentElement.appendChild(pr); }
+  const vis = Math.min(innerHeight, document.documentElement.clientHeight || innerHeight);
+  const full = Math.max(screen.height, pr.getBoundingClientRect().height);
+  const g = Math.round(full - vis), gap = g > 10 && g < 80 ? g : 0;
+  document.documentElement.style.setProperty("--vgap", gap + "px"); document.documentElement.classList.toggle("gapfix", gap > 0);
 }
 fixGap(); addEventListener("resize", () => setTimeout(fixGap, 60)); addEventListener("orientationchange", () => setTimeout(fixGap, 300));
 function healViewport(force) {
