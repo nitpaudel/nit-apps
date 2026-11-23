@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="NitFit">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
 <meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1089,11 +1089,49 @@ html[data-theme="light"] #tabs .tic svg,html[data-theme="light"] #tabs button.on
 #tabs [data-tab="dashboard"] .tic svg{width:21px;height:21px}
 #tabs [data-tab="levels"] .tic svg{width:22px;height:22px}
 #tabs .tyou .tic svg{width:24px;height:24px}
+/* v5.4 */
+/* content now scrolls under the clock and battery, softly faded like Claude and Apple's own apps */
+.topfade{position:fixed;left:0;right:0;top:0;height:calc(var(--sat) + 14px);z-index:15;pointer-events:none;
+  background:linear-gradient(to bottom,var(--dbg) 0%,var(--dbg) 45%,transparent 100%);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  -webkit-mask-image:linear-gradient(to bottom,#000 60%,transparent);mask-image:linear-gradient(to bottom,#000 60%,transparent)}
+body.pageon .topfade{display:none}
+/* more room at the sides, like Claude */
+.d2 .head{padding-left:24px;padding-right:24px}
+.d2 .pager{margin:0 -24px}
+.d2 .pager .pg{padding:0 24px}
+.d2 .body-pad{padding-left:24px;padding-right:24px}
+/* three rings: smaller, three equal columns, everything centred */
+.d3card{padding:20px 8px 0}
+.d3rings{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.d3r{min-width:0}
+.d3r .rv{width:86px;height:86px}
+.d3r .rv svg{width:86px;height:86px}
+.d3r .rc b{font-size:26px}
+.d3r .rc small{font-size:11px;margin-top:3px}
+.d3r .rl{margin-top:10px;font-size:14px}
+.d3r .rt{font-size:12px}
+.d3pace{margin:18px 12px 0;font-size:14px}
+/* tab bar: about 12% bigger, same gap above the bottom as Instagram, no shrinking on scroll */
+#tabs{left:calc(50% - 164px);width:328px;height:54px;gap:9px;bottom:max(16px, calc(var(--sab) - 11px))}
+#tabs .tcap{border-radius:27px;padding:0 5px}
+#tabs .tcap > button{height:45px;border-radius:22.5px;gap:2px}
+#tabs .tcap .pill{top:4.5px;height:45px;border-radius:22.5px}
+#tabs .tic{width:23px;height:23px}
+#tabs .tic svg{width:22px;height:22px}
+#tabs [data-tab="dashboard"] .tic svg{width:23px;height:23px}
+#tabs [data-tab="levels"] .tic svg{width:24px;height:24px}
+#tabs .tlb{font-size:10.5px}
+#tabs .tyou{width:54px;height:54px}
+#tabs .tyou .tic,#tabs .tyou .tic svg{width:26px;height:26px}
+body.tsmall #tabs{transform:none}
+body.tsmall #mini{transform:none}
+#mini{left:calc(50% - 164px);width:328px;bottom:calc(max(16px, calc(var(--sab) - 11px)) + 62px)}
 
 </style>
 </head>
 <body>
-<div id="main" class="scr"></div>
+<div id="main" class="scr"></div><div class="topfade" aria-hidden="true"></div>
 <div id="page" class="scr"></div>
 
 <div id="mini" hidden></div>
@@ -1602,7 +1640,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "5.3";
+const APP_VERSION = "5.4";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
