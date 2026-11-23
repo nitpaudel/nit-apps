@@ -8,7 +8,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="NitFit">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#181818">
 <meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/nitfit-180.png?v=37">
@@ -1133,6 +1133,9 @@ body.tsmall #mini{transform:none}
 .toast.on{opacity:1;visibility:visible}
 /* stretch the app over the missing strip at the bottom of the screen; everything pinned to the bottom moves down with it */
 body.gapfix{transform:translateZ(0);height:calc(100% + var(--vgap))!important}
+/* v5.6 soft greys instead of pure black (dark mode only) */
+:root,html[data-theme="dark"]{--bg:#181818;--top:#212121;--card:#252525;--card2:#2f2f2f;--chip:#333333;--line:#333336;
+  --dbg:#181818;--dcard:#252525;--dfill:#2f2f2f;--dt:#f2f2f2;--ds:#a1a1a6;--ds2:#b4b4b9;--dinact:#a1a1a6;--dmute:#4a4a4e;--dsep:#333336;--dthumb:#4a4a4e;--dglass:rgba(48,48,50,.7);--dpill:rgba(0,0,0,.32)}
 
 </style>
 </head>
@@ -1646,7 +1649,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "5.5";
+const APP_VERSION = "5.6";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -1943,7 +1946,7 @@ function applyTheme() {
   const t = (S && S.settings.theme) || "dark", r = t === "system" ? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : t;
   document.documentElement.dataset.theme = r;
   try { localStorage.setItem("nitfit:theme", r); } catch (_) {}
-  const m = $('meta[name="theme-color"]'); if (m) m.content = r === "light" ? "#fbfbf9" : "#000000";
+  const m = $('meta[name="theme-color"]'); if (m) m.content = r === "light" ? "#fbfbf9" : "#181818";
 }
 
 // ----- sheets -----

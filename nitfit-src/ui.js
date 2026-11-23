@@ -83,7 +83,7 @@ function applyTheme() {
   const t = (S && S.settings.theme) || "dark", r = t === "system" ? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : t;
   document.documentElement.dataset.theme = r;
   try { localStorage.setItem("nitfit:theme", r); } catch (_) {}
-  const m = $('meta[name="theme-color"]'); if (m) m.content = r === "light" ? "#fbfbf9" : "#000000";
+  const m = $('meta[name="theme-color"]'); if (m) m.content = r === "light" ? "#fbfbf9" : "#181818";
 }
 
 // ----- sheets -----
