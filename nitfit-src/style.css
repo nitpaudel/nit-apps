@@ -1110,3 +1110,9 @@ body.pageon .topfade{display:none}
 body.tsmall #tabs{transform:none}
 body.tsmall #mini{transform:none}
 #mini{left:calc(50% - 164px);width:328px;bottom:calc(max(16px, calc(var(--sab) - 11px)) + 62px)}
+/* v5.5 */
+/* the message pop-up stays fully hidden until it is shown (it was peeking out under the clock) */
+.toast:not(.on){opacity:0;visibility:hidden;transition:transform .3s,opacity .2s,visibility 0s .3s}
+.toast.on{opacity:1;visibility:visible}
+/* stretch the app over the missing strip at the bottom of the screen; everything pinned to the bottom moves down with it */
+body.gapfix{transform:translateZ(0);height:calc(100% + var(--vgap))!important}

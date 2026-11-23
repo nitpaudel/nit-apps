@@ -1599,6 +1599,14 @@ ACT.habitDay = el => {
 // Hiding and showing the full-height screens for one frame makes iOS measure the screen again.
 let MAXH = window.innerHeight;
 window.addEventListener("resize", () => { MAXH = Math.max(MAXH, window.innerHeight); });
+// iPhone bug: with the see-through status bar, a home-screen app's page can stop short of the bottom of the screen
+// by the height of the status bar. Measure the missing strip and stretch the page over it.
+function fixGap() {
+  const g = isStandalone() && innerHeight < innerWidth * 3 ? Math.round(screen.height - innerHeight) : 0;
+  const gap = g > 10 && g < 80 ? g : 0;
+  document.documentElement.style.setProperty("--vgap", gap + "px"); document.body.classList.toggle("gapfix", gap > 0);
+}
+fixGap(); addEventListener("resize", () => setTimeout(fixGap, 60)); addEventListener("orientationchange", () => setTimeout(fixGap, 300));
 function healViewport(force) {
   const a = document.activeElement; if (a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA")) return;
   window.scrollTo(0, 0);

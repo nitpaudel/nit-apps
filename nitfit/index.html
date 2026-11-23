@@ -1127,6 +1127,12 @@ body.pageon .topfade{display:none}
 body.tsmall #tabs{transform:none}
 body.tsmall #mini{transform:none}
 #mini{left:calc(50% - 164px);width:328px;bottom:calc(max(16px, calc(var(--sab) - 11px)) + 62px)}
+/* v5.5 */
+/* the message pop-up stays fully hidden until it is shown (it was peeking out under the clock) */
+.toast:not(.on){opacity:0;visibility:hidden;transition:transform .3s,opacity .2s,visibility 0s .3s}
+.toast.on{opacity:1;visibility:visible}
+/* stretch the app over the missing strip at the bottom of the screen; everything pinned to the bottom moves down with it */
+body.gapfix{transform:translateZ(0);height:calc(100% + var(--vgap))!important}
 
 </style>
 </head>
@@ -1640,7 +1646,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "5.4";
+const APP_VERSION = "5.5";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -3453,6 +3459,14 @@ ACT.habitDay = el => {
 // Hiding and showing the full-height screens for one frame makes iOS measure the screen again.
 let MAXH = window.innerHeight;
 window.addEventListener("resize", () => { MAXH = Math.max(MAXH, window.innerHeight); });
+// iPhone bug: with the see-through status bar, a home-screen app's page can stop short of the bottom of the screen
+// by the height of the status bar. Measure the missing strip and stretch the page over it.
+function fixGap() {
+  const g = isStandalone() && innerHeight < innerWidth * 3 ? Math.round(screen.height - innerHeight) : 0;
+  const gap = g > 10 && g < 80 ? g : 0;
+  document.documentElement.style.setProperty("--vgap", gap + "px"); document.body.classList.toggle("gapfix", gap > 0);
+}
+fixGap(); addEventListener("resize", () => setTimeout(fixGap, 60)); addEventListener("orientationchange", () => setTimeout(fixGap, 300));
 function healViewport(force) {
   const a = document.activeElement; if (a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA")) return;
   window.scrollTo(0, 0);
