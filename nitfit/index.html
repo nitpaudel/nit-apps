@@ -1163,6 +1163,67 @@ body.gapfix{transform:none;height:100%!important}
 .mce button{display:flex;justify-content:space-between;width:100%;padding:9px 2px;border-top:.5px solid var(--dsep);font:500 15px -apple-system,system-ui,sans-serif;color:var(--dt);text-align:left}
 .mce em{font-style:normal;color:var(--ds);font-weight:400}
 .mc0{margin:10px 2px 2px;font:400 14px -apple-system,system-ui,sans-serif;color:var(--ds)}
+/* ===== v6.0 Liquid Glass, measured from Apple Fitness and Health (iOS 26) ===== */
+:root{--gacc:#3E9BFF;
+  --gl:rgba(30,30,33,.6);--glblur:blur(5px) saturate(185%);--glrim:inset 0 0 0 .5px rgba(255,255,255,.15),inset 0 1px 0 rgba(255,255,255,.13),inset 0 -.5px 0 rgba(255,255,255,.06);--glshadow:0 8px 24px rgba(0,0,0,.35);
+  --glhi:rgba(120,120,126,.5);--glpill:rgba(8,8,10,.62);--gltext:#f5f5f7}
+html[data-theme="light"]{--gacc:#007AFF;--gl:rgba(250,250,252,.62);--glrim:inset 0 0 0 .5px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.9),inset 0 -.5px 0 rgba(255,255,255,.5);--glshadow:0 8px 24px rgba(0,0,0,.12);
+  --glhi:rgba(255,255,255,.7);--glpill:rgba(0,0,0,.07);--gltext:#1d1d1f}
+/* bar at rest */
+#tabs .tbg{background:var(--gl)!important;-webkit-backdrop-filter:var(--glblur)!important;backdrop-filter:var(--glblur)!important;box-shadow:var(--glrim),var(--glshadow)!important;transition:background .3s,box-shadow .3s}
+#tabs .tcap{transition:transform .38s cubic-bezier(.3,1.35,.5,1)}
+#tabs .tcap > button,#tabs .tyou{color:var(--gltext)!important}
+#tabs .tcap > button.on,#tabs .tyou.on{color:var(--gacc)!important}
+#tabs .tlb{font-weight:600}
+#tabs .tic svg{filter:none!important}
+#tabs .tcap .pill{background:var(--glpill)!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;transition:transform .34s cubic-bezier(.3,1.2,.5,1),width .3s,opacity .18s!important}
+#tabs .tcap.held .pill{transform:translateX(var(--x))}
+/* touch: the bar swells and lightens, the pill hides under the lens */
+#tabs.held .tcap{transform:scale(1.06,1.09)}
+#tabs.held .tcap .tbg{background:var(--glhi)!important}
+#tabs.held .tcap .pill{opacity:0}
+/* the lens */
+#tabs .lens{display:block!important;position:absolute;left:0;z-index:3;border-radius:999px;pointer-events:none;opacity:0;overflow:visible;
+  transition:opacity .18s;will-change:transform;
+  background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 40%,rgba(255,255,255,.06));
+  -webkit-backdrop-filter:blur(1.5px) saturate(160%) brightness(1.06);backdrop-filter:blur(1.5px) saturate(160%) brightness(1.06);
+  box-shadow:inset 0 0 0 .7px rgba(255,255,255,.42),inset 0 1.5px 1px rgba(255,255,255,.45),inset 0 -1.5px 2px rgba(255,255,255,.16),
+    inset 3px 0 3px -2px rgba(255,90,170,.38),inset -3px 0 3px -2px rgba(90,200,255,.42),inset 0 -3px 3px -2px rgba(140,255,120,.25),
+    0 0 0 .6px rgba(0,0,0,.35),0 10px 22px rgba(0,0,0,.3)}
+#tabs .lens.on{opacity:1}
+#tabs .lens.glide{transition:transform .36s cubic-bezier(.3,1.25,.5,1),opacity .18s}
+#tabs .lens.glide .lrow{transition:transform .36s cubic-bezier(.3,1.25,.5,1)}
+#tabs .lwarp{position:absolute;inset:0;border-radius:inherit;overflow:hidden;filter:url(#lgw);background:var(--glhi)}
+#tabs .lrow{position:absolute;left:0;top:0;color:var(--gacc);pointer-events:none}
+#tabs .lrow > span{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+#tabs .lrow .tic{position:relative;display:grid;place-items:center;width:23px;height:23px}
+#tabs .lrow .tic svg{position:absolute;width:22px;height:22px}
+#tabs .lrow .tic .o{opacity:0}
+#tabs .lrow .tic .f{opacity:1}
+#tabs .lrow .tlb{font:600 10.5px/1.15 -apple-system,"SF Pro Text",system-ui,sans-serif;white-space:nowrap}
+/* round profile button: same glass */
+#tabs .tyou .tbg{border-radius:50%}
+#tabs .tyou{transition:transform .38s cubic-bezier(.3,1.35,.5,1)}
+#tabs .tyou:active{transform:scale(1.08)}
+#tabs .tyou:active .tbg{background:var(--glhi)!important}
+/* other floating controls get the same glass (content cards stay solid, like Apple) */
+.d2 .head .ib,.pf .head .ib,.b3home,#mini,.toast{background:var(--gl)!important;-webkit-backdrop-filter:var(--glblur);backdrop-filter:var(--glblur);box-shadow:var(--glrim),var(--glshadow)!important;color:var(--gltext)}
+.d2 .head .ib:active,.pf .head .ib:active,.b3home:active{background:var(--glhi)!important;transform:scale(1.08)}
+.d2 .head .ib,.pf .head .ib,.b3home{transition:transform .3s cubic-bezier(.3,1.35,.5,1),background .2s}
+/* the muscle card floats over the body: thicker glass so the words stay easy to read */
+.mcard{background:rgba(30,30,33,.55)!important;-webkit-backdrop-filter:blur(14px) saturate(190%)!important;backdrop-filter:blur(14px) saturate(190%)!important;box-shadow:var(--glrim),0 12px 32px rgba(0,0,0,.4)!important}
+html[data-theme="light"] .mcard{background:rgba(250,250,252,.66)!important}
+.mcn div{background:rgba(255,255,255,.08)}
+html[data-theme="light"] .mcn div{background:rgba(0,0,0,.05)}
+/* bottom sheets: glass, a bit thicker */
+.sheet{background:rgba(37,37,40,.8)!important;-webkit-backdrop-filter:blur(30px) saturate(190%);backdrop-filter:blur(30px) saturate(190%);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 -10px 40px rgba(0,0,0,.4)}
+html[data-theme="light"] .sheet{background:rgba(248,248,250,.84)!important}
+#tabs .lens{overflow:hidden!important;background:var(--glhi)!important}
+#tabs .lwarp{border-radius:0;overflow:visible;background:none}
+#tabs .lrow,#tabs .lrow > span,#tabs .lrow .tlb{color:var(--gacc)!important}
+#tabs .lens{background:rgba(112,112,118,.94)!important}
+html[data-theme="light"] #tabs .lens{background:rgba(255,255,255,.94)!important}
+#tabs.held .tcap > button.on{color:var(--gltext)!important}
 
 </style>
 </head>
@@ -1171,7 +1232,7 @@ body.gapfix{transform:none;height:100%!important}
 <div id="page" class="scr"></div>
 
 <div id="mini" hidden></div>
-<nav id="tabs"><div class="tcap"><div class="tbg"></div><div class="pill"></div><button data-a="tab" data-tab="dashboard" class="on"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.9 2.6 10.9a1 1 0 0 0 1.3 1.5l.9-.77v7.82c0 1 .8 1.8 1.8 1.8h3.5v-5.2c0-.5.4-.85.85-.85h2.1c.5 0 .85.4.85.85v5.2h3.5c1 0 1.8-.8 1.8-1.8v-7.82l.9.77a1 1 0 0 0 1.3-1.5l-2.5-2.13V5.2a.7.7 0 0 0-.7-.7h-1.1a.7.7 0 0 0-.7.7v1.4z"/></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.9 2.6 10.9a1 1 0 0 0 1.3 1.5l.9-.77v7.82c0 1 .8 1.8 1.8 1.8h3.5v-5.2c0-.5.4-.85.85-.85h2.1c.5 0 .85.4.85.85v5.2h3.5c1 0 1.8-.8 1.8-1.8v-7.82l.9.77a1 1 0 0 0 1.3-1.5l-2.5-2.13V5.2a.7.7 0 0 0-.7-.7h-1.1a.7.7 0 0 0-.7.7v1.4z"/></svg></span><span class="tlb">Home</span></button><button data-a="tab" data-tab="workout"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mck"><rect width="24" height="24" fill="#fff"/><path d="M4.3 6.5l.9.9 1.5-1.7M4.3 12l.9.9 1.5-1.7M4.3 17.5l.9.9 1.5-1.7" stroke="#000" stroke-width="1.25" fill="none" stroke-linecap="round" stroke-linejoin="round"/></mask></defs><g fill="currentColor" mask="url(#mck)"><circle cx="5.5" cy="6.5" r="2.5"/><circle cx="5.5" cy="12" r="2.5"/><circle cx="5.5" cy="17.5" r="2.5"/></g><path d="M10.6 6.5h10M10.6 12h10M10.6 17.5h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mck"><rect width="24" height="24" fill="#fff"/><path d="M4.3 6.5l.9.9 1.5-1.7M4.3 12l.9.9 1.5-1.7M4.3 17.5l.9.9 1.5-1.7" stroke="#000" stroke-width="1.25" fill="none" stroke-linecap="round" stroke-linejoin="round"/></mask></defs><g fill="currentColor" mask="url(#mck)"><circle cx="5.5" cy="6.5" r="2.5"/><circle cx="5.5" cy="12" r="2.5"/><circle cx="5.5" cy="17.5" r="2.5"/></g><path d="M10.6 6.5h10M10.6 12h10M10.6 17.5h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span class="tlb">Workouts</span></button><button data-a="tab" data-tab="levels"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="12" cy="4.3" r="2.35"/><path d="M9.7 7.6h4.6c1.45 0 2.6 1.15 2.6 2.6v4.3c0 .6-.45 1.05-1.05 1.05S14.8 15.1 14.8 14.5v-3.6h-.5v9.4c0 .7-.55 1.25-1.25 1.25s-1.25-.55-1.25-1.25v-5.3h-.6v5.3c0 .7-.55 1.25-1.25 1.25S8.7 21 8.7 20.3v-9.4h-.5v3.6c0 .6-.45 1.05-1.05 1.05S6.1 15.1 6.1 14.5v-4.3c0-1.45 1.15-2.6 2.6-2.6z" transform="translate(.5 0)"/></g></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="12" cy="4.3" r="2.35"/><path d="M9.7 7.6h4.6c1.45 0 2.6 1.15 2.6 2.6v4.3c0 .6-.45 1.05-1.05 1.05S14.8 15.1 14.8 14.5v-3.6h-.5v9.4c0 .7-.55 1.25-1.25 1.25s-1.25-.55-1.25-1.25v-5.3h-.6v5.3c0 .7-.55 1.25-1.25 1.25S8.7 21 8.7 20.3v-9.4h-.5v3.6c0 .6-.45 1.05-1.05 1.05S6.1 15.1 6.1 14.5v-4.3c0-1.45 1.15-2.6 2.6-2.6z" transform="translate(.5 0)"/></g></svg></span><span class="tlb">Progress</span></button></div><button class="tyou" data-a="tab" data-tab="profile"><span class="tbg"></span><span class="tic"><svg class="av" viewBox="0 0 28 28" aria-hidden="true"><defs><clipPath id="avc"><circle cx="14" cy="14" r="14"/></clipPath></defs><circle cx="14" cy="14" r="14" class="avb"/><g clip-path="url(#avc)" fill="#fff"><circle cx="14" cy="11" r="4.6"/><ellipse cx="14" cy="25.5" rx="9" ry="7.2"/></g></svg></span><span class="tlb">You</span></button></nav>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="lgw" x="0" y="0" width="1" height="1" primitiveUnits="objectBoundingBox" color-interpolation-filters="sRGB"><feImage id="lgwImg" x="0" y="0" width="1" height="1" preserveAspectRatio="none" result="m"/><feDisplacementMap in="SourceGraphic" in2="m" scale=".05" xChannelSelector="R" yChannelSelector="G"/></filter></svg><nav id="tabs"><div class="tcap"><div class="tbg"></div><div class="pill"></div><div class="lens"><div class="lwarp"><div class="lrow"></div></div></div><button data-a="tab" data-tab="dashboard" class="on"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.9 2.6 10.9a1 1 0 0 0 1.3 1.5l.9-.77v7.82c0 1 .8 1.8 1.8 1.8h3.5v-5.2c0-.5.4-.85.85-.85h2.1c.5 0 .85.4.85.85v5.2h3.5c1 0 1.8-.8 1.8-1.8v-7.82l.9.77a1 1 0 0 0 1.3-1.5l-2.5-2.13V5.2a.7.7 0 0 0-.7-.7h-1.1a.7.7 0 0 0-.7.7v1.4z"/></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.9 2.6 10.9a1 1 0 0 0 1.3 1.5l.9-.77v7.82c0 1 .8 1.8 1.8 1.8h3.5v-5.2c0-.5.4-.85.85-.85h2.1c.5 0 .85.4.85.85v5.2h3.5c1 0 1.8-.8 1.8-1.8v-7.82l.9.77a1 1 0 0 0 1.3-1.5l-2.5-2.13V5.2a.7.7 0 0 0-.7-.7h-1.1a.7.7 0 0 0-.7.7v1.4z"/></svg></span><span class="tlb">Home</span></button><button data-a="tab" data-tab="workout"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mck"><rect width="24" height="24" fill="#fff"/><path d="M4.3 6.5l.9.9 1.5-1.7M4.3 12l.9.9 1.5-1.7M4.3 17.5l.9.9 1.5-1.7" stroke="#000" stroke-width="1.25" fill="none" stroke-linecap="round" stroke-linejoin="round"/></mask></defs><g fill="currentColor" mask="url(#mck)"><circle cx="5.5" cy="6.5" r="2.5"/><circle cx="5.5" cy="12" r="2.5"/><circle cx="5.5" cy="17.5" r="2.5"/></g><path d="M10.6 6.5h10M10.6 12h10M10.6 17.5h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mck"><rect width="24" height="24" fill="#fff"/><path d="M4.3 6.5l.9.9 1.5-1.7M4.3 12l.9.9 1.5-1.7M4.3 17.5l.9.9 1.5-1.7" stroke="#000" stroke-width="1.25" fill="none" stroke-linecap="round" stroke-linejoin="round"/></mask></defs><g fill="currentColor" mask="url(#mck)"><circle cx="5.5" cy="6.5" r="2.5"/><circle cx="5.5" cy="12" r="2.5"/><circle cx="5.5" cy="17.5" r="2.5"/></g><path d="M10.6 6.5h10M10.6 12h10M10.6 17.5h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span class="tlb">Workouts</span></button><button data-a="tab" data-tab="levels"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="12" cy="4.3" r="2.35"/><path d="M9.7 7.6h4.6c1.45 0 2.6 1.15 2.6 2.6v4.3c0 .6-.45 1.05-1.05 1.05S14.8 15.1 14.8 14.5v-3.6h-.5v9.4c0 .7-.55 1.25-1.25 1.25s-1.25-.55-1.25-1.25v-5.3h-.6v5.3c0 .7-.55 1.25-1.25 1.25S8.7 21 8.7 20.3v-9.4h-.5v3.6c0 .6-.45 1.05-1.05 1.05S6.1 15.1 6.1 14.5v-4.3c0-1.45 1.15-2.6 2.6-2.6z" transform="translate(.5 0)"/></g></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="12" cy="4.3" r="2.35"/><path d="M9.7 7.6h4.6c1.45 0 2.6 1.15 2.6 2.6v4.3c0 .6-.45 1.05-1.05 1.05S14.8 15.1 14.8 14.5v-3.6h-.5v9.4c0 .7-.55 1.25-1.25 1.25s-1.25-.55-1.25-1.25v-5.3h-.6v5.3c0 .7-.55 1.25-1.25 1.25S8.7 21 8.7 20.3v-9.4h-.5v3.6c0 .6-.45 1.05-1.05 1.05S6.1 15.1 6.1 14.5v-4.3c0-1.45 1.15-2.6 2.6-2.6z" transform="translate(.5 0)"/></g></svg></span><span class="tlb">Progress</span></button></div><button class="tyou" data-a="tab" data-tab="profile"><span class="tbg"></span><span class="tic"><svg class="av" viewBox="0 0 28 28" aria-hidden="true"><defs><clipPath id="avc"><circle cx="14" cy="14" r="14"/></clipPath></defs><circle cx="14" cy="14" r="14" class="avb"/><g clip-path="url(#avc)" fill="#fff"><circle cx="14" cy="11" r="4.6"/><ellipse cx="14" cy="25.5" rx="9" ry="7.2"/></g></svg></span><span class="tlb">You</span></button></nav>
 
 <div class="kp" id="kp"></div>
 <div class="scrim" id="scrim" data-a="closeSheet"></div>
@@ -1676,7 +1737,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "5.8";
+const APP_VERSION = "6.0";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -3548,50 +3609,90 @@ function bindCompact() {
 // ----- liquid glass tab bar (like WhatsApp) -----
 // Tap: the glass pill slides to the tab. Press and hold: the pill swells into a lens you can drag along the bar,
 // the icon under it grows a little. Let go: it shrinks back into the pill on the nearest tab and opens it.
-let TABDRAG = null, TABEATCLICK = false;
+// ----- Liquid Glass tab bar (copied from Apple Fitness and Health on iOS 26) -----
+// Rest: a see-through glass bar, the open tab sits in a dark pill and is tinted blue.
+// Touch: the bar swells and turns lighter, the pill becomes a clear lens that magnifies and bends
+// the icons under it (and tints them). Let go: the lens settles into the dark pill on the nearest tab.
+let TABDRAG = null, TABEATCLICK = false, TABX = null, LENST = 0;
 const tabBtns = () => $$("#tabs .tcap > button[data-tab]");
-function pillTo(x, w, how) {
-  const pill = $("#tabs .pill"); if (!pill) return;
-  if (how === "jump") { pill.style.transition = "none"; }
-  pill.style.setProperty("--x", x.toFixed(1) + "px"); pill.style.width = w + "px";
-  if (how === "jump") { pill.offsetWidth; pill.style.transition = ""; }
+function pillTo(b, jump) {
+  const pill = $("#tabs .pill"); if (!pill || !b) return;
+  if (jump) pill.style.transition = "none";
+  pill.style.setProperty("--x", b.offsetLeft + "px"); pill.style.width = b.offsetWidth + "px";
+  if (jump) { pill.offsetWidth; pill.style.transition = ""; }
 }
+function lensBuild() {
+  const row = $("#tabs .lrow"); if (!row) return;
+  row.innerHTML = tabBtns().map(b => '<span style="left:' + b.offsetLeft + "px;width:" + b.offsetWidth + "px;top:" + b.offsetTop + "px;height:" + b.offsetHeight + 'px">' + b.innerHTML + "</span>").join("");
+}
+function lensAt(cx) {
+  const cap = $("#tabs .tcap"), L = $("#tabs .lens"), row = $("#tabs .lrow"), b0 = tabBtns()[0]; if (!L || !b0) return;
+  const W = cap.offsetWidth, H = cap.offsetHeight, LW = Math.round(b0.offsetWidth * 1.16), LH = Math.round(H * 1.22);
+  cx = Math.max(LW / 2 - 6, Math.min(W - LW / 2 + 6, cx));
+  const left = cx - LW / 2, top = (H - LH) / 2;
+  L.style.width = LW + "px"; L.style.height = LH + "px"; L.style.top = top + "px"; L.style.transform = "translateX(" + left.toFixed(1) + "px)";
+  row.style.width = W + "px"; row.style.height = H + "px";
+  row.style.transformOrigin = cx.toFixed(1) + "px " + (H / 2) + "px";
+  row.style.transform = "translate(" + (-left).toFixed(1) + "px," + (-top).toFixed(1) + "px) scale(1.12)";
+}
+function glassOn(on) { $("#tabs").classList.toggle("held", on); }
+// open tab changed: the lens lifts off the old tab, glides over and drops into the pill
 function tabsPill(noAnim) {
-  const on = $("#tabs .tcap > button.on"), pill = $("#tabs .pill"); if (!pill) return; pill.style.opacity = on ? "" : 0; if (!on) return;
-  const was = parseFloat(pill.style.getPropertyValue("--x")), x = on.offsetLeft;
-  if (noAnim || isNaN(was)) return pillTo(x, on.offsetWidth, "jump");
-  if (Math.abs(was - x) > 2) { pill.classList.remove("move"); pill.offsetWidth; pill.classList.add("move"); clearTimeout(tabsPill.t); tabsPill.t = setTimeout(() => pill.classList.remove("move"), 420); }
-  pillTo(x, on.offsetWidth);
+  const on = $("#tabs .tcap > button.on"), pill = $("#tabs .pill"); if (!pill) return;
+  pill.style.opacity = on ? "" : 0; if (!on) { TABX = null; return; }
+  const c = on.offsetLeft + on.offsetWidth / 2, prev = TABX; TABX = c;
+  if (noAnim || prev == null || Math.abs(prev - c) < 2 || TABDRAG) return pillTo(on, true);
+  const L = $("#tabs .lens"); clearTimeout(LENST); lensBuild();
+  L.classList.remove("glide"); lensAt(prev); glassOn(true); L.classList.add("on");
+  requestAnimationFrame(() => requestAnimationFrame(() => { L.classList.add("glide"); lensAt(c); }));
+  LENST = setTimeout(() => { pillTo(on, true); glassOn(false); L.classList.remove("on", "glide"); }, 420);
 }
 function tabsGlass() {
-  const nav = $("#tabs .tcap"); if (!nav || nav._glass) return; nav._glass = 1;
-  tabsPill(true);
-  const scale = () => nav.getBoundingClientRect().width / nav.offsetWidth;
-  const local = e => (e.clientX - nav.getBoundingClientRect().left) / scale();
+  const cap = $("#tabs .tcap"); if (!cap || cap._glass) return; cap._glass = 1;
+  lensWarp(); tabsPill(true);
+  const scale = () => cap.getBoundingClientRect().width / cap.offsetWidth;
+  const local = e => (e.clientX - cap.getBoundingClientRect().left) / scale();
   const nearest = x => { let best = null, d = 1e9; tabBtns().forEach(b => { const k = Math.abs(b.offsetLeft + b.offsetWidth / 2 - x); if (k < d) { d = k; best = b; } }); return best; };
-  const hover = b => $$("#tabs .tcap > button").forEach(x => x.classList.toggle("hov", x === b));
-  const follow = x => { $("#tabs .pill").style.opacity = ""; const on = $("#tabs .tcap > button.on") || tabBtns()[0], w = on.offsetWidth; pillTo(Math.max(0, Math.min(nav.offsetWidth - w, x - w / 2)), w); };
-  const hold = () => { const D = TABDRAG; if (!D || D.held) return; D.held = true; nav.classList.add("held"); try { nav.setPointerCapture(D.id); } catch (_) {} follow(D.x); const h = nearest(D.x); hover(h); D.hover = h; haptic(); };
-  nav.addEventListener("pointerdown", e => {
-    TABDRAG = { id: e.pointerId, x0: e.clientX, x: local(e), held: false, hover: null };
-    TABDRAG.t = setTimeout(hold, 180);
-  });
-  nav.addEventListener("pointermove", e => {
+  const hold = () => {
+    const D = TABDRAG; if (!D || D.held) return; D.held = true; clearTimeout(LENST);
+    try { cap.setPointerCapture(D.id); } catch (_) {}
+    lensBuild(); const L = $("#tabs .lens"); L.classList.remove("glide"); lensAt(D.x); glassOn(true); L.classList.add("on");
+    D.hover = nearest(D.x); haptic();
+  };
+  cap.addEventListener("pointerdown", e => { TABDRAG = { id: e.pointerId, x0: e.clientX, x: local(e), held: false, hover: null }; TABDRAG.t = setTimeout(hold, 170); });
+  cap.addEventListener("pointermove", e => {
     const D = TABDRAG; if (!D || D.id !== e.pointerId) return; D.x = local(e);
     if (!D.held && Math.abs(e.clientX - D.x0) > 6) { clearTimeout(D.t); hold(); }
     if (!D.held) return;
-    follow(D.x); const h = nearest(D.x); if (h !== D.hover) { haptic(); D.hover = h; hover(h); }
+    lensAt(D.x); const h = nearest(D.x); if (h !== D.hover) { haptic(); D.hover = h; }
     e.preventDefault();
   });
-  const end = e => {
+  const end = () => {
     const D = TABDRAG; TABDRAG = null; if (!D) return; clearTimeout(D.t); if (!D.held) return;
     TABEATCLICK = true; setTimeout(() => TABEATCLICK = false, 350);
-    const b = nearest(D.x); nav.classList.remove("held"); hover(null);
-    if (b.dataset.tab !== TAB) ACT.tab(b); else tabsPill();
+    const b = nearest(D.x), L = $("#tabs .lens"), c = b.offsetLeft + b.offsetWidth / 2;
+    L.classList.add("glide"); lensAt(c);
+    LENST = setTimeout(() => {
+      if (b.dataset.tab !== TAB) { TABX = c; ACT.tab(b); }
+      pillTo(b, true); glassOn(false); L.classList.remove("on", "glide");
+    }, 300);
   };
-  nav.addEventListener("pointerup", end); nav.addEventListener("pointercancel", end);
-  nav.addEventListener("click", e => { if (TABEATCLICK) { e.stopPropagation(); e.preventDefault(); TABEATCLICK = false; } }, true);
-  window.addEventListener("resize", () => tabsPill(true));
+  cap.addEventListener("pointerup", end); cap.addEventListener("pointercancel", end);
+  cap.addEventListener("click", e => { if (TABEATCLICK) { e.stopPropagation(); e.preventDefault(); TABEATCLICK = false; } }, true);
+  window.addEventListener("resize", () => { lensBuild(); tabsPill(true); });
+}
+// the bend at the lens edge: a small map that pushes what's near the rim toward the middle,
+// so icons and words curve and stretch as the lens slides over them
+function lensWarp() {
+  const W = 160, H = 100, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const x = c.getContext("2d"), img = x.createImageData(W, H), d = img.data, r = H / 2;
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+    const px = i + .5, py = j + .5, cx = Math.max(r, Math.min(W - r, px)), dx = px - cx, dy = py - r, dist = Math.hypot(dx, dy) || 1;
+    const edge = Math.min(1, Math.max(0, 1 - (r - dist) / (r * 0.34))), k = edge * edge * (3 - 2 * edge), o = (j * W + i) * 4;
+    d[o] = 128 - (dx / dist) * k * 127; d[o + 1] = 128 - (dy / dist) * k * 127; d[o + 2] = 128; d[o + 3] = 255;
+  }
+  x.putImageData(img, 0, 0);
+  const fe = document.getElementById("lgwImg"); if (fe) { fe.setAttribute("href", c.toDataURL()); fe.setAttributeNS("http://www.w3.org/1999/xlink", "href", c.toDataURL()); }
 }
 ACT.expandTabs = () => setFold(false);
 // ----- boot -----

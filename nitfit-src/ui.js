@@ -1658,50 +1658,90 @@ function bindCompact() {
 // ----- liquid glass tab bar (like WhatsApp) -----
 // Tap: the glass pill slides to the tab. Press and hold: the pill swells into a lens you can drag along the bar,
 // the icon under it grows a little. Let go: it shrinks back into the pill on the nearest tab and opens it.
-let TABDRAG = null, TABEATCLICK = false;
+// ----- Liquid Glass tab bar (copied from Apple Fitness and Health on iOS 26) -----
+// Rest: a see-through glass bar, the open tab sits in a dark pill and is tinted blue.
+// Touch: the bar swells and turns lighter, the pill becomes a clear lens that magnifies and bends
+// the icons under it (and tints them). Let go: the lens settles into the dark pill on the nearest tab.
+let TABDRAG = null, TABEATCLICK = false, TABX = null, LENST = 0;
 const tabBtns = () => $$("#tabs .tcap > button[data-tab]");
-function pillTo(x, w, how) {
-  const pill = $("#tabs .pill"); if (!pill) return;
-  if (how === "jump") { pill.style.transition = "none"; }
-  pill.style.setProperty("--x", x.toFixed(1) + "px"); pill.style.width = w + "px";
-  if (how === "jump") { pill.offsetWidth; pill.style.transition = ""; }
+function pillTo(b, jump) {
+  const pill = $("#tabs .pill"); if (!pill || !b) return;
+  if (jump) pill.style.transition = "none";
+  pill.style.setProperty("--x", b.offsetLeft + "px"); pill.style.width = b.offsetWidth + "px";
+  if (jump) { pill.offsetWidth; pill.style.transition = ""; }
 }
+function lensBuild() {
+  const row = $("#tabs .lrow"); if (!row) return;
+  row.innerHTML = tabBtns().map(b => '<span style="left:' + b.offsetLeft + "px;width:" + b.offsetWidth + "px;top:" + b.offsetTop + "px;height:" + b.offsetHeight + 'px">' + b.innerHTML + "</span>").join("");
+}
+function lensAt(cx) {
+  const cap = $("#tabs .tcap"), L = $("#tabs .lens"), row = $("#tabs .lrow"), b0 = tabBtns()[0]; if (!L || !b0) return;
+  const W = cap.offsetWidth, H = cap.offsetHeight, LW = Math.round(b0.offsetWidth * 1.16), LH = Math.round(H * 1.22);
+  cx = Math.max(LW / 2 - 6, Math.min(W - LW / 2 + 6, cx));
+  const left = cx - LW / 2, top = (H - LH) / 2;
+  L.style.width = LW + "px"; L.style.height = LH + "px"; L.style.top = top + "px"; L.style.transform = "translateX(" + left.toFixed(1) + "px)";
+  row.style.width = W + "px"; row.style.height = H + "px";
+  row.style.transformOrigin = cx.toFixed(1) + "px " + (H / 2) + "px";
+  row.style.transform = "translate(" + (-left).toFixed(1) + "px," + (-top).toFixed(1) + "px) scale(1.12)";
+}
+function glassOn(on) { $("#tabs").classList.toggle("held", on); }
+// open tab changed: the lens lifts off the old tab, glides over and drops into the pill
 function tabsPill(noAnim) {
-  const on = $("#tabs .tcap > button.on"), pill = $("#tabs .pill"); if (!pill) return; pill.style.opacity = on ? "" : 0; if (!on) return;
-  const was = parseFloat(pill.style.getPropertyValue("--x")), x = on.offsetLeft;
-  if (noAnim || isNaN(was)) return pillTo(x, on.offsetWidth, "jump");
-  if (Math.abs(was - x) > 2) { pill.classList.remove("move"); pill.offsetWidth; pill.classList.add("move"); clearTimeout(tabsPill.t); tabsPill.t = setTimeout(() => pill.classList.remove("move"), 420); }
-  pillTo(x, on.offsetWidth);
+  const on = $("#tabs .tcap > button.on"), pill = $("#tabs .pill"); if (!pill) return;
+  pill.style.opacity = on ? "" : 0; if (!on) { TABX = null; return; }
+  const c = on.offsetLeft + on.offsetWidth / 2, prev = TABX; TABX = c;
+  if (noAnim || prev == null || Math.abs(prev - c) < 2 || TABDRAG) return pillTo(on, true);
+  const L = $("#tabs .lens"); clearTimeout(LENST); lensBuild();
+  L.classList.remove("glide"); lensAt(prev); glassOn(true); L.classList.add("on");
+  requestAnimationFrame(() => requestAnimationFrame(() => { L.classList.add("glide"); lensAt(c); }));
+  LENST = setTimeout(() => { pillTo(on, true); glassOn(false); L.classList.remove("on", "glide"); }, 420);
 }
 function tabsGlass() {
-  const nav = $("#tabs .tcap"); if (!nav || nav._glass) return; nav._glass = 1;
-  tabsPill(true);
-  const scale = () => nav.getBoundingClientRect().width / nav.offsetWidth;
-  const local = e => (e.clientX - nav.getBoundingClientRect().left) / scale();
+  const cap = $("#tabs .tcap"); if (!cap || cap._glass) return; cap._glass = 1;
+  lensWarp(); tabsPill(true);
+  const scale = () => cap.getBoundingClientRect().width / cap.offsetWidth;
+  const local = e => (e.clientX - cap.getBoundingClientRect().left) / scale();
   const nearest = x => { let best = null, d = 1e9; tabBtns().forEach(b => { const k = Math.abs(b.offsetLeft + b.offsetWidth / 2 - x); if (k < d) { d = k; best = b; } }); return best; };
-  const hover = b => $$("#tabs .tcap > button").forEach(x => x.classList.toggle("hov", x === b));
-  const follow = x => { $("#tabs .pill").style.opacity = ""; const on = $("#tabs .tcap > button.on") || tabBtns()[0], w = on.offsetWidth; pillTo(Math.max(0, Math.min(nav.offsetWidth - w, x - w / 2)), w); };
-  const hold = () => { const D = TABDRAG; if (!D || D.held) return; D.held = true; nav.classList.add("held"); try { nav.setPointerCapture(D.id); } catch (_) {} follow(D.x); const h = nearest(D.x); hover(h); D.hover = h; haptic(); };
-  nav.addEventListener("pointerdown", e => {
-    TABDRAG = { id: e.pointerId, x0: e.clientX, x: local(e), held: false, hover: null };
-    TABDRAG.t = setTimeout(hold, 180);
-  });
-  nav.addEventListener("pointermove", e => {
+  const hold = () => {
+    const D = TABDRAG; if (!D || D.held) return; D.held = true; clearTimeout(LENST);
+    try { cap.setPointerCapture(D.id); } catch (_) {}
+    lensBuild(); const L = $("#tabs .lens"); L.classList.remove("glide"); lensAt(D.x); glassOn(true); L.classList.add("on");
+    D.hover = nearest(D.x); haptic();
+  };
+  cap.addEventListener("pointerdown", e => { TABDRAG = { id: e.pointerId, x0: e.clientX, x: local(e), held: false, hover: null }; TABDRAG.t = setTimeout(hold, 170); });
+  cap.addEventListener("pointermove", e => {
     const D = TABDRAG; if (!D || D.id !== e.pointerId) return; D.x = local(e);
     if (!D.held && Math.abs(e.clientX - D.x0) > 6) { clearTimeout(D.t); hold(); }
     if (!D.held) return;
-    follow(D.x); const h = nearest(D.x); if (h !== D.hover) { haptic(); D.hover = h; hover(h); }
+    lensAt(D.x); const h = nearest(D.x); if (h !== D.hover) { haptic(); D.hover = h; }
     e.preventDefault();
   });
-  const end = e => {
+  const end = () => {
     const D = TABDRAG; TABDRAG = null; if (!D) return; clearTimeout(D.t); if (!D.held) return;
     TABEATCLICK = true; setTimeout(() => TABEATCLICK = false, 350);
-    const b = nearest(D.x); nav.classList.remove("held"); hover(null);
-    if (b.dataset.tab !== TAB) ACT.tab(b); else tabsPill();
+    const b = nearest(D.x), L = $("#tabs .lens"), c = b.offsetLeft + b.offsetWidth / 2;
+    L.classList.add("glide"); lensAt(c);
+    LENST = setTimeout(() => {
+      if (b.dataset.tab !== TAB) { TABX = c; ACT.tab(b); }
+      pillTo(b, true); glassOn(false); L.classList.remove("on", "glide");
+    }, 300);
   };
-  nav.addEventListener("pointerup", end); nav.addEventListener("pointercancel", end);
-  nav.addEventListener("click", e => { if (TABEATCLICK) { e.stopPropagation(); e.preventDefault(); TABEATCLICK = false; } }, true);
-  window.addEventListener("resize", () => tabsPill(true));
+  cap.addEventListener("pointerup", end); cap.addEventListener("pointercancel", end);
+  cap.addEventListener("click", e => { if (TABEATCLICK) { e.stopPropagation(); e.preventDefault(); TABEATCLICK = false; } }, true);
+  window.addEventListener("resize", () => { lensBuild(); tabsPill(true); });
+}
+// the bend at the lens edge: a small map that pushes what's near the rim toward the middle,
+// so icons and words curve and stretch as the lens slides over them
+function lensWarp() {
+  const W = 160, H = 100, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const x = c.getContext("2d"), img = x.createImageData(W, H), d = img.data, r = H / 2;
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+    const px = i + .5, py = j + .5, cx = Math.max(r, Math.min(W - r, px)), dx = px - cx, dy = py - r, dist = Math.hypot(dx, dy) || 1;
+    const edge = Math.min(1, Math.max(0, 1 - (r - dist) / (r * 0.34))), k = edge * edge * (3 - 2 * edge), o = (j * W + i) * 4;
+    d[o] = 128 - (dx / dist) * k * 127; d[o + 1] = 128 - (dy / dist) * k * 127; d[o + 2] = 128; d[o + 3] = 255;
+  }
+  x.putImageData(img, 0, 0);
+  const fe = document.getElementById("lgwImg"); if (fe) { fe.setAttribute("href", c.toDataURL()); fe.setAttributeNS("http://www.w3.org/1999/xlink", "href", c.toDataURL()); }
 }
 ACT.expandTabs = () => setFold(false);
 // ----- boot -----
