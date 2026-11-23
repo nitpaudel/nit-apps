@@ -1153,7 +1153,13 @@ function vProfile() {
 ACT.settings = () => openPage({ kind: "settings" });
 // profile photo: picked from the phone, cut to a square, made small, saved with the rest of your data
 ACT.pickAvatar = () => { let f = $("#avIn"); if (!f) { f = document.createElement("input"); f.type = "file"; f.accept = "image/*"; f.id = "avIn"; f.hidden = true; document.body.appendChild(f); f.addEventListener("change", () => { const file = f.files[0]; f.value = ""; if (!file) return; const im = new Image(), u = URL.createObjectURL(file); im.onload = () => { const c = document.createElement("canvas"), N = 240, k = Math.min(im.width, im.height); c.width = c.height = N; c.getContext("2d").drawImage(im, (im.width - k) / 2, (im.height - k) / 2, k, k, 0, 0, N, N); URL.revokeObjectURL(u); addEvent("settings.upserted", { avatar: c.toDataURL("image/jpeg", 0.82) }); paintAvatar(); render(); haptic(); }; im.src = u; }); } f.click(); };
-function paintAvatar() { const b = $("#tabs .tyou"); if (!b) return; b.innerHTML = '<span class="tbg"></span>' + (S.settings.avatar ? '<img class="tav" src="' + S.settings.avatar + '" alt="">' : '<span class="tav tini">N</span>'); }
+function paintAvatar() {
+  const b = $("#tabs .tyou"); if (!b) return;
+  const st = 'fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"';
+  b.innerHTML = '<span class="tbg"></span><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><g ' + st + '><circle cx="12" cy="12" r="9.2"/><circle cx="12" cy="9.8" r="3.2"/><path d="M6.2 18.4c1.3-2.2 3.4-3.4 5.8-3.4s4.5 1.2 5.8 3.4"/></g></svg>'
+    + '<svg class="f" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mtu"><rect width="24" height="24" fill="#fff"/><circle cx="12" cy="9.8" r="3.2" fill="#000"/><path d="M6.2 18.4c1.3-2.2 3.4-3.4 5.8-3.4s4.5 1.2 5.8 3.4v3H6.2z" fill="#000"/></mask></defs><circle cx="12" cy="12" r="10" fill="currentColor" mask="url(#mtu)"/></svg></span>';
+  b.setAttribute("aria-label", "Profile");
+}
 function vSettings() {
   const st = syncStatus(), t = S.settings.theme || "dark";
   let h = nav("Settings") + "<div class='body-pad'>";

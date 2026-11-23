@@ -1060,3 +1060,8 @@ body.tsmall #tabs{transform:translateY(3px) scale(.92)}
 .pfa img{width:100%;height:100%;border-radius:50%;object-fit:cover}
 .pfa i{position:absolute;right:-2px;bottom:-2px;width:24px;height:24px;border-radius:50%;background:var(--dt);color:var(--dbg);display:grid;place-items:center;box-shadow:0 0 0 2px var(--dbg)}
 .pfa i svg{width:12px;height:12px}
+/* v5.2 profile circle: plain line icon like the other tabs, no photo, no label */
+#tabs .tyou{color:var(--dinact);box-shadow:none!important}
+#tabs .tyou.on{color:var(--dt)}
+#tabs .tyou .tic{position:relative;z-index:1;width:23px;height:23px}
+#tabs .tyou .tic svg{width:23px;height:23px}
