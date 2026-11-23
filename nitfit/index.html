@@ -1832,7 +1832,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "8.2";
+const APP_VERSION = "8.3";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -3671,10 +3671,19 @@ function fixGap() {
   if (!pr) { pr = document.createElement("div"); pr.id = "vprobe"; pr.style.cssText = "position:absolute;left:-9px;top:0;width:1px;height:100vh;height:100lvh;visibility:hidden;pointer-events:none"; document.documentElement.appendChild(pr); }
   const vis = Math.min(innerHeight, document.documentElement.clientHeight || innerHeight);
   const full = Math.max(screen.height, pr.getBoundingClientRect().height);
-  const g = Math.round(full - vis), gap = g > 10 && g < 80 ? g : 0;
+  const g = Math.round(full - vis); let gap = g > 10 && g < 80 ? g : 0;
+  const a = document.activeElement, typing = a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA");
+  if (!gap && (typing || g >= 80) && fixGap.last) gap = fixGap.last; if (gap) fixGap.last = gap;
   document.documentElement.style.setProperty("--vgap", gap + "px"); document.documentElement.classList.toggle("gapfix", gap > 0);
 }
+// iPhone sometimes reports the screen size late (right after opening, or when coming back to the app)
+// without any resize event, so check again a few times and on every return. This stops the page
+// from ending in a straight cut above the bottom of the screen.
 fixGap(); addEventListener("resize", () => setTimeout(fixGap, 60)); addEventListener("orientationchange", () => setTimeout(fixGap, 300));
+[50, 250, 700, 1500, 3000].forEach(t => setTimeout(fixGap, t));
+addEventListener("pageshow", () => { fixGap(); setTimeout(fixGap, 300); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { fixGap(); setTimeout(fixGap, 300); setTimeout(fixGap, 1000); } });
+if (window.visualViewport) visualViewport.addEventListener("resize", () => setTimeout(fixGap, 60));
 function healViewport(force) {
   const a = document.activeElement; if (a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA")) return;
   window.scrollTo(0, 0);
