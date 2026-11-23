@@ -1283,6 +1283,39 @@ html[data-theme="light"] #tabs .lens{background:var(--glhi)!important;
 #tabs.held .tcap .tbg{background:var(--gl)!important}
 /* older lens (only used if the graphics chip path is missing): no pink or green */
 #tabs .lens{box-shadow:inset 0 0 0 .75px rgba(255,255,255,.3),inset 0 10px 3px -4px rgba(0,0,0,.92),inset 0 -10px 3px -4px rgba(0,0,0,.92),0 8px 22px rgba(0,0,0,.28)!important}
+/* v8.1: real glass on every floating button and the muscle card.
+   Clear (almost no blur), a light rim that catches light at the top left, and it swells when touched. */
+:root{--gx:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 55%,rgba(255,255,255,.06)),rgba(38,38,42,.40);
+  --gxhi:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.07) 55%,rgba(255,255,255,.12)),rgba(70,70,76,.45);
+  --gxrim:inset 0 0 0 .6px rgba(255,255,255,.16),inset 1.2px 1.6px 1px -1px rgba(255,255,255,.5),inset -1.2px -1.6px 1px -1px rgba(255,255,255,.2),inset 0 -10px 14px -12px rgba(255,255,255,.14);
+  --gxrimhi:inset 0 0 0 .7px rgba(255,255,255,.3),inset 1.4px 1.8px 1px -1px rgba(255,255,255,.7),inset -1.4px -1.8px 1px -1px rgba(255,255,255,.3),inset 0 -12px 16px -12px rgba(255,255,255,.22);
+  --gxsh:0 6px 18px rgba(0,0,0,.30)}
+html[data-theme="light"]{--gx:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.25) 55%,rgba(255,255,255,.4)),rgba(255,255,255,.30);
+  --gxhi:linear-gradient(180deg,rgba(255,255,255,.8),rgba(255,255,255,.5)),rgba(255,255,255,.5);
+  --gxrim:inset 0 0 0 .6px rgba(0,0,0,.08),inset 1.2px 1.6px 1px -1px rgba(255,255,255,.95),inset -1.2px -1.6px 1px -1px rgba(255,255,255,.6);
+  --gxrimhi:inset 0 0 0 .7px rgba(0,0,0,.1),inset 1.4px 1.8px 1px -1px #fff,inset -1.4px -1.8px 1px -1px rgba(255,255,255,.8);
+  --gxsh:0 6px 18px rgba(0,0,0,.12)}
+.head .ib:not(.inv):not(.plain),.navr .ib,.b3home,#tabs .tyou .tbg{background:var(--gx)!important;box-shadow:var(--gxrim),var(--gxsh)!important;
+  -webkit-backdrop-filter:var(--glblur)!important;backdrop-filter:var(--glblur)!important;color:var(--gltext)}
+.head .ib,.navr .ib,.b3home,#tabs .tyou{transition:transform .5s cubic-bezier(.25,1.7,.4,1),background .25s,box-shadow .25s!important;will-change:transform}
+.head .ib:active,.navr .ib:active,.b3home:active,#tabs .tyou:active{transform:none}
+/* touched: grows and lights up like the tab bubble, then springs back */
+.head .ib.pr,.navr .ib.pr,.b3home.pr,#tabs .tyou.pr{transform:scale(1.16)!important;transition:transform .2s cubic-bezier(.2,.9,.3,1.2),background .12s,box-shadow .12s!important}
+.head .ib.pr:not(.inv),.navr .ib.pr,.b3home.pr,#tabs .tyou.pr .tbg{background:var(--gxhi)!important;box-shadow:var(--gxrimhi),0 10px 24px rgba(0,0,0,.34)!important}
+#tabs .tyou .tic{transition:transform .5s cubic-bezier(.25,1.7,.4,1)}
+#tabs .tyou.pr .tic{transform:scale(1.08)}
+/* profile open: the same dark pill the bar uses sits inside the circle */
+#tabs .tyou .tbg::after{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--glpill);opacity:0;transition:opacity .2s}
+#tabs .tyou.on .tbg::after{opacity:1}
+#tabs .tyou .tbg{overflow:hidden}
+#tabs .tyou .tic{position:relative;z-index:1}
+/* the muscle card is glass too: clear, light rim, a little tint so the words stay readable */
+.mcard{background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 40%,rgba(255,255,255,.05)),rgba(26,26,30,.52)!important;
+  -webkit-backdrop-filter:blur(1.5px) saturate(160%) brightness(.9)!important;backdrop-filter:blur(1.5px) saturate(160%) brightness(.9)!important;
+  box-shadow:var(--gxrim),0 12px 32px rgba(0,0,0,.35)!important}
+html[data-theme="light"] .mcard{background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,.35)),rgba(255,255,255,.4)!important}
+.mcard .mcn div{background:rgba(255,255,255,.07)!important;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.08)}
+.mcard b,.mcard h3,.mcard .mct{text-shadow:0 1px 8px rgba(0,0,0,.35)}
 
 </style>
 </head>
@@ -1796,7 +1829,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "8.0";
+const APP_VERSION = "8.1";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -3781,6 +3814,14 @@ function lensWarp() {
   x.putImageData(img, 0, 0);
   const fe = document.getElementById("lgwImg"); if (fe) { fe.setAttribute("href", c.toDataURL()); fe.setAttributeNS("http://www.w3.org/1999/xlink", "href", c.toDataURL()); }
 }
+// glass buttons swell the moment a finger lands, and spring back when it lifts
+(function glassPress() {
+  const SEL = ".head .ib,.navr .ib,.b3home,#tabs .tyou"; let cur = null;
+  const off = () => { if (cur) { const c = cur; cur = null; setTimeout(() => c.classList.remove("pr"), 90); } };
+  document.addEventListener("pointerdown", e => { const b = e.target.closest && e.target.closest(SEL); if (!b || b.disabled) return; off(); cur = b; b.classList.add("pr"); }, true);
+  ["pointerup", "pointercancel"].forEach(t => document.addEventListener(t, off, true));
+  document.addEventListener("pointermove", e => { if (cur && e.buttons && !cur.contains(document.elementFromPoint(e.clientX, e.clientY))) off(); }, true);
+})();
 // ----- Liquid Glass v8 -----
 // The glass is drawn by the graphics chip on its own worker thread, so it keeps moving even while a page
 // is being drawn. It starts the moment a finger touches the bar. While it runs, one canvas draws the whole

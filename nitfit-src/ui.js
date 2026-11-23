@@ -1771,6 +1771,14 @@ function lensWarp() {
   x.putImageData(img, 0, 0);
   const fe = document.getElementById("lgwImg"); if (fe) { fe.setAttribute("href", c.toDataURL()); fe.setAttributeNS("http://www.w3.org/1999/xlink", "href", c.toDataURL()); }
 }
+// glass buttons swell the moment a finger lands, and spring back when it lifts
+(function glassPress() {
+  const SEL = ".head .ib,.navr .ib,.b3home,#tabs .tyou"; let cur = null;
+  const off = () => { if (cur) { const c = cur; cur = null; setTimeout(() => c.classList.remove("pr"), 90); } };
+  document.addEventListener("pointerdown", e => { const b = e.target.closest && e.target.closest(SEL); if (!b || b.disabled) return; off(); cur = b; b.classList.add("pr"); }, true);
+  ["pointerup", "pointercancel"].forEach(t => document.addEventListener(t, off, true));
+  document.addEventListener("pointermove", e => { if (cur && e.buttons && !cur.contains(document.elementFromPoint(e.clientX, e.clientY))) off(); }, true);
+})();
 // ----- Liquid Glass v8 -----
 // The glass is drawn by the graphics chip on its own worker thread, so it keeps moving even while a page
 // is being drawn. It starts the moment a finger touches the bar. While it runs, one canvas draws the whole
