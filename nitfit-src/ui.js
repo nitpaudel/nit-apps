@@ -271,7 +271,7 @@ const card2 = (act, extra, title, sub, viz, val, unit) => '<button class="ic pre
 // ===== Dashboard (Apple style) =====
 const D2N = { insights: "Insights & analytics", habits: "Habits", body: "Body metrics", muscles: "Muscle groups", exercises: "Exercises" };
 const D2T = id => ({ workouts: "Workouts", wtrend: "Weight trend", weighin: "Weigh-in", wohabit: "Workouts", scale: "Scale weight", waist: "Waist", bf: "Body fat" })[id] || TILE_NAME(id);
-const D2A = "var(--dacc)", D2OFF = "#3A3A3C";
+const D2A = "#0A84FF", D2OFF = "#3A3A3C";
 const d2num = (v, unit) => '<div class="d2n">' + v + (unit ? "<small>" + unit + "</small>" : "") + "</div>";
 const d2sign = v => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(1);
 // a ring of separate little dashes, one per target item, lit when done
@@ -339,7 +339,7 @@ function d2chart(vals, W, H, o) {
 }
 function d2bars(vals, W, H) {
   const n = Math.max(vals.length, 1), mx = Math.max(1, ...vals), bw = 7, gap = (W - n * bw) / Math.max(n - 1, 1);
-  return '<svg class="d2v" width="' + W + '" height="' + H + '">' + (vals.length ? vals.map((v, i) => { const h = Math.max(6, v / mx * H); return '<rect x="' + (i * (bw + Math.min(gap, 9))).toFixed(1) + '" y="' + (H - h).toFixed(1) + '" width="' + bw + '" height="' + h.toFixed(1) + '" rx="3.5" fill="' + (i === vals.length - 1 ? D2A : "rgba(255,255,255,.88)") + '"/>'; }).join("")
+  return '<svg class="d2v" width="' + W + '" height="' + H + '">' + (vals.length ? vals.map((v, i) => { const h = Math.max(6, v / mx * H); return '<rect x="' + (i * (bw + Math.min(gap, 9))).toFixed(1) + '" y="' + (H - h).toFixed(1) + '" width="' + bw + '" height="' + h.toFixed(1) + '" rx="3.5" fill="' + (i === vals.length - 1 ? "#fff" : "rgba(255,255,255,.3)") + '"/>'; }).join("")
     : Array.from({ length: 7 }, (_, i) => '<rect x="' + i * 14 + '" y="' + (H - 6) + '" width="7" height="6" rx="3" fill="' + D2OFF + '"/>').join("")) + "</svg>";
 }
 // change over the last 7 days: newest entry minus the newest entry on or before 7 days ago
@@ -363,7 +363,7 @@ function d2tile(id) {
     const days = Array.from({ length: 30 }, (_, i) => addDays(d, i - 29)), ws = days.map(x => S.weights[x] ? S.weights[x].kg : null), have = ws.filter(v => v != null);
     const lo = Math.min(...have), hi = Math.max(...have), sp = hi - lo || 1, W = 142, H = 46, dx = (W - 6) / 29;
     let svg = '<svg class="d2v" width="' + W + '" height="' + H + '">';
-    ws.forEach((v, i) => { const x = 3 + i * dx; svg += v == null ? '<circle cx="' + x.toFixed(1) + '" cy="' + (H - 3) + '" r="1.9" fill="none" stroke="#48484A" stroke-width="1.1"/>' : '<circle cx="' + x.toFixed(1) + '" cy="' + (3 + (hi === lo ? 0.5 : 1 - (v - lo) / sp) * (H - 14)).toFixed(1) + '" r="2.4" fill="' + D2A + '"/>'; });
+    ws.forEach((v, i) => { const x = 3 + i * dx; svg += v == null ? '<circle cx="' + x.toFixed(1) + '" cy="' + (H - 3) + '" r="1.9" fill="none" stroke="#48484A" stroke-width="1.1"/>' : '<circle cx="' + x.toFixed(1) + '" cy="' + (3 + (hi === lo ? 0.5 : 1 - (v - lo) / sp) * (H - 14)).toFixed(1) + '" r="2.4" fill="#fff"/>'; });
     const n = Object.keys(S.weights).filter(x => x >= wk0 && x <= d).length;
     return d2card("openPage", ' data-k="weighin"', "Weigh-in", "Last 30 days", svg + "</svg>", "<em>" + n + "</em> of 7 this week");
   }
@@ -1623,61 +1623,54 @@ function bindCompact() {
     if (ACC > 36 && y > 100) setFold(true); else if (ACC < -28) setFold(false);
   }, { passive: true });
 }
-// ----- liquid glass tab bar -----
-// The pill slides under the tab you are on. Drag a finger along the bar and a glass lens follows it,
-// magnifying the icons under it. Let go and it snaps onto the nearest tab and opens it.
-let TABPREV = null, TABDRAG = null, TABEATCLICK = false;
+// ----- liquid glass tab bar (like WhatsApp) -----
+// Tap: the glass pill slides to the tab. Press and hold: the pill swells into a lens you can drag along the bar,
+// the icon under it grows a little. Let go: it shrinks back into the pill on the nearest tab and opens it.
+let TABDRAG = null, TABEATCLICK = false;
 const tabBtns = () => $$("#tabs > button[data-tab]");
+function pillTo(x, w, how) {
+  const pill = $("#tabs .pill"); if (!pill) return;
+  if (how === "jump") { pill.style.transition = "none"; }
+  pill.style.setProperty("--x", x.toFixed(1) + "px"); pill.style.width = w + "px";
+  if (how === "jump") { pill.offsetWidth; pill.style.transition = ""; }
+}
 function tabsPill(noAnim) {
-  const nav = $("#tabs"), pill = $("#tabs .pill"), on = $("#tabs > button.on"); if (!nav || !pill || !on) return;
-  const x = on.offsetLeft, w = on.offsetWidth, prev = TABPREV;
-  if (noAnim || prev == null || prev === x) { pill.style.transition = "none"; pill.style.transform = "translateX(" + x + "px)"; pill.style.width = w + "px"; pill.offsetWidth; pill.style.transition = ""; TABPREV = x; return; }
-  // liquid move: a lens lifts off the old tab, glides to the new one and settles into the pill
-  TABPREV = x; lensAt(prev + w / 2, false); pill.style.opacity = 0;
-  const L = $("#tabs .lens"); L.classList.add("on", "glide");
-  requestAnimationFrame(() => requestAnimationFrame(() => { lensAt(x + w / 2, true); }));
-  clearTimeout(tabsPill.t); tabsPill.t = setTimeout(() => { L.classList.remove("on", "glide"); pill.style.transition = "none"; pill.style.transform = "translateX(" + x + "px)"; pill.style.width = w + "px"; pill.offsetWidth; pill.style.transition = ""; pill.style.opacity = ""; }, 430);
-}
-function lensBuild() {
-  const row = $("#tabs .lrow"); if (!row) return;
-  row.innerHTML = $$("#tabs > button").map(b => '<span class="' + (b.classList.contains("plus") ? "lp" : "") + '" style="left:' + b.offsetLeft + "px;width:" + b.offsetWidth + 'px">' + b.innerHTML + "</span>").join("");
-}
-function lensAt(cx) {
-  const nav = $("#tabs"), L = $("#tabs .lens"), row = $("#tabs .lrow"), b0 = tabBtns()[0]; if (!L || !b0) return;
-  const W = nav.offsetWidth, H = nav.offsetHeight, LW = Math.round(b0.offsetWidth * 1.18), LH = H + 10;
-  cx = Math.max(LW / 2 - 4, Math.min(W - LW / 2 + 4, cx));
-  const left = cx - LW / 2, top = (H - LH) / 2;
-  L.style.width = LW + "px"; L.style.height = LH + "px"; L.style.top = top + "px"; L.style.transform = "translateX(" + left.toFixed(1) + "px)";
-  row.style.width = W + "px"; row.style.height = H + "px"; row.style.left = "0px"; row.style.top = -top + "px";
-  row.style.transform = "translateX(" + (-left).toFixed(1) + "px) scale(1.3)"; row.style.transformOrigin = cx.toFixed(1) + "px 50%";
-  row.style.setProperty("--lx", cx.toFixed(1) + "px");
+  const on = $("#tabs > button.on"), pill = $("#tabs .pill"); if (!on || !pill) return;
+  const was = parseFloat(pill.style.getPropertyValue("--x")), x = on.offsetLeft;
+  if (noAnim || isNaN(was)) return pillTo(x, on.offsetWidth, "jump");
+  if (Math.abs(was - x) > 2) { pill.classList.remove("move"); pill.offsetWidth; pill.classList.add("move"); clearTimeout(tabsPill.t); tabsPill.t = setTimeout(() => pill.classList.remove("move"), 420); }
+  pillTo(x, on.offsetWidth);
 }
 function tabsGlass() {
   const nav = $("#tabs"); if (!nav || nav._glass) return; nav._glass = 1;
-  lensBuild(); tabsPill(true);
-  const local = e => { const r = nav.getBoundingClientRect(); return (e.clientX - r.left) * nav.offsetWidth / r.width; };
-  const nearest = x => { let best = null, d = 1e9; tabBtns().forEach(b => { const c = b.offsetLeft + b.offsetWidth / 2, k = Math.abs(c - x); if (k < d) { d = k; best = b; } }); return best; };
-  nav.addEventListener("pointerdown", e => { if (e.target.closest(".plus")) return; TABDRAG = { x0: e.clientX, on: false, id: e.pointerId, hover: null }; });
+  tabsPill(true);
+  const scale = () => nav.getBoundingClientRect().width / nav.offsetWidth;
+  const local = e => (e.clientX - nav.getBoundingClientRect().left) / scale();
+  const nearest = x => { let best = null, d = 1e9; tabBtns().forEach(b => { const k = Math.abs(b.offsetLeft + b.offsetWidth / 2 - x); if (k < d) { d = k; best = b; } }); return best; };
+  const hover = b => $$("#tabs > button").forEach(x => x.classList.toggle("hov", x === b));
+  const follow = x => { const on = $("#tabs > button.on") || tabBtns()[0], w = on.offsetWidth; pillTo(Math.max(0, Math.min(nav.offsetWidth - w, x - w / 2)), w); };
+  const hold = () => { const D = TABDRAG; if (!D || D.held) return; D.held = true; nav.classList.add("held"); try { nav.setPointerCapture(D.id); } catch (_) {} follow(D.x); const h = nearest(D.x); hover(h); D.hover = h; haptic(); };
+  nav.addEventListener("pointerdown", e => {
+    if (e.target.closest(".plus")) return;
+    TABDRAG = { id: e.pointerId, x0: e.clientX, x: local(e), held: false, hover: null };
+    TABDRAG.t = setTimeout(hold, 180);
+  });
   nav.addEventListener("pointermove", e => {
-    const D = TABDRAG; if (!D || D.id !== e.pointerId) return;
-    if (!D.on && Math.abs(e.clientX - D.x0) > 7) { D.on = true; try { nav.setPointerCapture(e.pointerId); } catch (_) {} lensBuild(); $("#tabs .pill").style.opacity = 0; const L = $("#tabs .lens"); L.classList.remove("glide"); L.classList.add("on", "drag"); }
-    if (!D.on) return;
-    const x = local(e); lensAt(x); const h = nearest(x); if (h !== D.hover) { if (D.hover) haptic(); D.hover = h; }
+    const D = TABDRAG; if (!D || D.id !== e.pointerId) return; D.x = local(e);
+    if (!D.held && Math.abs(e.clientX - D.x0) > 6) { clearTimeout(D.t); hold(); }
+    if (!D.held) return;
+    follow(D.x); const h = nearest(D.x); if (h !== D.hover) { haptic(); D.hover = h; hover(h); }
     e.preventDefault();
   });
   const end = e => {
-    const D = TABDRAG; TABDRAG = null; if (!D || !D.on) return;
+    const D = TABDRAG; TABDRAG = null; if (!D) return; clearTimeout(D.t); if (!D.held) return;
     TABEATCLICK = true; setTimeout(() => TABEATCLICK = false, 350);
-    const b = nearest(local(e)), L = $("#tabs .lens"); L.classList.remove("drag"); L.classList.add("glide");
-    lensAt(b.offsetLeft + b.offsetWidth / 2);
-    setTimeout(() => {
-      L.classList.remove("on", "glide"); const pill = $("#tabs .pill"); pill.style.opacity = "";
-      if (b.dataset.tab !== TAB) { TABPREV = null; ACT.tab(b); } else tabsPill(true);
-    }, 300);
+    const b = nearest(D.x); nav.classList.remove("held"); hover(null);
+    if (b.dataset.tab !== TAB) ACT.tab(b); else tabsPill();
   };
   nav.addEventListener("pointerup", end); nav.addEventListener("pointercancel", end);
   nav.addEventListener("click", e => { if (TABEATCLICK) { e.stopPropagation(); e.preventDefault(); TABEATCLICK = false; } }, true);
-  window.addEventListener("resize", () => { lensBuild(); tabsPill(true); });
+  window.addEventListener("resize", () => tabsPill(true));
 }
 ACT.expandTabs = () => setFold(false);
 // ----- boot -----

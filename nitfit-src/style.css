@@ -950,3 +950,38 @@ body.tsmall #mini{transform:translateY(14px)}
 .pf .rec:last-child{border-bottom:0}
 .pf .rec b{font:600 16px var(--sf);color:#fff}
 .pf .rec span{font:400 14px var(--sf);color:#8E8E93}
+/* v4.8: true black everywhere, no orange, WhatsApp-style glass tab bar with real icons */
+:root,html[data-theme="dark"]{--bg:#000;--top:#000;--card:#1C1C1E;--card2:#2C2C2E;--chip:#2C2C2E}
+#main[data-tab="dashboard"],#main[data-tab="profile"]{--dacc:#0A84FF}
+.d2cal i.on{background:#fff}
+.d2cal i.today{box-shadow:0 0 0 1.5px #0A84FF}
+#tabs{left:26px;right:26px;height:56px;border-radius:28px;padding:0 6px}
+#tabs .tbg{border-radius:28px;background:rgba(30,30,32,.62);-webkit-backdrop-filter:blur(26px) saturate(190%);backdrop-filter:blur(26px) saturate(190%);
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.18),inset 0 1px 1px rgba(255,255,255,.08),0 8px 28px rgba(0,0,0,.5)}
+#tabs > button{height:44px;border-radius:22px;color:#fff}
+#tabs > button svg{position:absolute;width:25px;height:25px;transition:transform .32s cubic-bezier(.3,1.4,.5,1),opacity .15s}
+#tabs > button{position:relative;display:grid;place-items:center}
+#tabs > button .f{opacity:0}
+#tabs > button.on .f{opacity:1}
+#tabs > button.on .o{opacity:0}
+#tabs > button.hov svg{transform:scale(1.2)}
+#tabs > button:active svg{transform:scale(.9)}
+#tabs .plus{width:auto;flex:1;height:44px;border-radius:22px;color:#fff}
+#tabs .plus span{display:none}
+#tabs .plus .f{opacity:0}
+#tabs .plus:active .f{opacity:1}
+#tabs .plus:active .o{opacity:0}
+#tabs .lens{display:none!important}
+#tabs .pill{top:6px;height:44px;border-radius:22px;--x:0px;--sx:1;--sy:1;transform:translateX(var(--x)) scale(var(--sx),var(--sy));
+  background:rgba(255,255,255,.13);box-shadow:inset 0 .5px 0 rgba(255,255,255,.22),inset 0 0 0 .5px rgba(255,255,255,.06);
+  transition:transform .48s cubic-bezier(.32,1.25,.5,1),width .3s,background .2s,box-shadow .2s,opacity .12s;will-change:transform}
+#tabs .pill.move{animation:pillSquish .42s ease}
+@keyframes pillSquish{30%{--sx:1.12;--sy:.9}100%{--sx:1;--sy:1}}
+@property --sx{syntax:"<number>";inherits:false;initial-value:1}
+@property --sy{syntax:"<number>";inherits:false;initial-value:1}
+#tabs.held .pill{--sx:1.16;--sy:1.24;background:rgba(255,255,255,.17);-webkit-backdrop-filter:blur(4px) saturate(160%);backdrop-filter:blur(4px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 1px rgba(255,255,255,.1),inset 0 0 0 .5px rgba(255,255,255,.28),0 6px 18px rgba(0,0,0,.4);
+  transition:transform .16s cubic-bezier(.2,.9,.3,1),width .3s,background .2s,box-shadow .2s}
+body.tsmall #tabs{transform:translateY(4px) scale(.9)}
+#mini{bottom:calc(var(--barb) + 64px);left:26px;right:26px}
+body.tsmall #mini{transform:translateY(10px)}

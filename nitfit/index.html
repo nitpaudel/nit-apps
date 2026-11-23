@@ -967,6 +967,41 @@ body.tsmall #mini{transform:translateY(14px)}
 .pf .rec:last-child{border-bottom:0}
 .pf .rec b{font:600 16px var(--sf);color:#fff}
 .pf .rec span{font:400 14px var(--sf);color:#8E8E93}
+/* v4.8: true black everywhere, no orange, WhatsApp-style glass tab bar with real icons */
+:root,html[data-theme="dark"]{--bg:#000;--top:#000;--card:#1C1C1E;--card2:#2C2C2E;--chip:#2C2C2E}
+#main[data-tab="dashboard"],#main[data-tab="profile"]{--dacc:#0A84FF}
+.d2cal i.on{background:#fff}
+.d2cal i.today{box-shadow:0 0 0 1.5px #0A84FF}
+#tabs{left:26px;right:26px;height:56px;border-radius:28px;padding:0 6px}
+#tabs .tbg{border-radius:28px;background:rgba(30,30,32,.62);-webkit-backdrop-filter:blur(26px) saturate(190%);backdrop-filter:blur(26px) saturate(190%);
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.18),inset 0 1px 1px rgba(255,255,255,.08),0 8px 28px rgba(0,0,0,.5)}
+#tabs > button{height:44px;border-radius:22px;color:#fff}
+#tabs > button svg{position:absolute;width:25px;height:25px;transition:transform .32s cubic-bezier(.3,1.4,.5,1),opacity .15s}
+#tabs > button{position:relative;display:grid;place-items:center}
+#tabs > button .f{opacity:0}
+#tabs > button.on .f{opacity:1}
+#tabs > button.on .o{opacity:0}
+#tabs > button.hov svg{transform:scale(1.2)}
+#tabs > button:active svg{transform:scale(.9)}
+#tabs .plus{width:auto;flex:1;height:44px;border-radius:22px;color:#fff}
+#tabs .plus span{display:none}
+#tabs .plus .f{opacity:0}
+#tabs .plus:active .f{opacity:1}
+#tabs .plus:active .o{opacity:0}
+#tabs .lens{display:none!important}
+#tabs .pill{top:6px;height:44px;border-radius:22px;--x:0px;--sx:1;--sy:1;transform:translateX(var(--x)) scale(var(--sx),var(--sy));
+  background:rgba(255,255,255,.13);box-shadow:inset 0 .5px 0 rgba(255,255,255,.22),inset 0 0 0 .5px rgba(255,255,255,.06);
+  transition:transform .48s cubic-bezier(.32,1.25,.5,1),width .3s,background .2s,box-shadow .2s,opacity .12s;will-change:transform}
+#tabs .pill.move{animation:pillSquish .42s ease}
+@keyframes pillSquish{30%{--sx:1.12;--sy:.9}100%{--sx:1;--sy:1}}
+@property --sx{syntax:"<number>";inherits:false;initial-value:1}
+@property --sy{syntax:"<number>";inherits:false;initial-value:1}
+#tabs.held .pill{--sx:1.16;--sy:1.24;background:rgba(255,255,255,.17);-webkit-backdrop-filter:blur(4px) saturate(160%);backdrop-filter:blur(4px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 1px rgba(255,255,255,.1),inset 0 0 0 .5px rgba(255,255,255,.28),0 6px 18px rgba(0,0,0,.4);
+  transition:transform .16s cubic-bezier(.2,.9,.3,1),width .3s,background .2s,box-shadow .2s}
+body.tsmall #tabs{transform:translateY(4px) scale(.9)}
+#mini{bottom:calc(var(--barb) + 64px);left:26px;right:26px}
+body.tsmall #mini{transform:translateY(10px)}
 
 </style>
 </head>
@@ -975,7 +1010,7 @@ body.tsmall #mini{transform:translateY(14px)}
 <div id="page" class="scr"></div>
 
 <div id="mini" hidden></div>
-<nav id="tabs"><div class="tbg"></div><div class="pill"></div><button data-a="tab" data-tab="dashboard" class="on" aria-label="Dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.6L12 4l8.5 6.6V19a1.5 1.5 0 0 1-1.5 1.5h-4.2v-5.6H9.2v5.6H5A1.5 1.5 0 0 1 3.5 19z"/></svg></button><button data-a="tab" data-tab="workout" aria-label="Workout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12h8"/><rect x="4.6" y="7" width="3.4" height="10" rx="1.4"/><rect x="16" y="7" width="3.4" height="10" rx="1.4"/><path d="M2.6 10v4M21.4 10v4"/></svg></button><button data-a="plusMenu" class="plus" aria-label="Quick add"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5.5v13M5.5 12h13"/></svg></span></button><button data-a="tab" data-tab="levels" aria-label="Progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16M6.5 16v-4M11 16V8.5M15.5 16v-6M19.5 16V5"/></svg></button><button data-a="tab" data-tab="profile" aria-label="Profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><circle cx="12" cy="10" r="2.9"/><path d="M6.6 18.2c1.2-2.2 3.1-3.3 5.4-3.3s4.2 1.1 5.4 3.3"/></svg></button><div class="lens"><div class="lrow"></div></div></nav>
+<nav id="tabs"><div class="tbg"></div><div class="pill"></div><button data-a="tab" data-tab="dashboard" class="on" aria-label="Dashboard"><svg class="o" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M219.31,108.68l-80-80a16,16,0,0,0-22.62,0l-80,80A15.87,15.87,0,0,0,32,120v96a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V160h32v56a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V120A15.87,15.87,0,0,0,219.31,108.68ZM208,208H160V152a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8v56H48V120l80-80,80,80Z"/></svg><svg class="f" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,120v96a8,8,0,0,1-8,8H160a8,8,0,0,1-8-8V164a4,4,0,0,0-4-4H108a4,4,0,0,0-4,4v52a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V120a16,16,0,0,1,4.69-11.31l80-80a16,16,0,0,1,22.62,0l80,80A16,16,0,0,1,224,120Z"/></svg></button><button data-a="tab" data-tab="workout" aria-label="Workout"><svg class="o" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M215.79,118.17a8,8,0,0,0-5-5.66L153.18,90.9l14.66-73.33a8,8,0,0,0-13.69-7l-112,120a8,8,0,0,0,3,13l57.63,21.61L88.16,238.43a8,8,0,0,0,13.69,7l112-120A8,8,0,0,0,215.79,118.17ZM109.37,214l10.47-52.38a8,8,0,0,0-5-9.06L62,132.71l84.62-90.66L136.16,94.43a8,8,0,0,0,5,9.06l52.8,19.8Z"/></svg><svg class="f" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M213.85,125.46l-112,120a8,8,0,0,1-13.69-7l14.66-73.33L45.19,143.49a8,8,0,0,1-3-13l112-120a8,8,0,0,1,13.69,7L153.18,90.9l57.63,21.61a8,8,0,0,1,3,12.95Z"/></svg></button><button data-a="plusMenu" class="plus" aria-label="Quick add"><svg class="o" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,176H48V48H208V208Zm-32-80a8,8,0,0,1-8,8H136v32a8,8,0,0,1-16,0V136H88a8,8,0,0,1,0-16h32V88a8,8,0,0,1,16,0v32h32A8,8,0,0,1,176,128Z"/></svg><svg class="f" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM168,136H136v32a8,8,0,0,1-16,0V136H88a8,8,0,0,1,0-16h32V88a8,8,0,0,1,16,0v32h32a8,8,0,0,1,0,16Z"/></svg></button><button data-a="tab" data-tab="levels" aria-label="Progress"><svg class="o" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M232,208a8,8,0,0,1-8,8H32a8,8,0,0,1-8-8V48a8,8,0,0,1,16,0V156.69l50.34-50.35a8,8,0,0,1,11.32,0L128,132.69,180.69,80H160a8,8,0,0,1,0-16h40a8,8,0,0,1,8,8v40a8,8,0,0,1-16,0V91.31l-58.34,58.35a8,8,0,0,1-11.32,0L96,123.31l-56,56V200H224A8,8,0,0,1,232,208Z"/></svg><svg class="f" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M236,208a12,12,0,0,1-12,12H32a12,12,0,0,1-12-12V48a12,12,0,0,1,24,0v99l43.51-43.52a12,12,0,0,1,17,0L128,127l43-43H160a12,12,0,0,1,0-24h40a12,12,0,0,1,12,12v40a12,12,0,0,1-24,0V101l-51.51,51.52a12,12,0,0,1-17,0L96,129,44,181v15H224A12,12,0,0,1,236,208Z"/></svg></button><button data-a="tab" data-tab="profile" aria-label="Profile"><svg class="o" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-59.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,131.52,0Z"/></svg><svg class="f" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M172,120a44,44,0,1,1-44-44A44.05,44.05,0,0,1,172,120Zm60,8A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88.09,88.09,0,0,0-91.47-87.93C77.43,41.89,39.87,81.12,40,128.25a87.65,87.65,0,0,0,22.24,58.16A79.71,79.71,0,0,1,84,165.1a4,4,0,0,1,4.83.32,59.83,59.83,0,0,0,78.28,0,4,4,0,0,1,4.83-.32,79.71,79.71,0,0,1,21.79,21.31A87.62,87.62,0,0,0,216,128Z"/></svg></button></nav>
 
 <div class="kp" id="kp"></div>
 <div class="scrim" id="scrim" data-a="closeSheet"></div>
@@ -1480,7 +1515,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "4.7";
+const APP_VERSION = "4.8";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -1965,7 +2000,7 @@ const card2 = (act, extra, title, sub, viz, val, unit) => '<button class="ic pre
 // ===== Dashboard (Apple style) =====
 const D2N = { insights: "Insights & analytics", habits: "Habits", body: "Body metrics", muscles: "Muscle groups", exercises: "Exercises" };
 const D2T = id => ({ workouts: "Workouts", wtrend: "Weight trend", weighin: "Weigh-in", wohabit: "Workouts", scale: "Scale weight", waist: "Waist", bf: "Body fat" })[id] || TILE_NAME(id);
-const D2A = "var(--dacc)", D2OFF = "#3A3A3C";
+const D2A = "#0A84FF", D2OFF = "#3A3A3C";
 const d2num = (v, unit) => '<div class="d2n">' + v + (unit ? "<small>" + unit + "</small>" : "") + "</div>";
 const d2sign = v => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(1);
 // a ring of separate little dashes, one per target item, lit when done
@@ -2033,7 +2068,7 @@ function d2chart(vals, W, H, o) {
 }
 function d2bars(vals, W, H) {
   const n = Math.max(vals.length, 1), mx = Math.max(1, ...vals), bw = 7, gap = (W - n * bw) / Math.max(n - 1, 1);
-  return '<svg class="d2v" width="' + W + '" height="' + H + '">' + (vals.length ? vals.map((v, i) => { const h = Math.max(6, v / mx * H); return '<rect x="' + (i * (bw + Math.min(gap, 9))).toFixed(1) + '" y="' + (H - h).toFixed(1) + '" width="' + bw + '" height="' + h.toFixed(1) + '" rx="3.5" fill="' + (i === vals.length - 1 ? D2A : "rgba(255,255,255,.88)") + '"/>'; }).join("")
+  return '<svg class="d2v" width="' + W + '" height="' + H + '">' + (vals.length ? vals.map((v, i) => { const h = Math.max(6, v / mx * H); return '<rect x="' + (i * (bw + Math.min(gap, 9))).toFixed(1) + '" y="' + (H - h).toFixed(1) + '" width="' + bw + '" height="' + h.toFixed(1) + '" rx="3.5" fill="' + (i === vals.length - 1 ? "#fff" : "rgba(255,255,255,.3)") + '"/>'; }).join("")
     : Array.from({ length: 7 }, (_, i) => '<rect x="' + i * 14 + '" y="' + (H - 6) + '" width="7" height="6" rx="3" fill="' + D2OFF + '"/>').join("")) + "</svg>";
 }
 // change over the last 7 days: newest entry minus the newest entry on or before 7 days ago
@@ -2057,7 +2092,7 @@ function d2tile(id) {
     const days = Array.from({ length: 30 }, (_, i) => addDays(d, i - 29)), ws = days.map(x => S.weights[x] ? S.weights[x].kg : null), have = ws.filter(v => v != null);
     const lo = Math.min(...have), hi = Math.max(...have), sp = hi - lo || 1, W = 142, H = 46, dx = (W - 6) / 29;
     let svg = '<svg class="d2v" width="' + W + '" height="' + H + '">';
-    ws.forEach((v, i) => { const x = 3 + i * dx; svg += v == null ? '<circle cx="' + x.toFixed(1) + '" cy="' + (H - 3) + '" r="1.9" fill="none" stroke="#48484A" stroke-width="1.1"/>' : '<circle cx="' + x.toFixed(1) + '" cy="' + (3 + (hi === lo ? 0.5 : 1 - (v - lo) / sp) * (H - 14)).toFixed(1) + '" r="2.4" fill="' + D2A + '"/>'; });
+    ws.forEach((v, i) => { const x = 3 + i * dx; svg += v == null ? '<circle cx="' + x.toFixed(1) + '" cy="' + (H - 3) + '" r="1.9" fill="none" stroke="#48484A" stroke-width="1.1"/>' : '<circle cx="' + x.toFixed(1) + '" cy="' + (3 + (hi === lo ? 0.5 : 1 - (v - lo) / sp) * (H - 14)).toFixed(1) + '" r="2.4" fill="#fff"/>'; });
     const n = Object.keys(S.weights).filter(x => x >= wk0 && x <= d).length;
     return d2card("openPage", ' data-k="weighin"', "Weigh-in", "Last 30 days", svg + "</svg>", "<em>" + n + "</em> of 7 this week");
   }
@@ -3317,61 +3352,54 @@ function bindCompact() {
     if (ACC > 36 && y > 100) setFold(true); else if (ACC < -28) setFold(false);
   }, { passive: true });
 }
-// ----- liquid glass tab bar -----
-// The pill slides under the tab you are on. Drag a finger along the bar and a glass lens follows it,
-// magnifying the icons under it. Let go and it snaps onto the nearest tab and opens it.
-let TABPREV = null, TABDRAG = null, TABEATCLICK = false;
+// ----- liquid glass tab bar (like WhatsApp) -----
+// Tap: the glass pill slides to the tab. Press and hold: the pill swells into a lens you can drag along the bar,
+// the icon under it grows a little. Let go: it shrinks back into the pill on the nearest tab and opens it.
+let TABDRAG = null, TABEATCLICK = false;
 const tabBtns = () => $$("#tabs > button[data-tab]");
+function pillTo(x, w, how) {
+  const pill = $("#tabs .pill"); if (!pill) return;
+  if (how === "jump") { pill.style.transition = "none"; }
+  pill.style.setProperty("--x", x.toFixed(1) + "px"); pill.style.width = w + "px";
+  if (how === "jump") { pill.offsetWidth; pill.style.transition = ""; }
+}
 function tabsPill(noAnim) {
-  const nav = $("#tabs"), pill = $("#tabs .pill"), on = $("#tabs > button.on"); if (!nav || !pill || !on) return;
-  const x = on.offsetLeft, w = on.offsetWidth, prev = TABPREV;
-  if (noAnim || prev == null || prev === x) { pill.style.transition = "none"; pill.style.transform = "translateX(" + x + "px)"; pill.style.width = w + "px"; pill.offsetWidth; pill.style.transition = ""; TABPREV = x; return; }
-  // liquid move: a lens lifts off the old tab, glides to the new one and settles into the pill
-  TABPREV = x; lensAt(prev + w / 2, false); pill.style.opacity = 0;
-  const L = $("#tabs .lens"); L.classList.add("on", "glide");
-  requestAnimationFrame(() => requestAnimationFrame(() => { lensAt(x + w / 2, true); }));
-  clearTimeout(tabsPill.t); tabsPill.t = setTimeout(() => { L.classList.remove("on", "glide"); pill.style.transition = "none"; pill.style.transform = "translateX(" + x + "px)"; pill.style.width = w + "px"; pill.offsetWidth; pill.style.transition = ""; pill.style.opacity = ""; }, 430);
-}
-function lensBuild() {
-  const row = $("#tabs .lrow"); if (!row) return;
-  row.innerHTML = $$("#tabs > button").map(b => '<span class="' + (b.classList.contains("plus") ? "lp" : "") + '" style="left:' + b.offsetLeft + "px;width:" + b.offsetWidth + 'px">' + b.innerHTML + "</span>").join("");
-}
-function lensAt(cx) {
-  const nav = $("#tabs"), L = $("#tabs .lens"), row = $("#tabs .lrow"), b0 = tabBtns()[0]; if (!L || !b0) return;
-  const W = nav.offsetWidth, H = nav.offsetHeight, LW = Math.round(b0.offsetWidth * 1.18), LH = H + 10;
-  cx = Math.max(LW / 2 - 4, Math.min(W - LW / 2 + 4, cx));
-  const left = cx - LW / 2, top = (H - LH) / 2;
-  L.style.width = LW + "px"; L.style.height = LH + "px"; L.style.top = top + "px"; L.style.transform = "translateX(" + left.toFixed(1) + "px)";
-  row.style.width = W + "px"; row.style.height = H + "px"; row.style.left = "0px"; row.style.top = -top + "px";
-  row.style.transform = "translateX(" + (-left).toFixed(1) + "px) scale(1.3)"; row.style.transformOrigin = cx.toFixed(1) + "px 50%";
-  row.style.setProperty("--lx", cx.toFixed(1) + "px");
+  const on = $("#tabs > button.on"), pill = $("#tabs .pill"); if (!on || !pill) return;
+  const was = parseFloat(pill.style.getPropertyValue("--x")), x = on.offsetLeft;
+  if (noAnim || isNaN(was)) return pillTo(x, on.offsetWidth, "jump");
+  if (Math.abs(was - x) > 2) { pill.classList.remove("move"); pill.offsetWidth; pill.classList.add("move"); clearTimeout(tabsPill.t); tabsPill.t = setTimeout(() => pill.classList.remove("move"), 420); }
+  pillTo(x, on.offsetWidth);
 }
 function tabsGlass() {
   const nav = $("#tabs"); if (!nav || nav._glass) return; nav._glass = 1;
-  lensBuild(); tabsPill(true);
-  const local = e => { const r = nav.getBoundingClientRect(); return (e.clientX - r.left) * nav.offsetWidth / r.width; };
-  const nearest = x => { let best = null, d = 1e9; tabBtns().forEach(b => { const c = b.offsetLeft + b.offsetWidth / 2, k = Math.abs(c - x); if (k < d) { d = k; best = b; } }); return best; };
-  nav.addEventListener("pointerdown", e => { if (e.target.closest(".plus")) return; TABDRAG = { x0: e.clientX, on: false, id: e.pointerId, hover: null }; });
+  tabsPill(true);
+  const scale = () => nav.getBoundingClientRect().width / nav.offsetWidth;
+  const local = e => (e.clientX - nav.getBoundingClientRect().left) / scale();
+  const nearest = x => { let best = null, d = 1e9; tabBtns().forEach(b => { const k = Math.abs(b.offsetLeft + b.offsetWidth / 2 - x); if (k < d) { d = k; best = b; } }); return best; };
+  const hover = b => $$("#tabs > button").forEach(x => x.classList.toggle("hov", x === b));
+  const follow = x => { const on = $("#tabs > button.on") || tabBtns()[0], w = on.offsetWidth; pillTo(Math.max(0, Math.min(nav.offsetWidth - w, x - w / 2)), w); };
+  const hold = () => { const D = TABDRAG; if (!D || D.held) return; D.held = true; nav.classList.add("held"); try { nav.setPointerCapture(D.id); } catch (_) {} follow(D.x); const h = nearest(D.x); hover(h); D.hover = h; haptic(); };
+  nav.addEventListener("pointerdown", e => {
+    if (e.target.closest(".plus")) return;
+    TABDRAG = { id: e.pointerId, x0: e.clientX, x: local(e), held: false, hover: null };
+    TABDRAG.t = setTimeout(hold, 180);
+  });
   nav.addEventListener("pointermove", e => {
-    const D = TABDRAG; if (!D || D.id !== e.pointerId) return;
-    if (!D.on && Math.abs(e.clientX - D.x0) > 7) { D.on = true; try { nav.setPointerCapture(e.pointerId); } catch (_) {} lensBuild(); $("#tabs .pill").style.opacity = 0; const L = $("#tabs .lens"); L.classList.remove("glide"); L.classList.add("on", "drag"); }
-    if (!D.on) return;
-    const x = local(e); lensAt(x); const h = nearest(x); if (h !== D.hover) { if (D.hover) haptic(); D.hover = h; }
+    const D = TABDRAG; if (!D || D.id !== e.pointerId) return; D.x = local(e);
+    if (!D.held && Math.abs(e.clientX - D.x0) > 6) { clearTimeout(D.t); hold(); }
+    if (!D.held) return;
+    follow(D.x); const h = nearest(D.x); if (h !== D.hover) { haptic(); D.hover = h; hover(h); }
     e.preventDefault();
   });
   const end = e => {
-    const D = TABDRAG; TABDRAG = null; if (!D || !D.on) return;
+    const D = TABDRAG; TABDRAG = null; if (!D) return; clearTimeout(D.t); if (!D.held) return;
     TABEATCLICK = true; setTimeout(() => TABEATCLICK = false, 350);
-    const b = nearest(local(e)), L = $("#tabs .lens"); L.classList.remove("drag"); L.classList.add("glide");
-    lensAt(b.offsetLeft + b.offsetWidth / 2);
-    setTimeout(() => {
-      L.classList.remove("on", "glide"); const pill = $("#tabs .pill"); pill.style.opacity = "";
-      if (b.dataset.tab !== TAB) { TABPREV = null; ACT.tab(b); } else tabsPill(true);
-    }, 300);
+    const b = nearest(D.x); nav.classList.remove("held"); hover(null);
+    if (b.dataset.tab !== TAB) ACT.tab(b); else tabsPill();
   };
   nav.addEventListener("pointerup", end); nav.addEventListener("pointercancel", end);
   nav.addEventListener("click", e => { if (TABEATCLICK) { e.stopPropagation(); e.preventDefault(); TABEATCLICK = false; } }, true);
-  window.addEventListener("resize", () => { lensBuild(); tabsPill(true); });
+  window.addEventListener("resize", () => tabsPill(true));
 }
 ACT.expandTabs = () => setFold(false);
 // ----- boot -----
