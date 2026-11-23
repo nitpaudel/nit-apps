@@ -1224,6 +1224,28 @@ html[data-theme="light"] .sheet{background:rgba(248,248,250,.84)!important}
 #tabs .lens{background:rgba(112,112,118,.94)!important}
 html[data-theme="light"] #tabs .lens{background:rgba(255,255,255,.94)!important}
 #tabs.held .tcap > button.on{color:var(--gltext)!important}
+/* v6.1: Apple sizes, clear glass, light and fast */
+#tabs{left:calc(50% - 175px);width:350px;height:60px;gap:12px;bottom:max(18px, calc(var(--sab) - 10px))}
+#tabs .tcap{border-radius:30px;padding:0 5px}
+#tabs .tcap > button{height:50px;border-radius:25px;gap:3px}
+#tabs .tcap .pill{top:5px;height:50px;border-radius:25px}
+#tabs .tic,#tabs .tic svg,#tabs [data-tab="dashboard"] .tic svg,#tabs [data-tab="levels"] .tic svg{width:24px;height:24px}
+#tabs .tlb,#tabs .lrow .tlb{font:600 10px/1.1 -apple-system,"SF Pro Text",system-ui,sans-serif;letter-spacing:.01em}
+#tabs .tyou{width:60px;height:60px}
+#tabs .tyou .tic,#tabs .tyou .tic svg{width:27px;height:27px}
+#mini{left:calc(50% - 175px);width:350px;bottom:calc(max(18px, calc(var(--sab) - 10px)) + 68px)}
+/* see-through: almost no blur, like real glass */
+:root{--gl:rgba(34,34,37,.42);--glblur:blur(1.2px) saturate(170%) brightness(.92)}
+html[data-theme="light"]{--gl:rgba(255,255,255,.42);--glblur:blur(1.2px) saturate(170%) brightness(1.06)}
+#tabs .tlb{text-shadow:0 0 8px rgba(0,0,0,.35)}
+html[data-theme="light"] #tabs .tlb{text-shadow:0 0 8px rgba(255,255,255,.6)}
+/* lighter to draw: no extra blur layers on the moving parts */
+#tabs .lens{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#tabs .tcap .pill{transition:transform .32s cubic-bezier(.3,1.25,.5,1),width .25s,opacity .15s!important}
+#tabs .tcap .pill.move{animation:pillSquish .32s ease}
+#tabs .tcap,#tabs .lens,#tabs .tcap .pill{will-change:transform;transform:translateZ(0)}
+#tabs .tcap .pill{transform:translateX(var(--x)) scale(var(--sx),var(--sy))}
+#tabs.held .tcap{transform:scale(1.05,1.08)}
 
 </style>
 </head>
@@ -1232,7 +1254,7 @@ html[data-theme="light"] #tabs .lens{background:rgba(255,255,255,.94)!important}
 <div id="page" class="scr"></div>
 
 <div id="mini" hidden></div>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="lgw" x="0" y="0" width="1" height="1" primitiveUnits="objectBoundingBox" color-interpolation-filters="sRGB"><feImage id="lgwImg" x="0" y="0" width="1" height="1" preserveAspectRatio="none" result="m"/><feDisplacementMap in="SourceGraphic" in2="m" scale=".05" xChannelSelector="R" yChannelSelector="G"/></filter></svg><nav id="tabs"><div class="tcap"><div class="tbg"></div><div class="pill"></div><div class="lens"><div class="lwarp"><div class="lrow"></div></div></div><button data-a="tab" data-tab="dashboard" class="on"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.9 2.6 10.9a1 1 0 0 0 1.3 1.5l.9-.77v7.82c0 1 .8 1.8 1.8 1.8h3.5v-5.2c0-.5.4-.85.85-.85h2.1c.5 0 .85.4.85.85v5.2h3.5c1 0 1.8-.8 1.8-1.8v-7.82l.9.77a1 1 0 0 0 1.3-1.5l-2.5-2.13V5.2a.7.7 0 0 0-.7-.7h-1.1a.7.7 0 0 0-.7.7v1.4z"/></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.9 2.6 10.9a1 1 0 0 0 1.3 1.5l.9-.77v7.82c0 1 .8 1.8 1.8 1.8h3.5v-5.2c0-.5.4-.85.85-.85h2.1c.5 0 .85.4.85.85v5.2h3.5c1 0 1.8-.8 1.8-1.8v-7.82l.9.77a1 1 0 0 0 1.3-1.5l-2.5-2.13V5.2a.7.7 0 0 0-.7-.7h-1.1a.7.7 0 0 0-.7.7v1.4z"/></svg></span><span class="tlb">Home</span></button><button data-a="tab" data-tab="workout"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mck"><rect width="24" height="24" fill="#fff"/><path d="M4.3 6.5l.9.9 1.5-1.7M4.3 12l.9.9 1.5-1.7M4.3 17.5l.9.9 1.5-1.7" stroke="#000" stroke-width="1.25" fill="none" stroke-linecap="round" stroke-linejoin="round"/></mask></defs><g fill="currentColor" mask="url(#mck)"><circle cx="5.5" cy="6.5" r="2.5"/><circle cx="5.5" cy="12" r="2.5"/><circle cx="5.5" cy="17.5" r="2.5"/></g><path d="M10.6 6.5h10M10.6 12h10M10.6 17.5h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mck"><rect width="24" height="24" fill="#fff"/><path d="M4.3 6.5l.9.9 1.5-1.7M4.3 12l.9.9 1.5-1.7M4.3 17.5l.9.9 1.5-1.7" stroke="#000" stroke-width="1.25" fill="none" stroke-linecap="round" stroke-linejoin="round"/></mask></defs><g fill="currentColor" mask="url(#mck)"><circle cx="5.5" cy="6.5" r="2.5"/><circle cx="5.5" cy="12" r="2.5"/><circle cx="5.5" cy="17.5" r="2.5"/></g><path d="M10.6 6.5h10M10.6 12h10M10.6 17.5h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span class="tlb">Workouts</span></button><button data-a="tab" data-tab="levels"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="12" cy="4.3" r="2.35"/><path d="M9.7 7.6h4.6c1.45 0 2.6 1.15 2.6 2.6v4.3c0 .6-.45 1.05-1.05 1.05S14.8 15.1 14.8 14.5v-3.6h-.5v9.4c0 .7-.55 1.25-1.25 1.25s-1.25-.55-1.25-1.25v-5.3h-.6v5.3c0 .7-.55 1.25-1.25 1.25S8.7 21 8.7 20.3v-9.4h-.5v3.6c0 .6-.45 1.05-1.05 1.05S6.1 15.1 6.1 14.5v-4.3c0-1.45 1.15-2.6 2.6-2.6z" transform="translate(.5 0)"/></g></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="12" cy="4.3" r="2.35"/><path d="M9.7 7.6h4.6c1.45 0 2.6 1.15 2.6 2.6v4.3c0 .6-.45 1.05-1.05 1.05S14.8 15.1 14.8 14.5v-3.6h-.5v9.4c0 .7-.55 1.25-1.25 1.25s-1.25-.55-1.25-1.25v-5.3h-.6v5.3c0 .7-.55 1.25-1.25 1.25S8.7 21 8.7 20.3v-9.4h-.5v3.6c0 .6-.45 1.05-1.05 1.05S6.1 15.1 6.1 14.5v-4.3c0-1.45 1.15-2.6 2.6-2.6z" transform="translate(.5 0)"/></g></svg></span><span class="tlb">Progress</span></button></div><button class="tyou" data-a="tab" data-tab="profile"><span class="tbg"></span><span class="tic"><svg class="av" viewBox="0 0 28 28" aria-hidden="true"><defs><clipPath id="avc"><circle cx="14" cy="14" r="14"/></clipPath></defs><circle cx="14" cy="14" r="14" class="avb"/><g clip-path="url(#avc)" fill="#fff"><circle cx="14" cy="11" r="4.6"/><ellipse cx="14" cy="25.5" rx="9" ry="7.2"/></g></svg></span><span class="tlb">You</span></button></nav>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="lgw" x="0" y="0" width="1" height="1" primitiveUnits="objectBoundingBox" color-interpolation-filters="sRGB"><feImage id="lgwImg" x="0" y="0" width="1" height="1" preserveAspectRatio="none" result="m"/><feDisplacementMap in="SourceGraphic" in2="m" scale=".05" xChannelSelector="R" yChannelSelector="G"/></filter></svg><nav id="tabs"><div class="tcap"><div class="tbg"></div><div class="pill"></div><div class="lens"><div class="lwarp"><div class="lrow"></div></div></div><button data-a="tab" data-tab="dashboard" class="on"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.9 2.6 10.9a1 1 0 0 0 1.3 1.5l.9-.77v7.82c0 1 .8 1.8 1.8 1.8h3.5v-5.2c0-.5.4-.85.85-.85h2.1c.5 0 .85.4.85.85v5.2h3.5c1 0 1.8-.8 1.8-1.8v-7.82l.9.77a1 1 0 0 0 1.3-1.5l-2.5-2.13V5.2a.7.7 0 0 0-.7-.7h-1.1a.7.7 0 0 0-.7.7v1.4z"/></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.9 2.6 10.9a1 1 0 0 0 1.3 1.5l.9-.77v7.82c0 1 .8 1.8 1.8 1.8h3.5v-5.2c0-.5.4-.85.85-.85h2.1c.5 0 .85.4.85.85v5.2h3.5c1 0 1.8-.8 1.8-1.8v-7.82l.9.77a1 1 0 0 0 1.3-1.5l-2.5-2.13V5.2a.7.7 0 0 0-.7-.7h-1.1a.7.7 0 0 0-.7.7v1.4z"/></svg></span><span class="tlb">Home</span></button><button data-a="tab" data-tab="workout"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mrun"><rect width="24" height="24" fill="#fff"/><g stroke="#000" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M13.2 8.9l-1.7 3.9 2.1 1.8-.4 3.3"/><path d="M11.5 12.8l-.9 2.5-2.6.6"/><path d="M13.2 8.9l2.2 1.6 1.6-.4"/><path d="M13.2 8.9l-2.3.2-1.3 1.7"/></g><circle cx="14.6" cy="6.3" r="1.65" fill="#000"/></mask></defs><circle cx="12" cy="12" r="10.6" fill="currentColor" mask="url(#mrun)"/></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="mrun2"><rect width="24" height="24" fill="#fff"/><g stroke="#000" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M13.2 8.9l-1.7 3.9 2.1 1.8-.4 3.3"/><path d="M11.5 12.8l-.9 2.5-2.6.6"/><path d="M13.2 8.9l2.2 1.6 1.6-.4"/><path d="M13.2 8.9l-2.3.2-1.3 1.7"/></g><circle cx="14.6" cy="6.3" r="1.65" fill="#000"/></mask></defs><circle cx="12" cy="12" r="10.6" fill="currentColor" mask="url(#mrun2)"/></svg></span><span class="tlb">Workout</span></button><button data-a="tab" data-tab="levels"><span class="tic"><svg class="o" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="12" cy="4.3" r="2.35"/><path d="M9.7 7.6h4.6c1.45 0 2.6 1.15 2.6 2.6v4.3c0 .6-.45 1.05-1.05 1.05S14.8 15.1 14.8 14.5v-3.6h-.5v9.4c0 .7-.55 1.25-1.25 1.25s-1.25-.55-1.25-1.25v-5.3h-.6v5.3c0 .7-.55 1.25-1.25 1.25S8.7 21 8.7 20.3v-9.4h-.5v3.6c0 .6-.45 1.05-1.05 1.05S6.1 15.1 6.1 14.5v-4.3c0-1.45 1.15-2.6 2.6-2.6z" transform="translate(.5 0)"/></g></svg><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="12" cy="4.3" r="2.35"/><path d="M9.7 7.6h4.6c1.45 0 2.6 1.15 2.6 2.6v4.3c0 .6-.45 1.05-1.05 1.05S14.8 15.1 14.8 14.5v-3.6h-.5v9.4c0 .7-.55 1.25-1.25 1.25s-1.25-.55-1.25-1.25v-5.3h-.6v5.3c0 .7-.55 1.25-1.25 1.25S8.7 21 8.7 20.3v-9.4h-.5v3.6c0 .6-.45 1.05-1.05 1.05S6.1 15.1 6.1 14.5v-4.3c0-1.45 1.15-2.6 2.6-2.6z" transform="translate(.5 0)"/></g></svg></span><span class="tlb">Progress</span></button></div><button class="tyou" data-a="tab" data-tab="profile"><span class="tbg"></span><span class="tic"><svg class="av" viewBox="0 0 28 28" aria-hidden="true"><defs><clipPath id="avc"><circle cx="14" cy="14" r="14"/></clipPath></defs><circle cx="14" cy="14" r="14" class="avb"/><g clip-path="url(#avc)" fill="#fff"><circle cx="14" cy="11" r="4.6"/><ellipse cx="14" cy="25.5" rx="9" ry="7.2"/></g></svg></span><span class="tlb">You</span></button></nav>
 
 <div class="kp" id="kp"></div>
 <div class="scrim" id="scrim" data-a="closeSheet"></div>
@@ -1737,7 +1759,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "6.0";
+const APP_VERSION = "6.1";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -3178,7 +3200,7 @@ function lineChart(pts) {
 }
 
 // ----- tabs and taps -----
-ACT.tab = el => { const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; if (t === TAB) { $("#main").scrollTo({ top: 0, behavior: "smooth" }); return; } TAB = t; haptic(); render(); };
+ACT.tab = el => { const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; if (t === TAB) { $("#main").scrollTo({ top: 0, behavior: "smooth" }); return; } TAB = t; haptic(); $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB)); tabsPill(); requestAnimationFrame(() => setTimeout(render, 0)); };
 document.addEventListener("click", e => { const el = e.target.closest("[data-a]"); if (!el) return; const f = ACT[el.dataset.a]; if (f) { e.preventDefault(); f(el, e); } });
 document.addEventListener("DOMContentLoaded", () => {
   $("#importIn").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { const n = await importExport(JSON.parse(await f.text())); toast(n + " entries loaded"); render(); } catch (er) { toast(er.message || "Could not read that file"); } e.target.value = ""; });
@@ -3636,17 +3658,15 @@ function lensAt(cx) {
   row.style.transform = "translate(" + (-left).toFixed(1) + "px," + (-top).toFixed(1) + "px) scale(1.12)";
 }
 function glassOn(on) { $("#tabs").classList.toggle("held", on); }
-// open tab changed: the lens lifts off the old tab, glides over and drops into the pill
+// open tab changed by a tap: the dark pill slides over (runs on the graphics chip, so it stays smooth)
 function tabsPill(noAnim) {
   const on = $("#tabs .tcap > button.on"), pill = $("#tabs .pill"); if (!pill) return;
   pill.style.opacity = on ? "" : 0; if (!on) { TABX = null; return; }
-  const c = on.offsetLeft + on.offsetWidth / 2, prev = TABX; TABX = c;
-  if (noAnim || prev == null || Math.abs(prev - c) < 2 || TABDRAG) return pillTo(on, true);
-  const L = $("#tabs .lens"); clearTimeout(LENST); lensBuild();
-  L.classList.remove("glide"); lensAt(prev); glassOn(true); L.classList.add("on");
-  requestAnimationFrame(() => requestAnimationFrame(() => { L.classList.add("glide"); lensAt(c); }));
-  LENST = setTimeout(() => { pillTo(on, true); glassOn(false); L.classList.remove("on", "glide"); }, 420);
+  const c = on.offsetLeft + on.offsetWidth / 2, moved = TABX != null && Math.abs(TABX - c) > 2; TABX = c;
+  if (noAnim || !moved) return pillTo(on, true);
+  pill.classList.remove("move"); void pill.offsetWidth; pill.classList.add("move"); pillTo(on);
 }
+function glassReset() { clearTimeout(LENST); const t = $("#tabs"), L = $("#tabs .lens"); if (t) t.classList.remove("held"); if (L) L.classList.remove("on", "glide"); }
 function tabsGlass() {
   const cap = $("#tabs .tcap"); if (!cap || cap._glass) return; cap._glass = 1;
   lensWarp(); tabsPill(true);
@@ -3673,11 +3693,14 @@ function tabsGlass() {
     const b = nearest(D.x), L = $("#tabs .lens"), c = b.offsetLeft + b.offsetWidth / 2;
     L.classList.add("glide"); lensAt(c);
     LENST = setTimeout(() => {
-      if (b.dataset.tab !== TAB) { TABX = c; ACT.tab(b); }
-      pillTo(b, true); glassOn(false); L.classList.remove("on", "glide");
-    }, 300);
+      pillTo(b, true); glassReset();
+      if (b.dataset.tab !== TAB) { TABX = c; try { ACT.tab(b); } catch (err) { console.error(err); } }
+    }, 220);
   };
   cap.addEventListener("pointerup", end); cap.addEventListener("pointercancel", end);
+  // never leave the glass stuck: a finger lifted anywhere, or the app coming back, clears it
+  addEventListener("pointerup", () => setTimeout(() => { if (!TABDRAG) glassReset(); }, 400), true);
+  document.addEventListener("visibilitychange", () => { TABDRAG = null; glassReset(); });
   cap.addEventListener("click", e => { if (TABEATCLICK) { e.stopPropagation(); e.preventDefault(); TABEATCLICK = false; } }, true);
   window.addEventListener("resize", () => { lensBuild(); tabsPill(true); });
 }

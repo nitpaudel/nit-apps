@@ -1227,7 +1227,7 @@ function lineChart(pts) {
 }
 
 // ----- tabs and taps -----
-ACT.tab = el => { const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; if (t === TAB) { $("#main").scrollTo({ top: 0, behavior: "smooth" }); return; } TAB = t; haptic(); render(); };
+ACT.tab = el => { const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; if (t === TAB) { $("#main").scrollTo({ top: 0, behavior: "smooth" }); return; } TAB = t; haptic(); $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB)); tabsPill(); requestAnimationFrame(() => setTimeout(render, 0)); };
 document.addEventListener("click", e => { const el = e.target.closest("[data-a]"); if (!el) return; const f = ACT[el.dataset.a]; if (f) { e.preventDefault(); f(el, e); } });
 document.addEventListener("DOMContentLoaded", () => {
   $("#importIn").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { const n = await importExport(JSON.parse(await f.text())); toast(n + " entries loaded"); render(); } catch (er) { toast(er.message || "Could not read that file"); } e.target.value = ""; });
@@ -1685,17 +1685,15 @@ function lensAt(cx) {
   row.style.transform = "translate(" + (-left).toFixed(1) + "px," + (-top).toFixed(1) + "px) scale(1.12)";
 }
 function glassOn(on) { $("#tabs").classList.toggle("held", on); }
-// open tab changed: the lens lifts off the old tab, glides over and drops into the pill
+// open tab changed by a tap: the dark pill slides over (runs on the graphics chip, so it stays smooth)
 function tabsPill(noAnim) {
   const on = $("#tabs .tcap > button.on"), pill = $("#tabs .pill"); if (!pill) return;
   pill.style.opacity = on ? "" : 0; if (!on) { TABX = null; return; }
-  const c = on.offsetLeft + on.offsetWidth / 2, prev = TABX; TABX = c;
-  if (noAnim || prev == null || Math.abs(prev - c) < 2 || TABDRAG) return pillTo(on, true);
-  const L = $("#tabs .lens"); clearTimeout(LENST); lensBuild();
-  L.classList.remove("glide"); lensAt(prev); glassOn(true); L.classList.add("on");
-  requestAnimationFrame(() => requestAnimationFrame(() => { L.classList.add("glide"); lensAt(c); }));
-  LENST = setTimeout(() => { pillTo(on, true); glassOn(false); L.classList.remove("on", "glide"); }, 420);
+  const c = on.offsetLeft + on.offsetWidth / 2, moved = TABX != null && Math.abs(TABX - c) > 2; TABX = c;
+  if (noAnim || !moved) return pillTo(on, true);
+  pill.classList.remove("move"); void pill.offsetWidth; pill.classList.add("move"); pillTo(on);
 }
+function glassReset() { clearTimeout(LENST); const t = $("#tabs"), L = $("#tabs .lens"); if (t) t.classList.remove("held"); if (L) L.classList.remove("on", "glide"); }
 function tabsGlass() {
   const cap = $("#tabs .tcap"); if (!cap || cap._glass) return; cap._glass = 1;
   lensWarp(); tabsPill(true);
@@ -1722,11 +1720,14 @@ function tabsGlass() {
     const b = nearest(D.x), L = $("#tabs .lens"), c = b.offsetLeft + b.offsetWidth / 2;
     L.classList.add("glide"); lensAt(c);
     LENST = setTimeout(() => {
-      if (b.dataset.tab !== TAB) { TABX = c; ACT.tab(b); }
-      pillTo(b, true); glassOn(false); L.classList.remove("on", "glide");
-    }, 300);
+      pillTo(b, true); glassReset();
+      if (b.dataset.tab !== TAB) { TABX = c; try { ACT.tab(b); } catch (err) { console.error(err); } }
+    }, 220);
   };
   cap.addEventListener("pointerup", end); cap.addEventListener("pointercancel", end);
+  // never leave the glass stuck: a finger lifted anywhere, or the app coming back, clears it
+  addEventListener("pointerup", () => setTimeout(() => { if (!TABDRAG) glassReset(); }, 400), true);
+  document.addEventListener("visibilitychange", () => { TABDRAG = null; glassReset(); });
   cap.addEventListener("click", e => { if (TABEATCLICK) { e.stopPropagation(); e.preventDefault(); TABEATCLICK = false; } }, true);
   window.addEventListener("resize", () => { lensBuild(); tabsPill(true); });
 }

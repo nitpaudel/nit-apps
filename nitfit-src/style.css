@@ -1207,3 +1207,25 @@ html[data-theme="light"] .sheet{background:rgba(248,248,250,.84)!important}
 #tabs .lens{background:rgba(112,112,118,.94)!important}
 html[data-theme="light"] #tabs .lens{background:rgba(255,255,255,.94)!important}
 #tabs.held .tcap > button.on{color:var(--gltext)!important}
+/* v6.1: Apple sizes, clear glass, light and fast */
+#tabs{left:calc(50% - 175px);width:350px;height:60px;gap:12px;bottom:max(18px, calc(var(--sab) - 10px))}
+#tabs .tcap{border-radius:30px;padding:0 5px}
+#tabs .tcap > button{height:50px;border-radius:25px;gap:3px}
+#tabs .tcap .pill{top:5px;height:50px;border-radius:25px}
+#tabs .tic,#tabs .tic svg,#tabs [data-tab="dashboard"] .tic svg,#tabs [data-tab="levels"] .tic svg{width:24px;height:24px}
+#tabs .tlb,#tabs .lrow .tlb{font:600 10px/1.1 -apple-system,"SF Pro Text",system-ui,sans-serif;letter-spacing:.01em}
+#tabs .tyou{width:60px;height:60px}
+#tabs .tyou .tic,#tabs .tyou .tic svg{width:27px;height:27px}
+#mini{left:calc(50% - 175px);width:350px;bottom:calc(max(18px, calc(var(--sab) - 10px)) + 68px)}
+/* see-through: almost no blur, like real glass */
+:root{--gl:rgba(34,34,37,.42);--glblur:blur(1.2px) saturate(170%) brightness(.92)}
+html[data-theme="light"]{--gl:rgba(255,255,255,.42);--glblur:blur(1.2px) saturate(170%) brightness(1.06)}
+#tabs .tlb{text-shadow:0 0 8px rgba(0,0,0,.35)}
+html[data-theme="light"] #tabs .tlb{text-shadow:0 0 8px rgba(255,255,255,.6)}
+/* lighter to draw: no extra blur layers on the moving parts */
+#tabs .lens{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#tabs .tcap .pill{transition:transform .32s cubic-bezier(.3,1.25,.5,1),width .25s,opacity .15s!important}
+#tabs .tcap .pill.move{animation:pillSquish .32s ease}
+#tabs .tcap,#tabs .lens,#tabs .tcap .pill{will-change:transform;transform:translateZ(0)}
+#tabs .tcap .pill{transform:translateX(var(--x)) scale(var(--sx),var(--sy))}
+#tabs.held .tcap{transform:scale(1.05,1.08)}
