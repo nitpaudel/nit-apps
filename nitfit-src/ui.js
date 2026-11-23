@@ -292,7 +292,7 @@ function weekScore(done, plan) {
 function solidRing(v, frac, sub, color, track) {
   const S = 104, w = 10, r = (S - w) / 2, c = 2 * Math.PI * r, f = Math.max(0, Math.min(1, frac));
   return '<div class="rv"><svg width="' + S + '" height="' + S + '" viewBox="0 0 ' + S + " " + S + '"><circle cx="52" cy="52" r="' + r + '" fill="none" stroke="' + track + '" stroke-width="' + w + '"/>'
-    + (f > 0 ? '<circle class="arc" cx="52" cy="52" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="' + w + '" stroke-linecap="round" stroke-dasharray="' + (c * f).toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 52 52)"/></svg>'
+    + (f > 0 ? '<circle class="arc" cx="52" cy="52" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="' + w + '" stroke-linecap="round" stroke-dasharray="' + (c * f).toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 52 52)"/>' : "") + "</svg>"
     + '<div class="rc"><b>' + v + "</b><small>" + sub + "</small></div></div>";
 }
 function ringsHtml() {

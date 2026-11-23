@@ -1940,7 +1940,7 @@ function weekScore(done, plan) {
 function solidRing(v, frac, sub, color, track) {
   const S = 104, w = 10, r = (S - w) / 2, c = 2 * Math.PI * r, f = Math.max(0, Math.min(1, frac));
   return '<div class="rv"><svg width="' + S + '" height="' + S + '" viewBox="0 0 ' + S + " " + S + '"><circle cx="52" cy="52" r="' + r + '" fill="none" stroke="' + track + '" stroke-width="' + w + '"/>'
-    + '<circle class="arc" cx="52" cy="52" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="' + w + '" stroke-linecap="round" stroke-dasharray="' + (c * f).toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 52 52)"/></svg>'
+    + (f > 0 ? '<circle class="arc" cx="52" cy="52" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="' + w + '" stroke-linecap="round" stroke-dasharray="' + (c * f).toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 52 52)"/>' : "") + "</svg>"
     + '<div class="rc"><b>' + v + "</b><small>" + sub + "</small></div></div>";
 }
 function ringsHtml() {
@@ -1954,7 +1954,7 @@ function ringsHtml() {
     + one("Exercises", solidRing(dn.ex.size, exFrac, "done", "#7AB8F5", "rgba(122,184,245,.2)"), all ? ls.ex.size + " last week" : "of " + p.ex.size) + "</div>";
   // pace: how many planned sets should be done by the end of today
   const d = today(), w0 = weekSun(d); let due = 0;
-  for (let i = 0; i < 7; i++) { const x = addDays(w0, i); if (x > d) break; const dk = dayKeyFor(x); if (dk) itemsForDay(dk, x).forEach(it => due += it.n); }
+  for (let i = 0; i < 7; i++) { const x = addDays(w0, i); if (x >= d) break; const dk = dayKeyFor(x); if (dk) itemsForDay(dk, x).forEach(it => due += it.n); }
   const left = Math.max(0, p.sets - dn.sets);
   const msg = !p.sets ? "No program sets planned this week."
     : left === 0 ? "Week done. <b>" + dn.sets + " sets</b> logged."
