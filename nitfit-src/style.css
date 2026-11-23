@@ -992,3 +992,37 @@ body.tsmall #mini{transform:translateY(10px)}
 #tabs .pill{top:6px;height:46px;border-radius:23px;background:rgba(255,255,255,.16)}
 #tabs > button,#tabs .plus{height:46px;border-radius:23px}
 #tabs .plus svg{width:28px;height:28px}
+/* v5.0 tab bar from Nit's design: glass capsule (Home, Workouts, Progress) + separate You circle */
+#tabs{left:16px;right:16px;height:58px;padding:0;border-radius:0;display:flex;gap:10px;align-items:stretch;background:none!important;box-shadow:none!important}
+#tabs > .tbg,#tabs > .pill{display:none}
+#tabs .tbg{position:absolute;inset:0;border-radius:inherit;pointer-events:none;clip-path:none!important;
+  background:rgba(44,44,46,.64);-webkit-backdrop-filter:blur(26px) saturate(190%);backdrop-filter:blur(26px) saturate(190%);
+  box-shadow:inset 0 0 0 .6px rgba(255,255,255,.2),inset 0 1px 0 rgba(255,255,255,.12),inset 0 -1px 0 rgba(255,255,255,.04),0 8px 26px rgba(0,0,0,.5)}
+#tabs .tcap{position:relative;flex:1;display:flex;align-items:center;padding:0 4px;border-radius:29px;touch-action:none}
+#tabs .tcap > button,#tabs .tyou{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#9B9BA1;background:transparent!important;transform:none!important;opacity:1!important;font-size:0}
+#tabs .tcap > button{flex:1;height:50px;border-radius:25px}
+#tabs .tyou{flex:none;width:58px;height:58px;border-radius:50%}
+#tabs .tic{position:relative;display:grid;place-items:center;width:24px;height:24px;transition:transform .3s cubic-bezier(.3,1.4,.5,1)}
+#tabs .tic svg{position:absolute;width:23px;height:23px;transition:opacity .15s}
+#tabs .tlb{font:600 10px/1.15 -apple-system,"SF Pro Text",system-ui,sans-serif;letter-spacing:.01em;white-space:nowrap}
+#tabs .tic .f{opacity:0}
+#tabs button.on .tic .f{opacity:1}
+#tabs button.on .tic .o{opacity:0}
+#tabs button.on{color:#fff}
+#tabs .tcap > button.hov .tic{transform:scale(1.14)}
+#tabs .tcap > button:active .tic,#tabs .tyou:active .tic{transform:scale(.9)}
+#tabs .av{position:absolute;width:24px;height:24px;opacity:1!important}
+#tabs .avb{fill:#8E8E93;transition:fill .2s}
+#tabs .tyou.on .avb{fill:#C7C7CC}
+#tabs .tyou.on .tbg{box-shadow:inset 0 0 0 1px rgba(255,255,255,.34),inset 0 1px 0 rgba(255,255,255,.14),0 8px 26px rgba(0,0,0,.5)}
+#tabs .tcap .pill{position:absolute;left:0;top:4px;height:50px;border-radius:25px;z-index:0;pointer-events:none;--x:0px;--sx:1;--sy:1;transform:translateX(var(--x)) scale(var(--sx),var(--sy));
+  background:rgba(0,0,0,.42);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.05);transition:transform .46s cubic-bezier(.32,1.2,.5,1),width .3s,opacity .15s,background .2s,box-shadow .2s;will-change:transform}
+#tabs .tcap .pill.move{animation:pillSquish .4s ease}
+#tabs .tcap.held .pill{--sx:1.1;--sy:1.16;background:rgba(255,255,255,.12);-webkit-backdrop-filter:blur(4px) saturate(160%);backdrop-filter:blur(4px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 0 .6px rgba(255,255,255,.26),0 6px 18px rgba(0,0,0,.45);transition:transform .16s cubic-bezier(.2,.9,.3,1),width .3s,background .2s,box-shadow .2s}
+body.tsmall #tabs{transform:translateY(4px) scale(.9)}
+#mini{left:16px;right:16px;bottom:calc(var(--barb) + 66px)}
+#tabs .tyou .tic,#tabs .tyou .tlb{position:relative;z-index:1}
+#tabs .tyou{color:#9B9BA1}
+#tabs .tyou.on{color:#fff}
+#tabs [data-tab="levels"] .tic svg{width:25px;height:25px}

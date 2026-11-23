@@ -385,7 +385,7 @@ function d2tile(id) {
 }
 function vDash() {
   const d = today(), L = dashLayout();
-  let h = '<div class="d2">' + head("Dashboard", "", '<button class="ib" data-a="dashCustom" aria-label="Customize">' + I.sliders + "</button>");
+  let h = '<div class="d2">' + head("Dashboard", "", '<button class="ib" data-a="plusMenu" aria-label="Quick add">' + I.plus + '</button><button class="ib" data-a="dashCustom" aria-label="Customize">' + I.sliders + "</button>");
   const pg = { rings: '<div class="pg"><div class="d3hd"><h2 class="d2h2">Weekly workouts</h2><span>This week</span></div><div class="d3card" id="rings">' + ringsHtml() + "</div>"
       + '<div class="seg slide d2seg' + (RINGMODE === "all" ? " right" : "") + '"><i class="thumbx"></i><button class="' + (RINGMODE === "program" ? "on" : "") + '" data-a="ringMode" data-v="program">Active program</button><button class="' + (RINGMODE === "all" ? "on" : "") + '" data-a="ringMode" data-v="all">All workouts</button></div></div>',
     records: '<div class="pg"><h2 class="d2h2">Recent records</h2>' + recordsHtml() + "</div>" };
@@ -1627,7 +1627,7 @@ function bindCompact() {
 // Tap: the glass pill slides to the tab. Press and hold: the pill swells into a lens you can drag along the bar,
 // the icon under it grows a little. Let go: it shrinks back into the pill on the nearest tab and opens it.
 let TABDRAG = null, TABEATCLICK = false;
-const tabBtns = () => $$("#tabs > button[data-tab]");
+const tabBtns = () => $$("#tabs .tcap > button[data-tab]");
 function pillTo(x, w, how) {
   const pill = $("#tabs .pill"); if (!pill) return;
   if (how === "jump") { pill.style.transition = "none"; }
@@ -1635,23 +1635,22 @@ function pillTo(x, w, how) {
   if (how === "jump") { pill.offsetWidth; pill.style.transition = ""; }
 }
 function tabsPill(noAnim) {
-  const on = $("#tabs > button.on"), pill = $("#tabs .pill"); if (!on || !pill) return;
+  const on = $("#tabs .tcap > button.on"), pill = $("#tabs .pill"); if (!pill) return; pill.style.opacity = on ? "" : 0; if (!on) return;
   const was = parseFloat(pill.style.getPropertyValue("--x")), x = on.offsetLeft;
   if (noAnim || isNaN(was)) return pillTo(x, on.offsetWidth, "jump");
   if (Math.abs(was - x) > 2) { pill.classList.remove("move"); pill.offsetWidth; pill.classList.add("move"); clearTimeout(tabsPill.t); tabsPill.t = setTimeout(() => pill.classList.remove("move"), 420); }
   pillTo(x, on.offsetWidth);
 }
 function tabsGlass() {
-  const nav = $("#tabs"); if (!nav || nav._glass) return; nav._glass = 1;
+  const nav = $("#tabs .tcap"); if (!nav || nav._glass) return; nav._glass = 1;
   tabsPill(true);
   const scale = () => nav.getBoundingClientRect().width / nav.offsetWidth;
   const local = e => (e.clientX - nav.getBoundingClientRect().left) / scale();
   const nearest = x => { let best = null, d = 1e9; tabBtns().forEach(b => { const k = Math.abs(b.offsetLeft + b.offsetWidth / 2 - x); if (k < d) { d = k; best = b; } }); return best; };
-  const hover = b => $$("#tabs > button").forEach(x => x.classList.toggle("hov", x === b));
-  const follow = x => { const on = $("#tabs > button.on") || tabBtns()[0], w = on.offsetWidth; pillTo(Math.max(0, Math.min(nav.offsetWidth - w, x - w / 2)), w); };
+  const hover = b => $$("#tabs .tcap > button").forEach(x => x.classList.toggle("hov", x === b));
+  const follow = x => { $("#tabs .pill").style.opacity = ""; const on = $("#tabs .tcap > button.on") || tabBtns()[0], w = on.offsetWidth; pillTo(Math.max(0, Math.min(nav.offsetWidth - w, x - w / 2)), w); };
   const hold = () => { const D = TABDRAG; if (!D || D.held) return; D.held = true; nav.classList.add("held"); try { nav.setPointerCapture(D.id); } catch (_) {} follow(D.x); const h = nearest(D.x); hover(h); D.hover = h; haptic(); };
   nav.addEventListener("pointerdown", e => {
-    if (e.target.closest(".plus")) return;
     TABDRAG = { id: e.pointerId, x0: e.clientX, x: local(e), held: false, hover: null };
     TABDRAG.t = setTimeout(hold, 180);
   });
