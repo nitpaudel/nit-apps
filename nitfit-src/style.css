@@ -985,3 +985,10 @@ body.tsmall #mini{transform:translateY(14px)}
 body.tsmall #tabs{transform:translateY(4px) scale(.9)}
 #mini{bottom:calc(var(--barb) + 64px);left:26px;right:26px}
 body.tsmall #mini{transform:translateY(10px)}
+/* v4.9 own rounded icon set, Instagram weight */
+#tabs{height:58px;border-radius:29px}
+#tabs .tbg{border-radius:29px}
+#tabs > button svg{width:28px;height:28px}
+#tabs .pill{top:6px;height:46px;border-radius:23px;background:rgba(255,255,255,.16)}
+#tabs > button,#tabs .plus{height:46px;border-radius:23px}
+#tabs .plus svg{width:28px;height:28px}
