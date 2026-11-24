@@ -1803,11 +1803,12 @@ function lensWarp() {
 // each strip moved and stretched with the scroll. Nothing is blurred.
 const RF = { k: 1.6, M: 10, R: 22, last: 0 };
 function rfZones(H) {
-  // matched to Apple's screenshots: the top and bottom part (about a third each) mirror the page that is
-  // behind them, a little stretched; the middle shows the page straight. Text outside the bar never shows.
-  const Z = Math.round(H * .36), k = .9;
-  const ct = Z / 2, cb = H - Z / 2;
-  return [[0, Z, ct * (1 + k), -k], [Z, H - Z, 0, 1], [H - Z, H, cb * (1 + k), -k]];
+  // droop, never a flip: the page behind the top and bottom edge stretches toward the edge. Middle stays straight.
+  const Z = Math.round(H * .30), parts = [[2 / 3, 1, .9], [1 / 3, 2 / 3, .72], [0, 1 / 3, .52]];
+  const top = [], bot = []; let sT = Z, tT = Z;
+  parts.forEach(([f0, f1, b]) => { const t0 = Z * f0, t1 = Z * f1, a = sT - b * tT; top.push([t0, t1, a, b]); sT = a + b * t0; tT = t0; });
+  top.forEach(([t0, t1, a, b]) => bot.push([H - t1, H - t0, H - a - b * H, b]));
+  return top.concat([[Z, H - Z, 0, 1]], bot);
 }
 function rfInit() {
   if (RF.els) return; RF.els = [];
