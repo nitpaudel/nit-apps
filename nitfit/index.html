@@ -1852,7 +1852,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "8.5";
+const APP_VERSION = "8.6";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -3869,9 +3869,10 @@ function lensWarp() {
 // each strip moved and stretched with the scroll. Nothing is blurred.
 const RF = { k: 1.6, M: 10, R: 22, last: 0 };
 function rfZones(H) {
-  const k = RF.k, M = RF.M, R = Math.min(RF.R, H / 2 - 4), b = (R + k * M) / (R - M), a = R - b * R;
-  // each zone: [y0, y1, a, b] meaning the strip at bar-height y shows the page at (bar top + a + b*y)
-  return [[0, M, 0, -k], [M, R, a, b], [R, H - R, 0, 1], [H - R, H - M, H * (1 - b) - a, b], [H - M, H, H * (1 + k), -k]];
+  // three parts, like Apple: the top part and the bottom part flip only the text that is behind them,
+  // the middle shows the page straight. Text outside the bar never shows inside it.
+  const Z = Math.round(H * .3);
+  return [[0, Z, Z, -1], [Z, H - Z, 0, 1], [H - Z, H, 2 * H - Z, -1]];
 }
 function rfInit() {
   if (RF.els) return; RF.els = [];
