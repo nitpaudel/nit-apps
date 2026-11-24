@@ -43,7 +43,7 @@ svg{display:block}
 
 /* ===== screens ===== */
 .scr{position:fixed;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;background:var(--bg)}
-#main{padding-bottom:calc(var(--sab) + 110px)}
+#main,.rfm{padding-bottom:calc(var(--sab) + 110px)}
 #page{z-index:30;transform:translateX(100%);transition:transform .38s var(--ease);box-shadow:-10px 0 30px rgba(0,0,0,.25)}
 #page.on{transform:none}
 .head{background:var(--top);padding:calc(var(--sat) + 18px) 20px 18px}
@@ -536,7 +536,7 @@ html[data-theme="light"] .tipc{background:#e9e4ff;color:#2b2250}
 #mini .thumb{width:32px;height:42px;border-radius:6px}
 #mini .mb{width:40px;height:40px;border-radius:50%;background:var(--chip);display:grid;place-items:center}
 #mini .mb svg{width:16px;height:16px}
-body.hasmini #main{padding-bottom:calc(var(--sab) + 180px)}
+body.hasmini #main,body.hasmini .rfm{padding-bottom:calc(var(--sab) + 180px)}
 
 /* dialog */
 .dlg{position:fixed;inset:0;z-index:90;display:flex;align-items:flex-end;padding:12px 12px calc(var(--sab) + 16px);pointer-events:none}
@@ -612,7 +612,7 @@ body::before{display:none}
 .tin.gfield{display:grid;place-items:center}
 .kp.gp{z-index:58}
 body.gpon .sheet .sbody{padding-bottom:350px}
-body.gpon #main{padding-bottom:420px}
+body.gpon #main,body.gpon .rfm{padding-bottom:420px}
 .kp-info b{color:var(--text);font-weight:600}
 
 /* ===== v3.4 ===== */
@@ -628,7 +628,7 @@ body.gpon #main{padding-bottom:420px}
 /* tab bar sits lower, like the real app */
 #tabs{padding:6px 6px max(6px, calc(var(--sab) - 16px))}
 #mini{bottom:calc(max(6px, var(--sab) - 16px) + 74px)}
-#main{padding-bottom:calc(var(--sab) + 100px)}
+#main,.rfm{padding-bottom:calc(var(--sab) + 100px)}
 #page .body-pad{padding-bottom:calc(var(--sab) + 40px)}
 /* ticks centred in every box */
 .fixrow .cb,.wrow .cb,span.cb{display:grid!important;place-items:center;margin-top:0;padding:0}
@@ -674,8 +674,8 @@ html[data-theme="light"] #tabs button.on:not(.plus){background:rgba(0,0,0,.05)}
   box-shadow:inset 0 0 0 1px var(--glassline),0 8px 30px rgba(0,0,0,.35);transition:left .38s var(--ease),right .38s var(--ease),bottom .38s var(--ease)}
 #mini .mb{width:44px;height:44px;background:transparent}
 #mini .thumb{width:30px;height:38px}
-#main{padding-bottom:calc(var(--barb) + 96px)}
-body.hasmini #main{padding-bottom:calc(var(--barb) + 170px)}
+#main,.rfm{padding-bottom:calc(var(--barb) + 96px)}
+body.hasmini #main,body.hasmini .rfm{padding-bottom:calc(var(--barb) + 170px)}
 
 /* ===== v3.7: Apple Music fold, transforms only ===== */
 :root{--barb:max(8px, calc(var(--sab) - 14px));--fold:.46s cubic-bezier(.32,.72,0,1)}
@@ -818,7 +818,7 @@ html[data-theme="light"] .b3w{background:radial-gradient(120% 80% at 50% 40%,#3a
 .lvempty2{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:2;font-size:13px;color:#d8d8dc;background:rgba(40,40,42,.7);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:8px 14px;border-radius:16px;white-space:nowrap}
 .thumb{background:#2b2626}
 /* v4.3 body: 3D, built from the 4 paintings */
-#main[data-tab="levels"] .b3w{height:min(80vh,700px);margin:calc(var(--sat,0px) + 6px) -16px 0;background:radial-gradient(110% 70% at 50% 42%,#26262a 0%,var(--bg) 72%)}
+#main[data-tab="levels"] .b3w,.rfm[data-tab="levels"] .b3w{height:min(80vh,700px);margin:calc(var(--sat,0px) + 6px) -16px 0;background:radial-gradient(110% 70% at 50% 42%,#26262a 0%,var(--bg) 72%)}
 .b2{position:absolute;inset:0;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .b2.zoomed{touch-action:none}
 .b2stage{position:absolute;transform-origin:50% 50%}
@@ -830,7 +830,7 @@ html[data-theme="light"] .b3w{background:radial-gradient(120% 80% at 50% 40%,#3a
 .b2name{position:absolute;left:16px;top:12px;z-index:2;display:flex;align-items:center;gap:6px;height:32px;padding:0 12px 0 14px;border-radius:16px;font-size:15px;font-weight:600;color:#fff;background:rgba(40,40,44,.6);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 .b2name .chev{width:7px;height:12px;opacity:.7}
 /* v4.5 Dashboard, Apple style (dashboard only) */
-#main[data-tab="dashboard"]{background:var(--dbg);--dacc:#FF9F0A;--sf:-apple-system,"SF Pro Text","SF Pro Display",system-ui,"Helvetica Neue",sans-serif;--sfr:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,sans-serif}
+#main[data-tab="dashboard"],.rfm[data-tab="dashboard"]{background:var(--dbg);--dacc:#FF9F0A;--sf:-apple-system,"SF Pro Text","SF Pro Display",system-ui,"Helvetica Neue",sans-serif;--sfr:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,sans-serif}
 .d2{font-family:var(--sf);-webkit-font-smoothing:antialiased}
 .d2 .head{background:var(--dbg);padding:calc(var(--sat) + 14px) 16px 4px}
 .d2 .head .title{font:700 34px/1.12 var(--sf);letter-spacing:.012em;text-transform:none;transform:none}
@@ -916,7 +916,7 @@ html[data-theme="light"] .b3w{background:radial-gradient(120% 80% at 50% 40%,#3a
 .d2 .d2seg button,.d2 .d2seg button.on{color:var(--dt)!important}
 .d2 .d2seg button:not(.on){color:var(--ds2)!important}
 /* v4.7 tab bar: Instagram size, shrinks on scroll, liquid glass pill and lens */
-#main[data-tab="profile"]{background:var(--dbg);--dacc:#FF9F0A;--sf:-apple-system,"SF Pro Text","SF Pro Display",system-ui,"Helvetica Neue",sans-serif;--sfr:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,sans-serif}
+#main[data-tab="profile"],.rfm[data-tab="profile"]{background:var(--dbg);--dacc:#FF9F0A;--sf:-apple-system,"SF Pro Text","SF Pro Display",system-ui,"Helvetica Neue",sans-serif;--sfr:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,sans-serif}
 #tabs{left:18px;right:18px;height:60px;border-radius:30px;padding:0 6px;display:flex;align-items:center;justify-content:space-between;transform-origin:50% 100%;transition:transform .42s cubic-bezier(.32,.72,0,1);touch-action:none;overflow:visible;-webkit-user-select:none;user-select:none}
 #tabs .tbg{border-radius:30px;clip-path:none!important;background:var(--dglass);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);
   box-shadow:inset 0 0 0 .5px rgba(255,255,255,.16),inset 0 1px 0 rgba(255,255,255,.07),0 10px 30px rgba(0,0,0,.45)}
@@ -969,7 +969,7 @@ body.tsmall #mini{transform:translateY(14px)}
 .pf .rec span{font:400 14px var(--sf);color:var(--ds)}
 /* v4.8: true black everywhere, no orange, WhatsApp-style glass tab bar with real icons */
 :root,html[data-theme="dark"]{--bg:var(--dbg);--top:var(--dbg);--card:var(--dcard);--card2:var(--dfill);--chip:var(--dfill)}
-#main[data-tab="dashboard"],#main[data-tab="profile"]{--dacc:#0A84FF}
+#main[data-tab="dashboard"],#main[data-tab="profile"],.rfm[data-tab="dashboard"],.rfm[data-tab="profile"]{--dacc:#0A84FF}
 .d2cal i.on{background:var(--dt)}
 .d2cal i.today{box-shadow:0 0 0 1.5px #0A84FF}
 #tabs{left:26px;right:26px;height:56px;border-radius:28px;padding:0 6px}
@@ -1321,17 +1321,24 @@ html[data-theme="light"] .mcard{background:linear-gradient(180deg,rgba(255,255,2
 #tabs .tyou .tic,#tabs .tyou .tic svg{width:25px!important;height:25px!important}
 
 /* v8.4: brighter, clearer bar glass, closer to Apple's */
-:root{--gl:rgba(84,84,90,.38);--glblur:blur(1.4px) saturate(175%) brightness(.96);
+:root{--gl:rgba(92,92,98,.30);--glblur:saturate(170%);
   --glrim:inset 0 0 0 .6px rgba(255,255,255,.17),inset 0 1px .5px rgba(255,255,255,.24),inset 0 -1px .5px rgba(255,255,255,.09)}
 html[data-theme="light"]{--gl:rgba(255,255,255,.45)}
-/* rim refraction bands */
-#tabs .rfw{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none}
-#tabs .rfb{position:absolute;left:0;right:0;height:9px;overflow:hidden;-webkit-backdrop-filter:blur(6px) saturate(160%);backdrop-filter:blur(6px) saturate(160%);background:rgba(60,60,66,.22)}
-#tabs .rft{top:0;-webkit-mask-image:linear-gradient(#000 45%,transparent);mask-image:linear-gradient(#000 45%,transparent)}
-#tabs .rfbm{bottom:0;-webkit-mask-image:linear-gradient(transparent,#000 55%);mask-image:linear-gradient(transparent,#000 55%)}
-#tabs .rfc{position:absolute;left:0;top:0;right:0;height:100px}
-#tabs .rfc > div{transform-origin:0 0;will-change:transform;opacity:.92;contain:layout paint}
-html[data-theme="light"] #tabs .rfb{background:rgba(255,255,255,.25)}
+
+
+/* v8.5: clear glass, no blur. The bar shows its own sharp copy of the page (bent at the edges),
+   with a light grey tint and a bright rim on top. */
+html[data-theme="light"]{--glblur:saturate(160%)}
+#tabs .tcap > .tbg,#tabs .tyou .tbg{background:var(--bg)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:var(--glshadow)!important}
+#tabs .rfw{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;isolation:isolate}
+#tabs .tyou .rfw{border-radius:50%}
+#tabs .rfw::after{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--gl);box-shadow:var(--glrim);z-index:2}
+#tabs .rfs{position:absolute;left:0;right:0;overflow:hidden}
+#tabs .rfo{position:absolute;left:0;right:0;height:0}
+#tabs .tyou .tic,#tabs .tyou .tbg::after{z-index:3}
+#tabs .tyou .tbg::after{display:none}
+#tabs .tyou .rfw::before{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--glpill);z-index:3;opacity:0;transition:opacity .2s}
+#tabs .tyou.on .rfw::before{opacity:1}
 
 </style>
 </head>
@@ -1845,7 +1852,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "8.4";
+const APP_VERSION = "8.5";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -3855,38 +3862,58 @@ function lensWarp() {
   const fe = document.getElementById("lgwImg"); if (fe) { fe.setAttribute("href", c.toDataURL()); fe.setAttributeNS("http://www.w3.org/1999/xlink", "href", c.toDataURL()); }
 }
 
-// ----- Rim refraction -----
-// Apple's bar bends the page behind it: right at the top and bottom edge you see the page flipped and squeezed.
-// Safari can't bend what is behind an element, so we keep a light copy of the page inside two thin rim bands
-// and flip it there, moving it with the scroll. Only the bands draw it, so it costs very little.
-const RF = { k: 1.7, B: 9 };
+// ----- Clear glass lens for the bar -----
+// Apple's bar does not blur. You see the page through it, sharp. Near the top and bottom edge the page
+// bends: first it gets squeezed toward the edge, then right at the edge it shows up flipped.
+// Safari can't bend what is behind an element, so the bar draws its own copy of the page in thin strips,
+// each strip moved and stretched with the scroll. Nothing is blurred.
+const RF = { k: 1.6, M: 10, R: 22, last: 0 };
+function rfZones(H) {
+  const k = RF.k, M = RF.M, R = Math.min(RF.R, H / 2 - 4), b = (R + k * M) / (R - M), a = R - b * R;
+  // each zone: [y0, y1, a, b] meaning the strip at bar-height y shows the page at (bar top + a + b*y)
+  return [[0, M, 0, -k], [M, R, a, b], [R, H - R, 0, 1], [H - R, H - M, H * (1 - b) - a, b], [H - M, H, H * (1 + k), -k]];
+}
 function rfInit() {
-  const cap = $("#tabs .tcap"); if (!cap || RF.w) return;
-  const w = document.createElement("div"); w.className = "rfw"; w.setAttribute("aria-hidden", "true");
-  w.innerHTML = '<div class="rfb rft"><div class="rfc"></div></div><div class="rfb rfbm"><div class="rfc"></div></div>';
-  cap.insertBefore(w, cap.querySelector(".pill")); RF.w = w;
+  if (RF.els) return; RF.els = [];
+  [["#tabs .tcap", ".pill"], ["#tabs .tyou", ".tic"]].forEach(([sel, before]) => {
+    const el = $(sel); if (!el) return;
+    const w = document.createElement("div"); w.className = "rfw"; w.setAttribute("aria-hidden", "true");
+    el.insertBefore(w, el.querySelector(before)); RF.els.push({ el, w });
+  });
   const m = $("#main"); m.addEventListener("scroll", rfMove, { passive: true });
-  let t = 0; new MutationObserver(() => { clearTimeout(t); t = setTimeout(rfSync, 120); }).observe(m, { childList: true, subtree: true, characterData: true });
+  let t = 0; new MutationObserver(() => { clearTimeout(t); const wait = Math.max(150, 900 - (Date.now() - RF.last)); t = setTimeout(rfSync, wait); }).observe(m, { childList: true, subtree: true, characterData: true });
   addEventListener("resize", () => setTimeout(rfSync, 80));
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") setTimeout(rfSync, 300); });
   rfSync();
 }
 function rfSync() {
-  if (!RF.w) return; const m = $("#main"), cap = $("#tabs .tcap"); if (!m || !cap) return;
-  const mr = m.getBoundingClientRect(), cr = cap.getBoundingClientRect(), cs = getComputedStyle(m);
-  RF.m = { top: mr.top, left: mr.left, w: m.clientWidth }; RF.c = { top: cr.top, left: cr.left, h: cap.offsetHeight };
-  const src = document.createElement("div"); src.className = m.className; src.innerHTML = m.innerHTML;
-  src.querySelectorAll("[id]").forEach(e => e.removeAttribute("id")); src.querySelectorAll("canvas,video,iframe,input,textarea,select").forEach(e => e.remove());
-  RF.w.querySelectorAll(".rfc").forEach((c, i) => {
-    const n = i ? src.cloneNode(true) : src; n.style.cssText = "position:absolute;left:" + (mr.left - cr.left) + "px;top:0;width:" + m.clientWidth + "px;padding:" + cs.padding + ";box-sizing:border-box;margin:0;height:auto;max-height:none;overflow:visible";
-    c.replaceChildren(n); if (i) c.style.top = -(RF.c.h - RF.B) + "px";
+  if (!RF.els) return; RF.last = Date.now(); const m = $("#main"); if (!m) return;
+  const mr = m.getBoundingClientRect(), cs = getComputedStyle(m);
+  RF.m = { top: mr.top, left: mr.left };
+  const src = document.createElement("div"); src.className = m.className + " rfm"; src.dataset.tab = m.dataset.tab || ""; src.innerHTML = m.innerHTML;
+  src.querySelectorAll("[id]").forEach(e => e.removeAttribute("id")); src.querySelectorAll("canvas,video,iframe,input,textarea,select,script").forEach(e => e.remove());
+  src.style.cssText = "position:absolute;top:0;width:" + m.clientWidth + "px;padding:" + cs.padding + ";box-sizing:border-box;margin:0;height:auto;max-height:none;overflow:visible;transform-origin:0 0;text-align:left;font:" + cs.font + ";color:" + cs.color + ";letter-spacing:" + cs.letterSpacing + ";white-space:normal";
+  RF.els.forEach(o => {
+    const r = o.el.getBoundingClientRect(), H = o.el.offsetHeight; o.top = r.top; o.H = H; o.zones = rfZones(H);
+    const frag = document.createDocumentFragment(); o.clones = [];
+    o.zones.forEach(([y0, y1]) => {
+      const st = document.createElement("div"); st.className = "rfs"; st.style.cssText = "top:" + y0 + "px;height:" + (y1 - y0) + "px";
+      const off = document.createElement("div"); off.className = "rfo"; off.style.top = -y0 + "px";
+      const c = src.cloneNode(true); c.style.left = (mr.left - r.left) + "px"; off.appendChild(c); st.appendChild(off); frag.appendChild(st); o.clones.push(c);
+    });
+    o.w.replaceChildren(frag);
   });
   rfMove();
 }
 function rfMove() {
-  if (!RF.m) return; const y = $("#main").scrollTop, k = RF.k, H = RF.c.h, rel = RF.c.top - RF.m.top + y, rb = RF.c.top + H - RF.m.top + y;
-  const [a, b] = RF.w.querySelectorAll(".rfc > div");
-  if (a) a.style.transform = "translate3d(0," + (rel / k).toFixed(2) + "px,0) scaleY(" + (-1 / k).toFixed(4) + ")";
-  if (b) b.style.transform = "translate3d(0," + (H + rb / k).toFixed(2) + "px,0) scaleY(" + (-1 / k).toFixed(4) + ")";
+  if (!RF.m || !RF.els) return; const y = $("#main").scrollTop;
+  RF.els.forEach(o => {
+    if (!o.clones) return;
+    o.zones.forEach(([, , a, b], i) => {
+      const T = (RF.m.top - y - o.top - a) / b;
+      o.clones[i].style.transform = "translate(0," + T.toFixed(2) + "px) scale(1," + (1 / b).toFixed(4) + ")";
+    });
+  });
 }
 // glass buttons swell the moment a finger lands, and spring back when it lifts
 (function glassPress() {

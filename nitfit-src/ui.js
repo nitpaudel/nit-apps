@@ -1796,38 +1796,58 @@ function lensWarp() {
   const fe = document.getElementById("lgwImg"); if (fe) { fe.setAttribute("href", c.toDataURL()); fe.setAttributeNS("http://www.w3.org/1999/xlink", "href", c.toDataURL()); }
 }
 
-// ----- Rim refraction -----
-// Apple's bar bends the page behind it: right at the top and bottom edge you see the page flipped and squeezed.
-// Safari can't bend what is behind an element, so we keep a light copy of the page inside two thin rim bands
-// and flip it there, moving it with the scroll. Only the bands draw it, so it costs very little.
-const RF = { k: 1.7, B: 9 };
+// ----- Clear glass lens for the bar -----
+// Apple's bar does not blur. You see the page through it, sharp. Near the top and bottom edge the page
+// bends: first it gets squeezed toward the edge, then right at the edge it shows up flipped.
+// Safari can't bend what is behind an element, so the bar draws its own copy of the page in thin strips,
+// each strip moved and stretched with the scroll. Nothing is blurred.
+const RF = { k: 1.6, M: 10, R: 22, last: 0 };
+function rfZones(H) {
+  const k = RF.k, M = RF.M, R = Math.min(RF.R, H / 2 - 4), b = (R + k * M) / (R - M), a = R - b * R;
+  // each zone: [y0, y1, a, b] meaning the strip at bar-height y shows the page at (bar top + a + b*y)
+  return [[0, M, 0, -k], [M, R, a, b], [R, H - R, 0, 1], [H - R, H - M, H * (1 - b) - a, b], [H - M, H, H * (1 + k), -k]];
+}
 function rfInit() {
-  const cap = $("#tabs .tcap"); if (!cap || RF.w) return;
-  const w = document.createElement("div"); w.className = "rfw"; w.setAttribute("aria-hidden", "true");
-  w.innerHTML = '<div class="rfb rft"><div class="rfc"></div></div><div class="rfb rfbm"><div class="rfc"></div></div>';
-  cap.insertBefore(w, cap.querySelector(".pill")); RF.w = w;
+  if (RF.els) return; RF.els = [];
+  [["#tabs .tcap", ".pill"], ["#tabs .tyou", ".tic"]].forEach(([sel, before]) => {
+    const el = $(sel); if (!el) return;
+    const w = document.createElement("div"); w.className = "rfw"; w.setAttribute("aria-hidden", "true");
+    el.insertBefore(w, el.querySelector(before)); RF.els.push({ el, w });
+  });
   const m = $("#main"); m.addEventListener("scroll", rfMove, { passive: true });
-  let t = 0; new MutationObserver(() => { clearTimeout(t); t = setTimeout(rfSync, 120); }).observe(m, { childList: true, subtree: true, characterData: true });
+  let t = 0; new MutationObserver(() => { clearTimeout(t); const wait = Math.max(150, 900 - (Date.now() - RF.last)); t = setTimeout(rfSync, wait); }).observe(m, { childList: true, subtree: true, characterData: true });
   addEventListener("resize", () => setTimeout(rfSync, 80));
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") setTimeout(rfSync, 300); });
   rfSync();
 }
 function rfSync() {
-  if (!RF.w) return; const m = $("#main"), cap = $("#tabs .tcap"); if (!m || !cap) return;
-  const mr = m.getBoundingClientRect(), cr = cap.getBoundingClientRect(), cs = getComputedStyle(m);
-  RF.m = { top: mr.top, left: mr.left, w: m.clientWidth }; RF.c = { top: cr.top, left: cr.left, h: cap.offsetHeight };
-  const src = document.createElement("div"); src.className = m.className; src.innerHTML = m.innerHTML;
-  src.querySelectorAll("[id]").forEach(e => e.removeAttribute("id")); src.querySelectorAll("canvas,video,iframe,input,textarea,select").forEach(e => e.remove());
-  RF.w.querySelectorAll(".rfc").forEach((c, i) => {
-    const n = i ? src.cloneNode(true) : src; n.style.cssText = "position:absolute;left:" + (mr.left - cr.left) + "px;top:0;width:" + m.clientWidth + "px;padding:" + cs.padding + ";box-sizing:border-box;margin:0;height:auto;max-height:none;overflow:visible";
-    c.replaceChildren(n); if (i) c.style.top = -(RF.c.h - RF.B) + "px";
+  if (!RF.els) return; RF.last = Date.now(); const m = $("#main"); if (!m) return;
+  const mr = m.getBoundingClientRect(), cs = getComputedStyle(m);
+  RF.m = { top: mr.top, left: mr.left };
+  const src = document.createElement("div"); src.className = m.className + " rfm"; src.dataset.tab = m.dataset.tab || ""; src.innerHTML = m.innerHTML;
+  src.querySelectorAll("[id]").forEach(e => e.removeAttribute("id")); src.querySelectorAll("canvas,video,iframe,input,textarea,select,script").forEach(e => e.remove());
+  src.style.cssText = "position:absolute;top:0;width:" + m.clientWidth + "px;padding:" + cs.padding + ";box-sizing:border-box;margin:0;height:auto;max-height:none;overflow:visible;transform-origin:0 0;text-align:left;font:" + cs.font + ";color:" + cs.color + ";letter-spacing:" + cs.letterSpacing + ";white-space:normal";
+  RF.els.forEach(o => {
+    const r = o.el.getBoundingClientRect(), H = o.el.offsetHeight; o.top = r.top; o.H = H; o.zones = rfZones(H);
+    const frag = document.createDocumentFragment(); o.clones = [];
+    o.zones.forEach(([y0, y1]) => {
+      const st = document.createElement("div"); st.className = "rfs"; st.style.cssText = "top:" + y0 + "px;height:" + (y1 - y0) + "px";
+      const off = document.createElement("div"); off.className = "rfo"; off.style.top = -y0 + "px";
+      const c = src.cloneNode(true); c.style.left = (mr.left - r.left) + "px"; off.appendChild(c); st.appendChild(off); frag.appendChild(st); o.clones.push(c);
+    });
+    o.w.replaceChildren(frag);
   });
   rfMove();
 }
 function rfMove() {
-  if (!RF.m) return; const y = $("#main").scrollTop, k = RF.k, H = RF.c.h, rel = RF.c.top - RF.m.top + y, rb = RF.c.top + H - RF.m.top + y;
-  const [a, b] = RF.w.querySelectorAll(".rfc > div");
-  if (a) a.style.transform = "translate3d(0," + (rel / k).toFixed(2) + "px,0) scaleY(" + (-1 / k).toFixed(4) + ")";
-  if (b) b.style.transform = "translate3d(0," + (H + rb / k).toFixed(2) + "px,0) scaleY(" + (-1 / k).toFixed(4) + ")";
+  if (!RF.m || !RF.els) return; const y = $("#main").scrollTop;
+  RF.els.forEach(o => {
+    if (!o.clones) return;
+    o.zones.forEach(([, , a, b], i) => {
+      const T = (RF.m.top - y - o.top - a) / b;
+      o.clones[i].style.transform = "translate(0," + T.toFixed(2) + "px) scale(1," + (1 / b).toFixed(4) + ")";
+    });
+  });
 }
 // glass buttons swell the moment a finger lands, and spring back when it lifts
 (function glassPress() {
