@@ -1246,7 +1246,7 @@ ACT.tab = el => { const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; 
   TAB = t; if (!el._glass) haptic(); $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB));
   const fade = () => { const go = tabXfade(); render(); go(); rfLater(650); };
   if (el._glass) { fade(); return; }
-  if (from >= 0 && to >= 0 && lgOk()) { LG.run = true; LG.rid = (LG.rid || 0) + 1; lgMsg({ t: "fly", from, to, id: LG.rid }); fade(); return; }
+  if (to >= 0 && lgOk()) { LG.run = true; LG.rid = (LG.rid || 0) + 1; lgMsg({ t: "fly", from: from >= 0 ? from : to, to, id: LG.rid }); fade(); return; }
   tabsPill(); requestAnimationFrame(() => setTimeout(fade, 0)); };
 document.addEventListener("click", e => { const el = e.target.closest("[data-a]"); if (!el) return; const f = ACT[el.dataset.a]; if (f) { e.preventDefault(); f(el, e); } });
 document.addEventListener("DOMContentLoaded", () => {
@@ -1811,11 +1811,16 @@ function rfZones(H) {
 }
 function rfInit() {
   if (RF.els) return; RF.els = [];
-  // the copy sits just under the bar (not inside it), so the bar's own styles can't change the copied page
-  [["#tabs .tcap", "rfw-cap"], ["#tabs .tyou", "rfw-you"]].forEach(([sel, cls]) => {
+  const css = [...document.querySelectorAll("style")].map(x => x.textContent).join("\n");
+  [["#tabs .tcap", ".tbg"], ["#tabs .tyou", ".tbg"]].forEach(([sel, before]) => {
     const el = $(sel); if (!el) return;
-    const w = document.createElement("div"); w.className = "rfw " + cls; w.setAttribute("aria-hidden", "true");
-    $("#tabs").before(w); RF.els.push({ el, w });
+    const w = document.createElement("div"); w.className = "rfw"; w.setAttribute("aria-hidden", "true");
+    el.insertBefore(w, el.querySelector(before));
+    // sealed box: the bar's own styles can't reach the copied page, the page's styles come with it
+    const root = w.attachShadow({ mode: "open" }), st = document.createElement("style"), box = document.createElement("div"), tint = document.createElement("div");
+    st.textContent = css + "\n.rfbox{position:absolute;inset:0;overflow:hidden;border-radius:inherit}.rfs{position:absolute;left:0;right:0;overflow:hidden}.rfo{position:absolute;left:0;right:0;height:0}.rftint{position:absolute;inset:0;border-radius:inherit;background:var(--gl);box-shadow:var(--glrim);pointer-events:none}";
+    box.className = "rfbox"; tint.className = "rftint"; root.append(st, box, tint);
+    RF.els.push({ el, w, box });
   });
   const m = $("#main"); m.addEventListener("scroll", rfMove, { passive: true });
   let hx = 0; m.addEventListener("scroll", e => { if (e.target !== m) { clearTimeout(hx); hx = setTimeout(rfSync, 160); } }, { passive: true, capture: true });
@@ -1827,15 +1832,17 @@ function rfInit() {
 }
 let RFT = 0;
 function rfLater(ms) { clearTimeout(RFT); $("#tabs").classList.add("rfstale"); RFT = setTimeout(function go() { if (LG.run) { RFT = setTimeout(go, 200); return; } (window.requestIdleCallback || setTimeout)(rfSync, { timeout: 300 }); }, ms); }
+function rfRect(el) { const t = $("#tabs").getBoundingClientRect(); let x = 0, y = 0, e = el; while (e && e.id !== "tabs") { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; } return { left: t.left + x, top: t.top + y }; }
 function rfPos() {
   if (!RF.els) return; let moved = false;
-  RF.els.forEach(o => { const r = o.el.getBoundingClientRect(); if (o.top == null || Math.abs(r.top - o.top) > .5 || Math.abs(r.left - (o.left || 0)) > .5) { o.top = r.top; o.left = r.left; o.w.style.top = r.top + "px"; o.w.style.left = r.left + "px"; moved = true; } o.w.style.display = $("#tabs").hidden ? "none" : "block"; });
+  RF.els.forEach(o => { const r = rfRect(o.el); if (o.top == null || Math.abs(r.top - o.top) > .5 || Math.abs(r.left - (o.left || 0)) > .5) { o.top = r.top; o.left = r.left; moved = true; } });
   if (moved) rfMove();
 }
 function rfSync() {
   if (!RF.els) return; RF.last = Date.now(); const m = $("#main"); if (!m) return;
   const mr = m.getBoundingClientRect(), cs = getComputedStyle(m);
   RF.m = { top: mr.top, left: mr.left };
+  const bs = getComputedStyle(document.body); RF.els.forEach(o => { o.box.style.cssText = "font-family:" + bs.fontFamily + ";font-size:" + bs.fontSize + ";line-height:" + bs.lineHeight + ";color:" + bs.color + ";letter-spacing:" + bs.letterSpacing + ";font-weight:" + bs.fontWeight + ";-webkit-font-smoothing:antialiased;text-align:left;white-space:normal"; });
   const sx = []; m.querySelectorAll("*").forEach(e => { if (e.scrollLeft > 0) { e.dataset.rfx = sx.length; sx.push(e.scrollLeft); } });
   const src = document.createElement("div"); src.className = m.className + " rfm"; src.dataset.tab = m.dataset.tab || ""; src.innerHTML = m.innerHTML;
   src.querySelectorAll("[id]").forEach(e => e.removeAttribute("id")); src.querySelectorAll("script").forEach(e => e.remove());
@@ -1845,18 +1852,16 @@ function rfSync() {
   src.querySelectorAll("img").forEach(e => { e.loading = "eager"; e.decoding = "sync"; });
   src.style.cssText = "position:absolute;top:0;width:" + m.clientWidth + "px;padding:" + cs.padding + ";box-sizing:border-box;margin:0;height:auto;max-height:none;overflow:visible;transform-origin:0 0";
   RF.els.forEach(o => {
-    const r = o.el.getBoundingClientRect(), H = o.el.offsetHeight; o.top = r.top; o.left = r.left; o.H = H; o.zones = rfZones(H);
-    const z = parseInt(getComputedStyle($("#tabs")).zIndex) || 50;
-    o.w.style.cssText = "left:" + r.left + "px;top:" + r.top + "px;width:" + o.el.offsetWidth + "px;height:" + H + "px;border-radius:" + getComputedStyle(o.el).borderRadius + ";z-index:" + (z - 1) + ";display:" + ($("#tabs").hidden ? "none" : "block");
+    const r = rfRect(o.el), H = o.el.offsetHeight; o.top = r.top; o.left = r.left; o.H = H; o.zones = rfZones(H);
     const frag = document.createDocumentFragment(); o.clones = [];
     o.zones.forEach(([y0, y1]) => {
       const st = document.createElement("div"); st.className = "rfs"; st.style.cssText = "top:" + y0 + "px;height:" + (y1 - y0) + "px";
       const off = document.createElement("div"); off.className = "rfo"; off.style.top = -y0 + "px";
       const c = src.cloneNode(true); c.style.left = (mr.left - r.left) + "px"; off.appendChild(c); st.appendChild(off); frag.appendChild(st); o.clones.push(c);
     });
-    o.w.replaceChildren(frag);
-    o.w.querySelectorAll("[data-rfx]").forEach(e => { e.scrollLeft = sx[+e.dataset.rfx] || 0; });
-    const oc = m.querySelectorAll("canvas"), cc = o.w.querySelectorAll(".rfm canvas");
+    o.box.replaceChildren(frag);
+    o.box.querySelectorAll("[data-rfx]").forEach(e => { e.scrollLeft = sx[+e.dataset.rfx] || 0; });
+    const oc = m.querySelectorAll("canvas"), cc = o.box.querySelectorAll(".rfm canvas");
     cc.forEach((c, i) => { const s0 = oc[i % (oc.length || 1)]; if (!s0 || !s0.width) return; try { c.getContext("2d").drawImage(s0, 0, 0); } catch (_) {} });
   });
   m.querySelectorAll("[data-rfx]").forEach(e => e.removeAttribute("data-rfx"));
@@ -1974,8 +1979,10 @@ function lgCore(post) {
   };
 }
 // where the row sits right now, relative to the glass canvas; if it moved since the glass was drawn, redraw first
-function lgSig() { const c = LG.cv; if (!c) return ""; const r0 = c.getBoundingClientRect(); return tabBtns().map(b => { const a = b.querySelector(".tlb").getBoundingClientRect(), i = b.querySelector(".tic").getBoundingClientRect(); return [i.left + i.width / 2 - r0.left, a.top - r0.top, i.top - r0.top].map(v => Math.round(v)).join(","); }).join("|") + "|" + Math.round(r0.width); }
-function lgOk() { if (!LG.ready) return false; if (lgSig() !== LG.sig) { LG.ready = false; setTimeout(lgBuild, 0); return false; } return true; }
+function lgSig() { const cap = $("#tabs .tcap"); if (!cap) return ""; return tabBtns().map(b => { const i = b.querySelector(".tic"), l = b.querySelector(".tlb"); return [b.offsetLeft, b.offsetWidth, i.offsetTop, i.offsetLeft, l.offsetTop, l.offsetHeight].join(","); }).join("|") + "|" + cap.offsetWidth + "x" + cap.offsetHeight; }
+function lgOk() { return !!LG.ready; }
+function lgCheck() { if (!LG.ok || LG.run || !LG.ready) return; if (lgSig() !== LG.sig) lgBuild(); }
+setInterval(lgCheck, 1500);
 function lgMsg(m, transfer) { if (LG.worker) LG.worker.postMessage(m, transfer || []); else if (LG.local) LG.local(m); }
 function lgOnMsg(m) {
   const T = $("#tabs");
