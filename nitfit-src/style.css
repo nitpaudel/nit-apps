@@ -1309,16 +1309,11 @@ html[data-theme="light"] .mcard{background:linear-gradient(180deg,rgba(255,255,2
 html[data-theme="light"]{--gl:rgba(255,255,255,.45)}
 
 
-/* v8.5: clear glass, no blur. The bar shows its own sharp copy of the page (bent at the edges),
-   with a light grey tint and a bright rim on top. */
+/* v8.5/8.8: clear glass, no blur. A sharp copy of the page sits right under the bar (bent at the edges),
+   the bar on top only adds a light tint, a bright rim and its shadow. */
 html[data-theme="light"]{--glblur:saturate(160%)}
-#tabs .tcap > .tbg,#tabs .tyou .tbg{background:var(--bg)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:var(--glshadow)!important}
-#tabs .rfw{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;isolation:isolate}
-#tabs .tyou .rfw{border-radius:50%}
-#tabs .rfw::after{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--gl);box-shadow:var(--glrim);z-index:2}
-#tabs .rfs{position:absolute;left:0;right:0;overflow:hidden}
-#tabs .rfo{position:absolute;left:0;right:0;height:0}
-#tabs .tyou .tic,#tabs .tyou .tbg::after{z-index:3}
-#tabs .tyou .tbg::after{display:none}
-#tabs .tyou .rfw::before{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--glpill);z-index:3;opacity:0;transition:opacity .2s}
-#tabs .tyou.on .rfw::before{opacity:1}
+#tabs .tcap > .tbg,#tabs .tyou .tbg{background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:var(--glshadow)!important}
+.rfw{position:fixed;overflow:hidden;pointer-events:none;isolation:isolate;background:var(--bg);contain:strict}
+.rfw::after{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--gl);box-shadow:var(--glrim);z-index:2}
+.rfw .rfs{position:absolute;left:0;right:0;overflow:hidden}
+.rfw .rfo{position:absolute;left:0;right:0;height:0}

@@ -1805,7 +1805,7 @@ const RF = { k: 1.6, M: 10, R: 22, last: 0 };
 function rfZones(H) {
   // droop, no flip: near the top and bottom edge the text behind the bar is stretched toward the edge,
   // the same bend the tab bubble has. The middle shows the page straight. Nothing outside the bar shows.
-  const Z = Math.round(H * .32), parts = [[2 / 3, 1, .86], [1 / 3, 2 / 3, .62], [0, 1 / 3, .4]];
+  const Z = Math.round(H * .26), parts = [[2 / 3, 1, .93], [1 / 3, 2 / 3, .82], [0, 1 / 3, .68]];
   const top = [], bot = []; let sT = Z, tT = Z;
   parts.forEach(([f0, f1, b]) => { const t0 = Z * f0, t1 = Z * f1, a = sT - b * tT; top.push([t0, t1, a, b]); sT = a + b * t0; tT = t0; });
   top.forEach(([t0, t1, a, b]) => bot.push([H - t1, H - t0, H - a - b * H, b]));
@@ -1813,12 +1813,14 @@ function rfZones(H) {
 }
 function rfInit() {
   if (RF.els) return; RF.els = [];
-  [["#tabs .tcap", ".pill"], ["#tabs .tyou", ".tic"]].forEach(([sel, before]) => {
+  // the copy sits just under the bar (not inside it), so the bar's own styles can't change the copied page
+  [["#tabs .tcap", "rfw-cap"], ["#tabs .tyou", "rfw-you"]].forEach(([sel, cls]) => {
     const el = $(sel); if (!el) return;
-    const w = document.createElement("div"); w.className = "rfw"; w.setAttribute("aria-hidden", "true");
-    el.insertBefore(w, el.querySelector(before)); RF.els.push({ el, w });
+    const w = document.createElement("div"); w.className = "rfw " + cls; w.setAttribute("aria-hidden", "true");
+    $("#tabs").before(w); RF.els.push({ el, w });
   });
   const m = $("#main"); m.addEventListener("scroll", rfMove, { passive: true });
+  let hx = 0; m.addEventListener("scroll", e => { if (e.target !== m) { clearTimeout(hx); hx = setTimeout(rfSync, 160); } }, { passive: true, capture: true });
   let t = 0; new MutationObserver(() => { clearTimeout(t); const wait = Math.max(150, 900 - (Date.now() - RF.last)); t = setTimeout(rfSync, wait); }).observe(m, { childList: true, subtree: true, characterData: true });
   addEventListener("resize", () => setTimeout(rfSync, 80));
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") setTimeout(rfSync, 300); });
@@ -1828,11 +1830,18 @@ function rfSync() {
   if (!RF.els) return; RF.last = Date.now(); const m = $("#main"); if (!m) return;
   const mr = m.getBoundingClientRect(), cs = getComputedStyle(m);
   RF.m = { top: mr.top, left: mr.left };
+  const sx = []; m.querySelectorAll("*").forEach(e => { if (e.scrollLeft > 0) { e.dataset.rfx = sx.length; sx.push(e.scrollLeft); } });
   const src = document.createElement("div"); src.className = m.className + " rfm"; src.dataset.tab = m.dataset.tab || ""; src.innerHTML = m.innerHTML;
-  src.querySelectorAll("[id]").forEach(e => e.removeAttribute("id")); src.querySelectorAll("canvas,video,iframe,input,textarea,select,script").forEach(e => e.remove());
-  src.style.cssText = "position:absolute;top:0;width:" + m.clientWidth + "px;padding:" + cs.padding + ";box-sizing:border-box;margin:0;height:auto;max-height:none;overflow:visible;transform-origin:0 0;text-align:left;font:" + cs.font + ";color:" + cs.color + ";letter-spacing:" + cs.letterSpacing + ";white-space:normal";
+  src.querySelectorAll("[id]").forEach(e => e.removeAttribute("id")); src.querySelectorAll("script").forEach(e => e.remove());
+  // keep every box at its real size so the copy lines up exactly with the page
+  src.querySelectorAll("video,iframe").forEach(e => { e.style.visibility = "hidden"; e.removeAttribute("src"); });
+  src.querySelectorAll("input,textarea,select,button,a").forEach(e => { e.tabIndex = -1; });
+  src.querySelectorAll("img").forEach(e => { e.loading = "eager"; e.decoding = "sync"; });
+  src.style.cssText = "position:absolute;top:0;width:" + m.clientWidth + "px;padding:" + cs.padding + ";box-sizing:border-box;margin:0;height:auto;max-height:none;overflow:visible;transform-origin:0 0";
   RF.els.forEach(o => {
     const r = o.el.getBoundingClientRect(), H = o.el.offsetHeight; o.top = r.top; o.H = H; o.zones = rfZones(H);
+    const z = parseInt(getComputedStyle($("#tabs")).zIndex) || 50;
+    o.w.style.cssText = "left:" + r.left + "px;top:" + r.top + "px;width:" + o.el.offsetWidth + "px;height:" + H + "px;border-radius:" + getComputedStyle(o.el).borderRadius + ";z-index:" + (z - 1) + ";display:" + ($("#tabs").hidden ? "none" : "block");
     const frag = document.createDocumentFragment(); o.clones = [];
     o.zones.forEach(([y0, y1]) => {
       const st = document.createElement("div"); st.className = "rfs"; st.style.cssText = "top:" + y0 + "px;height:" + (y1 - y0) + "px";
@@ -1840,7 +1849,11 @@ function rfSync() {
       const c = src.cloneNode(true); c.style.left = (mr.left - r.left) + "px"; off.appendChild(c); st.appendChild(off); frag.appendChild(st); o.clones.push(c);
     });
     o.w.replaceChildren(frag);
+    o.w.querySelectorAll("[data-rfx]").forEach(e => { e.scrollLeft = sx[+e.dataset.rfx] || 0; });
+    const oc = m.querySelectorAll("canvas"), cc = o.w.querySelectorAll(".rfm canvas");
+    cc.forEach((c, i) => { const s0 = oc[i % (oc.length || 1)]; if (!s0 || !s0.width) return; try { c.getContext("2d").drawImage(s0, 0, 0); } catch (_) {} });
   });
+  m.querySelectorAll("[data-rfx]").forEach(e => e.removeAttribute("data-rfx"));
   rfMove();
 }
 function rfMove() {
