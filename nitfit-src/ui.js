@@ -1244,7 +1244,7 @@ function lineChart(pts) {
 ACT.tab = el => { const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; if (t === TAB) { $("#main").scrollTo({ top: 0, behavior: "smooth" }); return; }
   const bs = tabBtns(), from = bs.findIndex(b => b.classList.contains("on")), to = bs.indexOf(el), cen = b => b.offsetLeft + b.offsetWidth / 2;
   TAB = t; if (!el._glass) haptic(); $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB));
-  const fade = () => { const go = tabXfade(); render(); go(); rfLater(650); };
+  const fade = () => { render(); const m = $("#main"); if (m.animate) m.animate([{ opacity: .55 }, { opacity: 1 }], { duration: 160, easing: "ease-out" }); rfLater(700); };
   if (el._glass) { fade(); return; }
   if (to >= 0 && lgOk()) { LG.run = true; LG.rid = (LG.rid || 0) + 1; lgMsg({ t: "fly", from: from >= 0 ? from : to, to, id: LG.rid }); fade(); return; }
   tabsPill(); requestAnimationFrame(() => setTimeout(fade, 0)); };
@@ -1931,7 +1931,7 @@ function lgCore(post) {
   }
   function spring(key, target, k, z, dt) { const v = S[key + "v"], x = S[key], c = 2 * Math.sqrt(k) * z, a = -k * (x - target) - c * v; S[key + "v"] = v + a * dt; S[key] = x + S[key + "v"] * dt; }
   function draw() {
-    const lens = { hw: D.tabW * .55, hh: D.H * .58 }, pill = { hw: D.tabW / 2, hh: D.pillH / 2 };
+    const lens = { hw: D.tabW * .52, hh: D.H * .55 }, pill = { hw: D.tabW / 2, hh: D.pillH / 2 };
     const p = Math.max(0, Math.min(1.15, S.s)), A = Math.max(0, Math.min(1, p)), sp = Math.abs(S.xv), st = Math.min(.3, sp / 2400);
     const hw = (pill.hw + (lens.hw - pill.hw) * p) * (1 + st), hh = (pill.hh + (lens.hh - pill.hh) * p) * (1 - st * .25);
     const cx = Math.max(hw - 6, Math.min(D.W - hw + 6, S.x));
@@ -1971,7 +1971,7 @@ function lgCore(post) {
       if (!D) return;
       if (m.t === "down") { begin(m.from, m.on); S.tx = m.x; if (S.id !== m.id) { S.id = m.id; shown = false; } }
       else if (m.t === "move") { if (S && S.mode === "hold") S.tx = m.x; }
-      else if (m.t === "up") { if (S) { S.tx = D.centers[m.idx]; S.to = m.idx; if (Math.abs(S.x - S.tx) < 20 && S.s < .9) { S.mode = "pop"; S.pt = now(); } else S.mode = "fly"; } }
+      else if (m.t === "up") { if (S) { S.mode = "fly"; S.tx = D.centers[m.idx]; S.to = m.idx; } }
       else if (m.t === "fly") { begin(D.centers[m.from], m.from); S.mode = m.from === m.to ? "pop" : "fly"; S.pt = now(); S.tx = D.centers[m.to]; S.to = m.to; if (S.id !== m.id) { S.id = m.id; shown = false; } }
       else if (m.t === "clear") { if (!S) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); } }
       else if (m.t === "stop") { S = null; CAF(raf); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); }
