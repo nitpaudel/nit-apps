@@ -1971,7 +1971,7 @@ function lgCore(post) {
       if (!D) return;
       if (m.t === "down") { begin(m.from, m.on); S.tx = m.x; if (S.id !== m.id) { S.id = m.id; shown = false; } }
       else if (m.t === "move") { if (S && S.mode === "hold") S.tx = m.x; }
-      else if (m.t === "up") { if (S) { S.mode = "fly"; S.tx = D.centers[m.idx]; S.to = m.idx; } }
+      else if (m.t === "up") { if (S) { S.tx = D.centers[m.idx]; S.to = m.idx; if (Math.abs(S.x - S.tx) < 20 && S.s < .9) { S.mode = "pop"; S.pt = now(); } else S.mode = "fly"; } }
       else if (m.t === "fly") { begin(D.centers[m.from], m.from); S.mode = m.from === m.to ? "pop" : "fly"; S.pt = now(); S.tx = D.centers[m.to]; S.to = m.to; if (S.id !== m.id) { S.id = m.id; shown = false; } }
       else if (m.t === "clear") { if (!S) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); } }
       else if (m.t === "stop") { S = null; CAF(raf); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); }
