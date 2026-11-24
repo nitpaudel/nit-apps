@@ -1803,10 +1803,13 @@ function lensWarp() {
 // each strip moved and stretched with the scroll. Nothing is blurred.
 const RF = { k: 1.6, M: 10, R: 22, last: 0 };
 function rfZones(H) {
-  // three parts, like Apple: the top part and the bottom part flip only the text that is behind them,
-  // the middle shows the page straight. Text outside the bar never shows inside it.
-  const Z = Math.round(H * .3);
-  return [[0, Z, Z, -1], [Z, H - Z, 0, 1], [H - Z, H, 2 * H - Z, -1]];
+  // droop, no flip: near the top and bottom edge the text behind the bar is stretched toward the edge,
+  // the same bend the tab bubble has. The middle shows the page straight. Nothing outside the bar shows.
+  const Z = Math.round(H * .32), parts = [[2 / 3, 1, .86], [1 / 3, 2 / 3, .62], [0, 1 / 3, .4]];
+  const top = [], bot = []; let sT = Z, tT = Z;
+  parts.forEach(([f0, f1, b]) => { const t0 = Z * f0, t1 = Z * f1, a = sT - b * tT; top.push([t0, t1, a, b]); sT = a + b * t0; tT = t0; });
+  top.forEach(([t0, t1, a, b]) => bot.push([H - t1, H - t0, H - a - b * H, b]));
+  return top.concat([[Z, H - Z, 0, 1]], bot);
 }
 function rfInit() {
   if (RF.els) return; RF.els = [];
