@@ -168,6 +168,20 @@ const autoTxt = (r, ex) => (r.kg ? fmtKg(r.kg) + " kg × " : "") + (r.reps != nu
 
 // ===== render =====
 function blurAll() { const a = document.activeElement; if (a && a !== document.body && a.blur && !(a.closest && a.closest("#sheet"))) a.blur(); }
+function tabXfade() {
+  const m = $("#main"); if (!m || !m.firstChild || matchMedia("(prefers-reduced-motion: reduce)").matches) return () => {};
+  const r = m.getBoundingClientRect(), cs = getComputedStyle(m), y = m.scrollTop, ov = document.createElement("div");
+  ov.className = m.className + " xfade"; ov.setAttribute("aria-hidden", "true");
+  ov.style.cssText = "position:fixed;left:" + r.left + "px;top:" + r.top + "px;width:" + r.width + "px;height:" + r.height + "px;overflow:hidden;pointer-events:none;z-index:1;padding:" + cs.padding + ";box-sizing:border-box";
+  while (m.firstChild) ov.appendChild(m.firstChild);
+  m.after(ov); ov.scrollTop = y;
+  return () => {
+    const ease = "cubic-bezier(.2,.8,.2,1)";
+    ov.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 170, easing: "ease-out", fill: "forwards" }).onfinish = () => ov.remove();
+    m.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 230, easing: ease });
+    setTimeout(() => ov.remove(), 600);
+  };
+}
 function render() {
   blurAll(); if (GP && !SHEET) gpClose();
   if (!isStandalone() && !/dev/.test(location.search)) { $("#main").innerHTML = vInstall(); $("#tabs").hidden = true; return; }
@@ -1230,9 +1244,10 @@ function lineChart(pts) {
 ACT.tab = el => { const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; if (t === TAB) { $("#main").scrollTo({ top: 0, behavior: "smooth" }); return; }
   const bs = tabBtns(), from = bs.findIndex(b => b.classList.contains("on")), to = bs.indexOf(el), cen = b => b.offsetLeft + b.offsetWidth / 2;
   TAB = t; if (!el._glass) haptic(); $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB));
-  if (el._glass) { render(); return; }
-  if (LG.ready && from >= 0 && to >= 0) { LG.run = true; LG.rid = (LG.rid || 0) + 1; lgMsg({ t: "fly", from, to, id: LG.rid }); render(); return; }
-  tabsPill(); requestAnimationFrame(() => setTimeout(render, 0)); };
+  const fade = () => { const go = tabXfade(); render(); go(); rfSync(); };
+  if (el._glass) { fade(); return; }
+  if (from >= 0 && to >= 0 && lgOk()) { LG.run = true; LG.rid = (LG.rid || 0) + 1; lgMsg({ t: "fly", from, to, id: LG.rid }); fade(); return; }
+  tabsPill(); requestAnimationFrame(() => setTimeout(fade, 0)); };
 document.addEventListener("click", e => { const el = e.target.closest("[data-a]"); if (!el) return; const f = ACT[el.dataset.a]; if (f) { e.preventDefault(); f(el, e); } });
 document.addEventListener("DOMContentLoaded", () => {
   $("#importIn").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { const n = await importExport(JSON.parse(await f.text())); toast(n + " entries loaded"); render(); } catch (er) { toast(er.message || "Could not read that file"); } e.target.value = ""; });
@@ -1714,7 +1729,7 @@ function tabsPill(noAnim) {
 function glassReset() { clearTimeout(LENST); const t = $("#tabs"), L = $("#tabs .lens"); if (t) t.classList.remove("held"); if (L) L.classList.remove("on", "glide"); }
 function tabsGlass() {
   const cap = $("#tabs .tcap"); if (!cap || cap._glass) return; cap._glass = 1;
-  lensWarp(); tabsPill(true); lgInit();
+  lensWarp(); tabsPill(true); lgInit(); rfInit();
   const scale = () => cap.getBoundingClientRect().width / cap.offsetWidth;
   const local = e => (e.clientX - cap.getBoundingClientRect().left) / scale();
   const nearest = x => { let best = null, d = 1e9; tabBtns().forEach(b => { const k = Math.abs(b.offsetLeft + b.offsetWidth / 2 - x); if (k < d) { d = k; best = b; } }); return best; };
@@ -1726,7 +1741,7 @@ function tabsGlass() {
   };
   cap.addEventListener("pointerdown", e => {
     TABDRAG = { id: e.pointerId, x0: e.clientX, x: local(e), held: false, hover: null }; const D = TABDRAG;
-    if (LG.ready) {
+    if (lgOk()) {
       // the glass answers the moment the finger lands
       D.gl = D.held = true; try { cap.setPointerCapture(D.id); } catch (_) {}
       const bs = tabBtns(), on = bs.findIndex(b => b.classList.contains("on"));
@@ -1780,6 +1795,40 @@ function lensWarp() {
   x.putImageData(img, 0, 0);
   const fe = document.getElementById("lgwImg"); if (fe) { fe.setAttribute("href", c.toDataURL()); fe.setAttributeNS("http://www.w3.org/1999/xlink", "href", c.toDataURL()); }
 }
+
+// ----- Rim refraction -----
+// Apple's bar bends the page behind it: right at the top and bottom edge you see the page flipped and squeezed.
+// Safari can't bend what is behind an element, so we keep a light copy of the page inside two thin rim bands
+// and flip it there, moving it with the scroll. Only the bands draw it, so it costs very little.
+const RF = { k: 1.7, B: 9 };
+function rfInit() {
+  const cap = $("#tabs .tcap"); if (!cap || RF.w) return;
+  const w = document.createElement("div"); w.className = "rfw"; w.setAttribute("aria-hidden", "true");
+  w.innerHTML = '<div class="rfb rft"><div class="rfc"></div></div><div class="rfb rfbm"><div class="rfc"></div></div>';
+  cap.insertBefore(w, cap.querySelector(".pill")); RF.w = w;
+  const m = $("#main"); m.addEventListener("scroll", rfMove, { passive: true });
+  let t = 0; new MutationObserver(() => { clearTimeout(t); t = setTimeout(rfSync, 120); }).observe(m, { childList: true, subtree: true, characterData: true });
+  addEventListener("resize", () => setTimeout(rfSync, 80));
+  rfSync();
+}
+function rfSync() {
+  if (!RF.w) return; const m = $("#main"), cap = $("#tabs .tcap"); if (!m || !cap) return;
+  const mr = m.getBoundingClientRect(), cr = cap.getBoundingClientRect(), cs = getComputedStyle(m);
+  RF.m = { top: mr.top, left: mr.left, w: m.clientWidth }; RF.c = { top: cr.top, left: cr.left, h: cap.offsetHeight };
+  const src = document.createElement("div"); src.className = m.className; src.innerHTML = m.innerHTML;
+  src.querySelectorAll("[id]").forEach(e => e.removeAttribute("id")); src.querySelectorAll("canvas,video,iframe,input,textarea,select").forEach(e => e.remove());
+  RF.w.querySelectorAll(".rfc").forEach((c, i) => {
+    const n = i ? src.cloneNode(true) : src; n.style.cssText = "position:absolute;left:" + (mr.left - cr.left) + "px;top:0;width:" + m.clientWidth + "px;padding:" + cs.padding + ";box-sizing:border-box;margin:0;height:auto;max-height:none;overflow:visible";
+    c.replaceChildren(n); if (i) c.style.top = -(RF.c.h - RF.B) + "px";
+  });
+  rfMove();
+}
+function rfMove() {
+  if (!RF.m) return; const y = $("#main").scrollTop, k = RF.k, H = RF.c.h, rel = RF.c.top - RF.m.top + y, rb = RF.c.top + H - RF.m.top + y;
+  const [a, b] = RF.w.querySelectorAll(".rfc > div");
+  if (a) a.style.transform = "translate3d(0," + (rel / k).toFixed(2) + "px,0) scaleY(" + (-1 / k).toFixed(4) + ")";
+  if (b) b.style.transform = "translate3d(0," + (H + rb / k).toFixed(2) + "px,0) scaleY(" + (-1 / k).toFixed(4) + ")";
+}
 // glass buttons swell the moment a finger lands, and spring back when it lifts
 (function glassPress() {
   const SEL = ".head .ib,.navr .ib,.b3home,#tabs .tyou"; let cur = null;
@@ -1807,7 +1856,7 @@ function lgCore(post) {
     "vec4 col=uPill*uPA;vec4 tc=uTint*clamp(.5+bd*uDpr,0.,1.);col=tc+col*(1.-tc.a);col=con+col*(1.-con.a);" +
     "float band=(1.-smoothstep(1.2,7.,-d))*smoothstep(0.,1.2,-d)*smoothstep(.45,.92,abs(n.y))*uBand;" +
     "col=vec4(col.rgb*(1.-band),col.a+band*(1.-col.a));" +
-    "float rim=(1.-smoothstep(0.,1.4,-d))*(.2+.45*max(0.,dot(n,vec2(-.45,-.89)))+.15*max(0.,dot(n,vec2(.45,.89))))*uRim;" +
+    "float rim=(1.-smoothstep(0.,1.6,-d))*(.28+.55*max(0.,dot(n,vec2(-.45,-.89)))+.3*max(0.,dot(n,vec2(.45,.89))))*uRim;" +
     "col=vec4(vec3(rim)+col.rgb*(1.-rim),rim+col.a*(1.-rim));" +
     "float ds=length(vec2(sx,dl.y-3.))-hh;float sh=(1.-ins)*exp(-max(ds,0.)/5.)*.22*uSh;" +
     "vec4 bl=outc+vec4(0.,0.,0.,sh)*(1.-outc.a);gl_FragColor=col*ins+bl*(1.-ins);}";
@@ -1833,7 +1882,7 @@ function lgCore(post) {
   }
   function spring(key, target, k, z, dt) { const v = S[key + "v"], x = S[key], c = 2 * Math.sqrt(k) * z, a = -k * (x - target) - c * v; S[key + "v"] = v + a * dt; S[key] = x + S[key + "v"] * dt; }
   function draw() {
-    const lens = { hw: D.tabW * .58, hh: D.H * .61 }, pill = { hw: D.tabW / 2, hh: D.pillH / 2 };
+    const lens = { hw: D.tabW * .55, hh: D.H * .58 }, pill = { hw: D.tabW / 2, hh: D.pillH / 2 };
     const p = Math.max(0, Math.min(1.15, S.s)), A = Math.max(0, Math.min(1, p)), sp = Math.abs(S.xv), st = Math.min(.3, sp / 2400);
     const hw = (pill.hw + (lens.hw - pill.hw) * p) * (1 + st), hh = (pill.hh + (lens.hh - pill.hh) * p) * (1 - st * .25);
     const cx = Math.max(hw - 6, Math.min(D.W - hw + 6, S.x));
@@ -1844,7 +1893,7 @@ function lgCore(post) {
     gl.uniform4f(U.uLens, cx, D.H / 2, hw, hh);
     const t = D.tint, pc = D.pill; gl.uniform4f(U.uTint, t[0] * t[3], t[1] * t[3], t[2] * t[3], t[3] * A); gl.uniform4f(U.uPill, pc[0] * pc[3], pc[1] * pc[3], pc[2] * pc[3], pc[3]);
     gl.uniform1f(U.uPA, Math.max(0, 1 - A * 2.2)); gl.uniform1f(U.uMag, 1 + .16 * A); gl.uniform1f(U.uRef, 8 * A + Math.min(9, sp * .004));
-    gl.uniform1f(U.uBand, (D.light ? .2 : .72) * A); gl.uniform1f(U.uRim, A); gl.uniform1f(U.uSh, A);
+    gl.uniform1f(U.uBand, (D.light ? .15 : .42) * A); gl.uniform1f(U.uRim, Math.min(1, A * 1.35)); gl.uniform1f(U.uSh, A);
     gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
   function loop() {
@@ -1880,6 +1929,9 @@ function lgCore(post) {
     } catch (err) { post({ t: "error", e: String(err) }); }
   };
 }
+// where the row sits right now, relative to the glass canvas; if it moved since the glass was drawn, redraw first
+function lgSig() { const c = LG.cv; if (!c) return ""; const r0 = c.getBoundingClientRect(); return tabBtns().map(b => { const a = b.querySelector(".tlb").getBoundingClientRect(), i = b.querySelector(".tic").getBoundingClientRect(); return [a.left - r0.left, a.top - r0.top, i.top - r0.top].map(v => Math.round(v * 2) / 2).join(","); }).join("|") + "|" + r0.width.toFixed(1); }
+function lgOk() { if (!LG.ready) return false; if (lgSig() !== LG.sig) { LG.ready = false; setTimeout(lgBuild, 0); return false; } return true; }
 function lgMsg(m, transfer) { if (LG.worker) LG.worker.postMessage(m, transfer || []); else if (LG.local) LG.local(m); }
 function lgOnMsg(m) {
   const T = $("#tabs");
@@ -1906,6 +1958,9 @@ function lgInit() {
     if (!done) { const h = lgCore(m => setTimeout(() => lgOnMsg(m), 0)); h({ t: "init", cv }); LG.local = h; LG.mode = "page"; }
     LG.ok = true; lgBuild();
     window.addEventListener("resize", () => lgBuild());
+    if (window.ResizeObserver) new ResizeObserver(() => { if (!LG.run) lgBuild(); }).observe(cap);
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") setTimeout(() => { if (!LG.run && lgSig() !== LG.sig) lgBuild(); }, 400); });
+    [600, 1800].forEach(t => setTimeout(() => { if (!LG.run && lgSig() !== LG.sig) lgBuild(); }, t));
     new MutationObserver(() => lgBuild()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
   } catch (err) { console.error(err); LG.ok = false; }
 }
@@ -1920,8 +1975,10 @@ let LGBUILD = 0;
 async function lgBuild() {
   if (!LG.ok || LG.run) return; const my = ++LGBUILD; LG.ready = false;
   try { await document.fonts.ready; } catch (_) {}
-  const cap = $("#tabs .tcap"), cr = cap.getBoundingClientRect(), sc = cr.width / cap.offsetWidth || 1, M = LG.M;
-  const W = cap.offsetWidth, H = cap.offsetHeight, dpr = Math.min(3, devicePixelRatio || 1), CW = W + 2 * M, CH = H + 2 * M;
+  const cap = $("#tabs .tcap"), M = LG.M, W0 = cap.offsetWidth, H0 = cap.offsetHeight;
+  LG.cv.style.cssText = "left:" + -M + "px;top:" + -M + "px;width:" + (W0 + 2 * M) + "px;height:" + (H0 + 2 * M) + "px";
+  const cvr = LG.cv.getBoundingClientRect(), sc = cvr.width / (W0 + 2 * M) || 1, cr = { left: cvr.left + M * sc, top: cvr.top + M * sc };
+  const W = W0, H = H0, dpr = Math.min(3, devicePixelRatio || 1), CW = W + 2 * M, CH = H + 2 * M;
   const cs = getComputedStyle($("#tabs")), acc = cs.getPropertyValue("--gacc").trim() || "#3E9BFF";
   const btns = tabBtns(), txt = cs.getPropertyValue("--gltext").trim() || "#f5f5f7", light = document.documentElement.dataset.theme === "light";
   const rel = el => { const r = el.getBoundingClientRect(); return { x: (r.left - cr.left) / sc + M, y: (r.top - cr.top) / sc + M, w: r.width / sc, h: r.height / sc }; };
@@ -1942,11 +1999,11 @@ async function lgBuild() {
   };
   const A = [], R = []; for (let i = 0; i < btns.length; i++) { A.push(await draw(false, i)); R.push(await draw(false, i, true)); }
   const B = await draw(true, -1); if (my !== LGBUILD) return;
-  LG.cv.style.cssText = "left:" + -M + "px;top:" + -M + "px;width:" + CW + "px;height:" + CH + "px";
+  LG.sig = lgSig();
   const pillEl = $("#tabs .pill"), pcs = pillEl ? getComputedStyle(pillEl).backgroundColor : "rgba(8,8,10,.62)";
   const num = s => (s.match(/[\d.]+/g) || [0, 0, 0, 1]).map(Number), pv = num(pcs);
   const d = { W, H, CW, CH, M, dpr, pw: Math.round(CW * dpr), ph: Math.round(CH * dpr), light, tabW: btns[0].offsetWidth, pillH: pillEl ? pillEl.offsetHeight : 50,
-    tint: light ? [1, 1, 1, .42] : [34 / 255, 34 / 255, 37 / 255, .42], pill: [pv[0] / 255, pv[1] / 255, pv[2] / 255, pv.length > 3 ? pv[3] : 1],
+    tint: (v => [v[0] / 255, v[1] / 255, v[2] / 255, v.length > 3 ? v[3] : 1])(num(cs.getPropertyValue("--gl")) ), pill: [pv[0] / 255, pv[1] / 255, pv[2] / 255, pv.length > 3 ? pv[3] : 1],
     centers: btns.map(b => b.offsetLeft + b.offsetWidth / 2) };
   Object.assign(LG, d);
   lgMsg({ t: "tex", d, A, R, B }, A.concat(R, [B]));

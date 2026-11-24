@@ -1302,3 +1302,16 @@ html[data-theme="light"] .mcard{background:linear-gradient(180deg,rgba(255,255,2
 /* v8.2: the profile circle uses the exact same glass as the bar, so they read as one set */
 #tabs .tyou.pr .tbg{background:var(--glhi)!important}
 #tabs .tyou .tic,#tabs .tyou .tic svg{width:25px!important;height:25px!important}
+
+/* v8.4: brighter, clearer bar glass, closer to Apple's */
+:root{--gl:rgba(84,84,90,.38);--glblur:blur(1.4px) saturate(175%) brightness(.96);
+  --glrim:inset 0 0 0 .6px rgba(255,255,255,.17),inset 0 1px .5px rgba(255,255,255,.24),inset 0 -1px .5px rgba(255,255,255,.09)}
+html[data-theme="light"]{--gl:rgba(255,255,255,.45)}
+/* rim refraction bands */
+#tabs .rfw{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none}
+#tabs .rfb{position:absolute;left:0;right:0;height:9px;overflow:hidden;-webkit-backdrop-filter:blur(6px) saturate(160%);backdrop-filter:blur(6px) saturate(160%);background:rgba(60,60,66,.22)}
+#tabs .rft{top:0;-webkit-mask-image:linear-gradient(#000 45%,transparent);mask-image:linear-gradient(#000 45%,transparent)}
+#tabs .rfbm{bottom:0;-webkit-mask-image:linear-gradient(transparent,#000 55%);mask-image:linear-gradient(transparent,#000 55%)}
+#tabs .rfc{position:absolute;left:0;top:0;right:0;height:100px}
+#tabs .rfc > div{transform-origin:0 0;will-change:transform;opacity:.92;contain:layout paint}
+html[data-theme="light"] #tabs .rfb{background:rgba(255,255,255,.25)}
