@@ -1317,3 +1317,10 @@ html[data-theme="light"]{--glblur:saturate(160%)}
 .rfw::after{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--gl);box-shadow:var(--glrim);z-index:2}
 .rfw .rfs{position:absolute;left:0;right:0;overflow:hidden}
 .rfw .rfo{position:absolute;left:0;right:0;height:0}
+
+/* while the page copy is being refreshed, hide it and let the bar show its plain clear tint */
+#tabs.rfstale ~ .rfw,.rfw{transition:opacity .15s}
+body:has(#tabs.rfstale) .rfw{opacity:0}
+#tabs.rfstale .tcap > .tbg,#tabs.rfstale .tyou .tbg{background:var(--gl)!important;box-shadow:var(--glrim),var(--glshadow)!important}
+html.barwait #tabs,html.barwait .rfw{opacity:0!important;transition:none!important}
+#tabs{transition:opacity .25s ease-out,transform .42s cubic-bezier(.32,.72,0,1)}

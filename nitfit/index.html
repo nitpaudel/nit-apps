@@ -1335,6 +1335,13 @@ html[data-theme="light"]{--glblur:saturate(160%)}
 .rfw .rfs{position:absolute;left:0;right:0;overflow:hidden}
 .rfw .rfo{position:absolute;left:0;right:0;height:0}
 
+/* while the page copy is being refreshed, hide it and let the bar show its plain clear tint */
+#tabs.rfstale ~ .rfw,.rfw{transition:opacity .15s}
+body:has(#tabs.rfstale) .rfw{opacity:0}
+#tabs.rfstale .tcap > .tbg,#tabs.rfstale .tyou .tbg{background:var(--gl)!important;box-shadow:var(--glrim),var(--glshadow)!important}
+html.barwait #tabs,html.barwait .rfw{opacity:0!important;transition:none!important}
+#tabs{transition:opacity .25s ease-out,transform .42s cubic-bezier(.32,.72,0,1)}
+
 </style>
 </head>
 <body>
@@ -1847,7 +1854,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "9.0";
+const APP_VERSION = "9.1";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -3305,7 +3312,7 @@ function lineChart(pts) {
 ACT.tab = el => { const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; if (t === TAB) { $("#main").scrollTo({ top: 0, behavior: "smooth" }); return; }
   const bs = tabBtns(), from = bs.findIndex(b => b.classList.contains("on")), to = bs.indexOf(el), cen = b => b.offsetLeft + b.offsetWidth / 2;
   TAB = t; if (!el._glass) haptic(); $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB));
-  const fade = () => { const go = tabXfade(); render(); go(); rfSync(); };
+  const fade = () => { const go = tabXfade(); render(); go(); rfLater(650); };
   if (el._glass) { fade(); return; }
   if (from >= 0 && to >= 0 && lgOk()) { LG.run = true; LG.rid = (LG.rid || 0) + 1; lgMsg({ t: "fly", from, to, id: LG.rid }); fade(); return; }
   tabsPill(); requestAnimationFrame(() => setTimeout(fade, 0)); };
@@ -3711,6 +3718,8 @@ function fixGap() {
 // from ending in a straight cut above the bottom of the screen.
 fixGap(); addEventListener("resize", () => setTimeout(fixGap, 60)); addEventListener("orientationchange", () => setTimeout(fixGap, 300));
 [50, 250, 700, 1500, 3000].forEach(t => setTimeout(fixGap, t));
+// the bar waits until the screen size has settled, then fades in already in its final place (no jump on open)
+document.documentElement.classList.add("barwait"); setTimeout(() => { fixGap(); requestAnimationFrame(() => { document.documentElement.classList.remove("barwait"); if (window.rfPos) rfPos(); }); }, 320);
 addEventListener("pageshow", () => { fixGap(); setTimeout(fixGap, 300); });
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { fixGap(); setTimeout(fixGap, 300); setTimeout(fixGap, 1000); } });
 if (window.visualViewport) visualViewport.addEventListener("resize", () => setTimeout(fixGap, 60));
@@ -3865,11 +3874,8 @@ function lensWarp() {
 const RF = { k: 1.6, M: 10, R: 22, last: 0 };
 function rfZones(H) {
   // droop, never a flip: the page behind the top and bottom edge stretches toward the edge. Middle stays straight.
-  const Z = Math.round(H * .30), parts = [[2 / 3, 1, .9], [1 / 3, 2 / 3, .72], [0, 1 / 3, .52]];
-  const top = [], bot = []; let sT = Z, tT = Z;
-  parts.forEach(([f0, f1, b]) => { const t0 = Z * f0, t1 = Z * f1, a = sT - b * tT; top.push([t0, t1, a, b]); sT = a + b * t0; tT = t0; });
-  top.forEach(([t0, t1, a, b]) => bot.push([H - t1, H - t0, H - a - b * H, b]));
-  return top.concat([[Z, H - Z, 0, 1]], bot);
+  const Z = Math.round(H * .3), b = .64, a = Z - b * Z;
+  return [[0, Z, a, b], [Z, H - Z, 0, 1], [H - Z, H, H - a - b * H, b]];
 }
 function rfInit() {
   if (RF.els) return; RF.els = [];
@@ -3881,10 +3887,18 @@ function rfInit() {
   });
   const m = $("#main"); m.addEventListener("scroll", rfMove, { passive: true });
   let hx = 0; m.addEventListener("scroll", e => { if (e.target !== m) { clearTimeout(hx); hx = setTimeout(rfSync, 160); } }, { passive: true, capture: true });
-  let t = 0; new MutationObserver(() => { clearTimeout(t); const wait = Math.max(150, 900 - (Date.now() - RF.last)); t = setTimeout(rfSync, wait); }).observe(m, { childList: true, subtree: true, characterData: true });
-  addEventListener("resize", () => setTimeout(rfSync, 80));
-  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") setTimeout(rfSync, 300); });
+  new MutationObserver(() => rfLater(600)).observe(m, { childList: true, subtree: true, characterData: true });
+  setInterval(rfPos, 400);
+  addEventListener("resize", () => rfLater(150));
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { rfPos(); rfLater(400); } });
   rfSync();
+}
+let RFT = 0;
+function rfLater(ms) { clearTimeout(RFT); $("#tabs").classList.add("rfstale"); RFT = setTimeout(function go() { if (LG.run) { RFT = setTimeout(go, 200); return; } (window.requestIdleCallback || setTimeout)(rfSync, { timeout: 300 }); }, ms); }
+function rfPos() {
+  if (!RF.els) return; let moved = false;
+  RF.els.forEach(o => { const r = o.el.getBoundingClientRect(); if (o.top == null || Math.abs(r.top - o.top) > .5 || Math.abs(r.left - (o.left || 0)) > .5) { o.top = r.top; o.left = r.left; o.w.style.top = r.top + "px"; o.w.style.left = r.left + "px"; moved = true; } o.w.style.display = $("#tabs").hidden ? "none" : "block"; });
+  if (moved) rfMove();
 }
 function rfSync() {
   if (!RF.els) return; RF.last = Date.now(); const m = $("#main"); if (!m) return;
@@ -3899,7 +3913,7 @@ function rfSync() {
   src.querySelectorAll("img").forEach(e => { e.loading = "eager"; e.decoding = "sync"; });
   src.style.cssText = "position:absolute;top:0;width:" + m.clientWidth + "px;padding:" + cs.padding + ";box-sizing:border-box;margin:0;height:auto;max-height:none;overflow:visible;transform-origin:0 0";
   RF.els.forEach(o => {
-    const r = o.el.getBoundingClientRect(), H = o.el.offsetHeight; o.top = r.top; o.H = H; o.zones = rfZones(H);
+    const r = o.el.getBoundingClientRect(), H = o.el.offsetHeight; o.top = r.top; o.left = r.left; o.H = H; o.zones = rfZones(H);
     const z = parseInt(getComputedStyle($("#tabs")).zIndex) || 50;
     o.w.style.cssText = "left:" + r.left + "px;top:" + r.top + "px;width:" + o.el.offsetWidth + "px;height:" + H + "px;border-radius:" + getComputedStyle(o.el).borderRadius + ";z-index:" + (z - 1) + ";display:" + ($("#tabs").hidden ? "none" : "block");
     const frag = document.createDocumentFragment(); o.clones = [];
@@ -3914,10 +3928,11 @@ function rfSync() {
     cc.forEach((c, i) => { const s0 = oc[i % (oc.length || 1)]; if (!s0 || !s0.width) return; try { c.getContext("2d").drawImage(s0, 0, 0); } catch (_) {} });
   });
   m.querySelectorAll("[data-rfx]").forEach(e => e.removeAttribute("data-rfx"));
+  $("#tabs").classList.remove("rfstale");
   rfMove();
 }
 function rfMove() {
-  if (!RF.m || !RF.els) return; const y = $("#main").scrollTop;
+  if (!RF.m || !RF.els) return; if (RF.chk !== 1) { RF.chk = 1; requestAnimationFrame(() => { RF.chk = 0; rfPos(); }); } const y = $("#main").scrollTop;
   RF.els.forEach(o => {
     if (!o.clones) return;
     o.zones.forEach(([, , a, b], i) => {
@@ -4027,7 +4042,7 @@ function lgCore(post) {
   };
 }
 // where the row sits right now, relative to the glass canvas; if it moved since the glass was drawn, redraw first
-function lgSig() { const c = LG.cv; if (!c) return ""; const r0 = c.getBoundingClientRect(); return tabBtns().map(b => { const a = b.querySelector(".tlb").getBoundingClientRect(), i = b.querySelector(".tic").getBoundingClientRect(); return [a.left - r0.left, a.top - r0.top, i.top - r0.top].map(v => Math.round(v * 2) / 2).join(","); }).join("|") + "|" + r0.width.toFixed(1); }
+function lgSig() { const c = LG.cv; if (!c) return ""; const r0 = c.getBoundingClientRect(); return tabBtns().map(b => { const a = b.querySelector(".tlb").getBoundingClientRect(), i = b.querySelector(".tic").getBoundingClientRect(); return [i.left + i.width / 2 - r0.left, a.top - r0.top, i.top - r0.top].map(v => Math.round(v)).join(","); }).join("|") + "|" + Math.round(r0.width); }
 function lgOk() { if (!LG.ready) return false; if (lgSig() !== LG.sig) { LG.ready = false; setTimeout(lgBuild, 0); return false; } return true; }
 function lgMsg(m, transfer) { if (LG.worker) LG.worker.postMessage(m, transfer || []); else if (LG.local) LG.local(m); }
 function lgOnMsg(m) {
