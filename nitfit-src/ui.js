@@ -1948,6 +1948,7 @@ function lgCore(post) {
   function loop() {
     if (!S) return; const tn = now(), dt = Math.min(.034, Math.max(.004, (tn - S.t) / 1000)) * (self.LGSLOW || 1); S.t = tn;
     if (S.mode === "hold") { spring("x", S.tx, 1500, .9, dt); spring("s", 1, 900, .78, dt); }
+    else if (S.mode === "pop") { spring("s", 1, 900, .78, dt); if (now() - S.pt > 170 / (self.LGSLOW || 1)) { S.mode = "end"; S.end = true; S.on = S.to; } }
     else if (S.mode === "fly") {
       spring("x", S.tx, 650, .82, dt); spring("s", Math.abs(S.x - S.tx) > 14 ? 1 : .15, 750, .8, dt);
       if (Math.abs(S.x - S.tx) < 1.5 && Math.abs(S.xv) < 60) { S.mode = "end"; S.end = true; S.on = S.to; }
@@ -1971,7 +1972,7 @@ function lgCore(post) {
       if (m.t === "down") { begin(m.from, m.on); S.tx = m.x; if (S.id !== m.id) { S.id = m.id; shown = false; } }
       else if (m.t === "move") { if (S && S.mode === "hold") S.tx = m.x; }
       else if (m.t === "up") { if (S) { S.mode = "fly"; S.tx = D.centers[m.idx]; S.to = m.idx; } }
-      else if (m.t === "fly") { begin(D.centers[m.from], m.from); S.mode = "fly"; S.tx = D.centers[m.to]; S.to = m.to; if (S.id !== m.id) { S.id = m.id; shown = false; } }
+      else if (m.t === "fly") { begin(D.centers[m.from], m.from); S.mode = m.from === m.to ? "pop" : "fly"; S.pt = now(); S.tx = D.centers[m.to]; S.to = m.to; if (S.id !== m.id) { S.id = m.id; shown = false; } }
       else if (m.t === "clear") { if (!S) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); } }
       else if (m.t === "stop") { S = null; CAF(raf); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); }
       else if (m.t === "slow") self.LGSLOW = m.v;
