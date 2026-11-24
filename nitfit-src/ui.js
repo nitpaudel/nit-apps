@@ -1244,7 +1244,7 @@ function lineChart(pts) {
 ACT.tab = el => { const t = el.dataset.tab; SCROLL[TAB] = $("#main").scrollTop; if (t === TAB) { $("#main").scrollTo({ top: 0, behavior: "smooth" }); return; }
   const bs = tabBtns(), from = bs.findIndex(b => b.classList.contains("on")), to = bs.indexOf(el), cen = b => b.offsetLeft + b.offsetWidth / 2;
   TAB = t; if (!el._glass) haptic(); $$("#tabs [data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === TAB));
-  const fade = () => { render(); const m = $("#main"); if (m.animate) m.animate([{ opacity: .55 }, { opacity: 1 }], { duration: 160, easing: "ease-out" }); rfLater(700); };
+  const fade = () => { render(); const m = $("#main"); if (m.animate) m.animate([{ opacity: .55 }, { opacity: 1 }], { duration: 160, easing: "ease-out" }); rfLater(350); };
   if (el._glass) { fade(); return; }
   if (to >= 0 && lgOk()) { LG.run = true; LG.rid = (LG.rid || 0) + 1; lgMsg({ t: "fly", from: from >= 0 ? from : to, to, id: LG.rid }); fade(); return; }
   tabsPill(); requestAnimationFrame(() => setTimeout(fade, 0)); };
@@ -1819,10 +1819,14 @@ function rfInit() {
     // sealed box: the bar's own styles can't reach the copied page, the page's styles come with it
     const root = w.attachShadow({ mode: "open" }), st = document.createElement("style"), box = document.createElement("div"), tint = document.createElement("div");
     st.textContent = css + "\n.rfbox{position:absolute;inset:0;overflow:hidden;border-radius:inherit}.rfs{position:absolute;left:0;right:0;overflow:hidden}.rfo{position:absolute;left:0;right:0;height:0}.rftint{position:absolute;inset:0;border-radius:inherit;background:var(--gl);box-shadow:var(--glrim);pointer-events:none}";
-    box.className = "rfbox"; tint.className = "rftint"; root.append(st, box, tint);
+    box.className = "rfbox"; root.append(st, box);
     RF.els.push({ el, w, box });
   });
   const m = $("#main"); m.addEventListener("scroll", rfMove, { passive: true });
+  let mv = 0; m.addEventListener("scroll", () => {
+    const T = $("#tabs"); if (T.classList.contains("rfstale") && !LG.run) { clearTimeout(RFT); rfSync(); }
+    T.classList.add("rfmov"); clearTimeout(mv); mv = setTimeout(() => T.classList.remove("rfmov"), 160);
+  }, { passive: true });
   let hx = 0; m.addEventListener("scroll", e => { if (e.target !== m) { clearTimeout(hx); hx = setTimeout(rfSync, 160); } }, { passive: true, capture: true });
   new MutationObserver(() => rfLater(600)).observe(m, { childList: true, subtree: true, characterData: true });
   setInterval(rfPos, 400);
