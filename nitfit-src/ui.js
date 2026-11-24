@@ -1810,6 +1810,7 @@ function rfZones(H) {
   return [[0, Z, a, b], [Z, H - Z, 0, 1], [H - Z, H, H - a - b * H, b]];
 }
 function rfInit() {
+  return; // scroll droop removed (glitchy on iPhone)
   if (RF.els) return; RF.els = [];
   const css = [...document.querySelectorAll("style")].map(x => x.textContent).join("\n");
   [["#tabs .tcap", ".tbg"], ["#tabs .tyou", ".tbg"]].forEach(([sel, before]) => {
@@ -1835,7 +1836,7 @@ function rfInit() {
   rfSync();
 }
 let RFT = 0;
-function rfLater(ms) { clearTimeout(RFT); $("#tabs").classList.add("rfstale"); RFT = setTimeout(function go() { if (LG.run) { RFT = setTimeout(go, 200); return; } (window.requestIdleCallback || setTimeout)(rfSync, { timeout: 300 }); }, ms); }
+function rfLater(ms) { if (!RF.els) return; clearTimeout(RFT); $("#tabs").classList.add("rfstale"); RFT = setTimeout(function go() { if (LG.run) { RFT = setTimeout(go, 200); return; } (window.requestIdleCallback || setTimeout)(rfSync, { timeout: 300 }); }, ms); }
 function rfRect(el) { const t = $("#tabs").getBoundingClientRect(); let x = 0, y = 0, e = el; while (e && e.id !== "tabs") { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; } return { left: t.left + x, top: t.top + y }; }
 function rfPos() {
   if (!RF.els) return; let moved = false;

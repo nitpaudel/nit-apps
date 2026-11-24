@@ -1,5 +1,5 @@
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "9.4";
+const APP_VERSION = "9.5";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());

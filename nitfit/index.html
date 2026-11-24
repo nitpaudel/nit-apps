@@ -1326,13 +1326,9 @@ html[data-theme="light"] .mcard{background:linear-gradient(180deg,rgba(255,255,2
 html[data-theme="light"]{--gl:rgba(255,255,255,.45)}
 
 
-/* v9.4: clear glass, no blur. At rest the bar is see-through (the page shows through it, normal and sharp).
-   Only while the page is moving, a bent copy of the page fades in under the tint to give the droop at the edges. */
+/* v9.5: clear glass, no blur, nothing drawn inside the bar. The page shows straight through it. */
 html[data-theme="light"]{--glblur:saturate(160%)}
 #tabs .tcap > .tbg,#tabs .tyou .tbg{background:var(--gl)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:var(--glrim),var(--glshadow)!important}
-#tabs .rfw{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;background:var(--bg);z-index:0;opacity:0;transition:opacity .22s ease-out}
-#tabs.rfmov:not(.rfstale):not(.lgon) .rfw{opacity:1;transition:opacity .1s ease-out}
-#tabs .tyou .rfw{border-radius:50%}
 #tabs .tyou .tbg{z-index:1}
 html.barwait #tabs{opacity:0!important;transition:none!important}
 #tabs{transition:opacity .2s ease-out}
@@ -1849,7 +1845,7 @@ function liveRows(ex, base, logged, rirT) {
 
 
 // ---------- NitFit core: storage, events, state, GitHub sync ----------
-const APP_VERSION = "9.4";
+const APP_VERSION = "9.5";
 const pad2 = n => String(n).padStart(2, "0");
 const dstr = dt => dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate());
 const today = () => dstr(new Date());
@@ -3873,6 +3869,7 @@ function rfZones(H) {
   return [[0, Z, a, b], [Z, H - Z, 0, 1], [H - Z, H, H - a - b * H, b]];
 }
 function rfInit() {
+  return; // scroll droop removed (glitchy on iPhone)
   if (RF.els) return; RF.els = [];
   const css = [...document.querySelectorAll("style")].map(x => x.textContent).join("\n");
   [["#tabs .tcap", ".tbg"], ["#tabs .tyou", ".tbg"]].forEach(([sel, before]) => {
@@ -3898,7 +3895,7 @@ function rfInit() {
   rfSync();
 }
 let RFT = 0;
-function rfLater(ms) { clearTimeout(RFT); $("#tabs").classList.add("rfstale"); RFT = setTimeout(function go() { if (LG.run) { RFT = setTimeout(go, 200); return; } (window.requestIdleCallback || setTimeout)(rfSync, { timeout: 300 }); }, ms); }
+function rfLater(ms) { if (!RF.els) return; clearTimeout(RFT); $("#tabs").classList.add("rfstale"); RFT = setTimeout(function go() { if (LG.run) { RFT = setTimeout(go, 200); return; } (window.requestIdleCallback || setTimeout)(rfSync, { timeout: 300 }); }, ms); }
 function rfRect(el) { const t = $("#tabs").getBoundingClientRect(); let x = 0, y = 0, e = el; while (e && e.id !== "tabs") { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; } return { left: t.left + x, top: t.top + y }; }
 function rfPos() {
   if (!RF.els) return; let moved = false;
